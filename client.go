@@ -19,6 +19,7 @@ type Client struct {
 	types.BaseClient
 	types.KeyManager
 	Bank bank.Client
+	Key  client.Client
 }
 
 func NewClient(cfg types.ClientConfig) Client {
@@ -28,6 +29,9 @@ func NewClient(cfg types.ClientConfig) Client {
 	baseClient := client.NewBaseClient(cfg, encodingConfig, nil)
 
 	bankClient := bank.NewClient(baseClient, encodingConfig.Marshaler)
+
+	keysClient := client.NewKeysClient(baseClient)
+
 	client := Client{
 		logger:         baseClient.Logger(),
 		BaseClient:     baseClient,
@@ -38,6 +42,7 @@ func NewClient(cfg types.ClientConfig) Client {
 			Algo:   cfg.Algo,
 		},
 		Bank: bankClient,
+		Key:  keysClient,
 	}
 	client.RegisterModule(
 		bankClient,

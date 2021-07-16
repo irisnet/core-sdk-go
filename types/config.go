@@ -19,6 +19,9 @@ const (
 	defaultPath          = "$HOME/irishub-sdk-go/leveldb"
 	defaultGasAdjustment = 1.0
 	defaultTxSizeLimit   = 1048576
+	BIP44Prefix          = "44'/118'/"
+	PartialPath          = "0'/0/0"
+	FullPath             = BIP44Prefix + PartialPath
 )
 
 type ClientConfig struct {
@@ -46,19 +49,19 @@ type ClientConfig struct {
 	// Transaction broadcast Mode
 	Mode BroadcastMode
 
-	//Transaction broadcast timeout(seconds)
+	// Transaction broadcast timeout(seconds)
 	Timeout uint
 
-	//log level(trace|debug|info|warn|error|fatal|panic)
+	// log level(trace|debug|info|warn|error|fatal|panic)
 	Level string
 
-	//maximum bytes of a transaction
+	// maximum bytes of a transaction
 	MaxTxBytes uint64
 
-	//adjustment factor to be multiplied against the estimate returned by the tx simulation;
+	// adjustment factor to be multiplied against the estimate returned by the tx simulation;
 	GasAdjustment float64
 
-	//whether to enable caching
+	// whether to enable caching
 	Cached bool
 
 	TokenManager TokenManager
@@ -67,8 +70,11 @@ type ClientConfig struct {
 
 	TxSizeLimit uint64
 
-	//bech32 Address Prefix
+	// bech32 Address Prefix
 	Bech32AddressPrefix AddrPrefixCfg
+
+	// BIP44 path
+	BIP44Path string
 }
 
 func NewClientConfig(uri, grpcAddr, chainID string, options ...Option) (ClientConfig, error) {
@@ -142,6 +148,9 @@ func (cfg *ClientConfig) checkAndSetDefault() error {
 		return err
 	}
 
+	if err := BIP44PathOption(cfg.BIP44Path)(cfg); err != nil {
+		return err
+	}
 	return GasAdjustmentOption(cfg.GasAdjustment)(cfg)
 }
 
@@ -283,6 +292,16 @@ func Bech32AddressPrefixOption(bech32AddressPrefix AddrPrefixCfg) Option {
 			bech32AddressPrefix = *PrefixCfg
 		}
 		cfg.Bech32AddressPrefix = bech32AddressPrefix
+		return nil
+	}
+}
+
+func BIP44PathOption(bIP44Path string) Option {
+	return func(cfg *ClientConfig) error {
+		if bIP44Path == "" {
+			bIP44Path = FullPath
+		}
+		cfg.BIP44Path = bIP44Path
 		return nil
 	}
 }

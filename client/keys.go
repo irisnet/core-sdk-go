@@ -195,7 +195,7 @@ type keysClient struct {
 	types.KeyManager
 }
 
-func NewClient(keyManager types.KeyManager) Client {
+func NewKeysClient(keyManager types.KeyManager) Client {
 	return keysClient{keyManager}
 }
 
