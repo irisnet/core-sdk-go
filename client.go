@@ -17,7 +17,6 @@ type Client struct {
 	moduleManager  map[string]types.Module
 	encodingConfig types.EncodingConfig
 	types.BaseClient
-	// types.KeyManager
 	Bank bank.Client
 	Key  client.Client
 }
@@ -37,12 +36,8 @@ func NewClient(cfg types.ClientConfig) Client {
 		BaseClient:     baseClient,
 		moduleManager:  make(map[string]types.Module),
 		encodingConfig: encodingConfig,
-		//KeyManager: client.KeyManager{
-		//	KeyDAO: cfg.KeyDAO,
-		//	Algo:   cfg.Algo,
-		//},
-		Bank: bankClient,
-		Key:  keysClient,
+		Bank:           bankClient,
+		Key:            keysClient,
 	}
 	client.RegisterModule(
 		bankClient,
