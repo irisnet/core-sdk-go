@@ -28,11 +28,12 @@ func (s IntegrationTestSuite) TestKeys() {
 
 	err = s.Key.Delete(name, password)
 	require.NoError(s.T(), err)
+	// test Recover
+	//address3, err := s.Key.Recover(name, password, mnemonic)
+	//require.NoError(s.T(), err)
+	//require.Equal(s.T(), address, address3)
 
-	address3, err := s.Key.Recover(name, password, mnemonic)
-	require.NoError(s.T(), err)
-	require.Equal(s.T(), address, address3)
-
+	// Recover With HD Path
 	address4, err := s.Key.RecoverWithHDPath(name, password, mnemonic, "")
 	require.NoError(s.T(), err)
 	require.Equal(s.T(), address, address4)

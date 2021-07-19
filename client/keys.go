@@ -7,6 +7,7 @@ import (
 
 	kmg "github.com/irisnet/core-sdk-go/common/crypto"
 	cryptoamino "github.com/irisnet/core-sdk-go/common/crypto/codec"
+	hd "github.com/irisnet/core-sdk-go/common/crypto/hd"
 	"github.com/irisnet/core-sdk-go/common/crypto/keys/secp256k1"
 	"github.com/irisnet/core-sdk-go/common/crypto/keys/sm2"
 	commoncryptotypes "github.com/irisnet/core-sdk-go/common/crypto/types"
@@ -192,11 +193,16 @@ type Client interface {
 }
 
 type keysClient struct {
+	hd.BIP44Params
 	types.KeyManager
 }
 
-func NewKeysClient(keyManager types.KeyManager) Client {
-	return keysClient{keyManager}
+func NewKeysClient(cfg types.ClientConfig, keyManager types.KeyManager) Client {
+	BIP44Params, err := hd.NewParamsFromPath(cfg.BIP44Path)
+	if err != nil {
+		panic(err)
+	}
+	return keysClient{(*BIP44Params), keyManager}
 }
 
 func (k keysClient) Add(name, password string) (string, string, types.Error) {
