@@ -5,6 +5,7 @@ import (
 
 	"github.com/irisnet/core-sdk-go/bank"
 	"github.com/irisnet/core-sdk-go/client"
+	keys "github.com/irisnet/core-sdk-go/client"
 	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
 	cryptotypes "github.com/irisnet/core-sdk-go/common/codec/types"
 	commoncryptocodec "github.com/irisnet/core-sdk-go/common/crypto/codec"
@@ -18,7 +19,7 @@ type Client struct {
 	encodingConfig types.EncodingConfig
 	types.BaseClient
 	Bank bank.Client
-	Key  client.Client
+	Key  keys.Client
 }
 
 func NewClient(cfg types.ClientConfig) Client {
@@ -29,7 +30,7 @@ func NewClient(cfg types.ClientConfig) Client {
 
 	bankClient := bank.NewClient(baseClient, encodingConfig.Marshaler)
 
-	keysClient := client.NewKeysClient(cfg, baseClient)
+	keysClient := keys.NewKeysClient(cfg, baseClient)
 
 	client := Client{
 		logger:         baseClient.Logger(),

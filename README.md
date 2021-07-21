@@ -10,8 +10,8 @@ Go version above 1.16.4
 
 ```
 replace (
-github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
-github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irita-210113
+    github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
+    github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irita-210113
 )
 ```
 
@@ -22,13 +22,13 @@ The initialization SDK code is as follows:
 ```go
     
         bech32AddressPrefix := types.AddrPrefixCfg{
-		Bech32AddressPrefix: map[string]string{
-            "account_addr":   "iaa",
-            "validator_addr": "iva",
-            "consensus_addr": "ica",
-            "account_pub":    "iap",
-            "validator_pub":  "ivp",
-            "consensus_pub":  "icp"},
+            Bech32AddressPrefix: map[string]string{
+                "account_addr":   "iaa",
+                "validator_addr": "iva",
+                "consensus_addr": "ica",
+                "account_pub":    "iap",
+                "validator_pub":  "ivp",
+                "consensus_pub":  "icp"},
 	}
 	options := []types.Option{
 		types.KeyDAOOption(store.NewMemory(nil)),
