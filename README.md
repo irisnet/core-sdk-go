@@ -15,10 +15,12 @@ github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irit
 )
 ```
 
-###Init Client
+### Init Client
+
 The initialization SDK code is as follows:
 
 ```go
+    
     bech32AddressPrefix := types.AddrPrefixCfg{
 		Bech32AddressPrefix: map[string]string{
             "account_addr":   "iaa",
@@ -65,6 +67,7 @@ If you want to use SDK to send a transfer transaction, the example is as follows
 There is more example of query and send tx
 
 ```go
+    
     coins, err := types.ParseDecCoins("10iris")
     to := "iaa1hp29kuh22vpjjlnctmyml5s75evsnsd8r4x0mm"
     baseTx := types.BaseTx{
