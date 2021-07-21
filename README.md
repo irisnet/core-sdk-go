@@ -1,6 +1,5 @@
 
-#IRIShub core-sdk  
-##core-sdk-go
+#IRIShub core-sdk
 - Golang SDK for Tendermint &amp; Cosmos-SDK Core Modules
 - Provides great convenience for users to quickly develop applications based on irishub.
 
