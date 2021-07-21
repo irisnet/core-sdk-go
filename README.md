@@ -22,13 +22,13 @@ The initialization SDK code is as follows:
 ```go
     
         bech32AddressPrefix := types.AddrPrefixCfg{
-		Bech32AddressPrefix: map[string]string{
-            "account_addr":   "iaa",
-            "validator_addr": "iva",
-            "consensus_addr": "ica",
-            "account_pub":    "iap",
-            "validator_pub":  "ivp",
-            "consensus_pub":  "icp"},
+            Bech32AddressPrefix: map[string]string{
+                "account_addr":   "iaa",
+                "validator_addr": "iva",
+                "consensus_addr": "ica",
+                "account_pub":    "iap",
+                "validator_pub":  "ivp",
+                "consensus_pub":  "icp"},
 	}
 	options := []types.Option{
 		types.KeyDAOOption(store.NewMemory(nil)),
