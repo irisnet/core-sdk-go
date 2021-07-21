@@ -1,6 +1,5 @@
 
 #IRIShub core-sdk
-- Golang SDK for Tendermint &amp; Cosmos-SDK Core Modules
 - Provides great convenience for users to quickly develop applications based on irishub.
 
 ##install
@@ -20,14 +19,14 @@ github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irit
 The initialization SDK code is as follows:
 
 ```go
-bech32AddressPrefix := types.AddrPrefixCfg{
+    bech32AddressPrefix := types.AddrPrefixCfg{
 		Bech32AddressPrefix: map[string]string{
-			"account_addr":   "",
-			"validator_addr": "",
-			"consensus_addr": "",
-			"account_pub":    "",
-			"validator_pub":  "",
-			"consensus_pub":  ""},
+            "account_addr":   "iaa",
+            "validator_addr": "iva",
+            "consensus_addr": "ica",
+            "account_pub":    "iap",
+            "validator_pub":  "ivp",
+            "consensus_pub":  "icp"},
 	}
 	options := []types.Option{
 		types.KeyDAOOption(store.NewMemory(nil)),
@@ -66,17 +65,17 @@ If you want to use SDK to send a transfer transaction, the example is as follows
 There is more example of query and send tx
 
 ```go
-coins, err := types.ParseDecCoins("10iris")
-to := "iaa1hp29kuh22vpjjlnctmyml5s75evsnsd8r4x0mm"
-baseTx := types.BaseTx{
-    From:               s.Account().Name,
-    Gas:                200000,
-    Memo:               "TEST",
-    Mode:               types.Commit,
-    Password:          "password",
-    SimulateAndExecute: false,
-    GasAdjustment:      1.5,
-}
-
-res, err := s.Bank.Send(to, coins, baseTx)
+    coins, err := types.ParseDecCoins("10iris")
+    to := "iaa1hp29kuh22vpjjlnctmyml5s75evsnsd8r4x0mm"
+    baseTx := types.BaseTx{
+        From:               s.Account().Name,
+        Gas:                200000,
+        Memo:               "TEST",
+        Mode:               types.Commit,
+        Password:          "password",
+        SimulateAndExecute: false,
+        GasAdjustment:      1.5,
+    }
+    
+    res, err := s.Bank.Send(to, coins, baseTx)
 ```
