@@ -50,10 +50,10 @@ below.
 
 | Iterm     | Type           | Description                                                                                         |
 |-----------|----------------|-----------------------------------------------------------------------------------------------------|
-| NodeURI   | string         | The RPC address of the irishub node connected to the SDK, for example: localhost: 26657             |
-| GRPCAddr  | string         | The GRPC address of the irishub node connected to the SDK, for example: localhost: 9090             |
-| Network   | enum           | irishub network type, value: Testnet, Mainnet                                                       |
-| ChainID   | string         | ChainID of irishub, for example: irishub                                                            |
+| NodeURI   | string         | The RPC address of the IRIShub node connected to the SDK, for example: localhost: 26657             |
+| GRPCAddr  | string         | The GRPC address of the IRIShub node connected to the SDK, for example: localhost: 9090             |
+| Network   | enum           | IRIShub network type, value: Testnet, Mainnet                                                       |
+| ChainID   | string         | ChainID of IRIShub, for example: IRIShub                                                            |
 | Gas       | uint64         | The maximum gas to be paid for the transaction, for example: 20000                                  |
 | Fee       | DecCoins       | Transaction fees to be paid for transactions                                                        |
 | KeyDAO    | KeyDAO         | Private key management interface, If the user does not provide it, the default LevelDB will be used |
