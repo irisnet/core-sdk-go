@@ -1,12 +1,12 @@
-### IRIShub Core Go SDK
+# IRIShub Core Go SDK
 
 * IRIShub Core Go SDK for Tendermint &amp; Cosmos-SDK Core Modules
 
-### Requirement
+## Requirement
 
 Go version above 1.16.4
 
-### Use Go Mod
+## Use Go Mod
 
 ```
 replace (
@@ -15,7 +15,7 @@ replace (
 )
 ```
 
-### Init Client
+## Init Client
 
 The initialization SDK code is as follows:
 
@@ -67,7 +67,6 @@ If you want to use SDK to send a transfer transaction, the example is as follows
 There is more example of query and send tx
 
 ```go
-
     coins, err := types.ParseDecCoins("10iris")
     to := "iaa1hp29kuh22vpjjlnctmyml5s75evsnsd8r4x0mm"
     baseTx := types.BaseTx{
