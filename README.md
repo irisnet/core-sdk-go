@@ -2,7 +2,6 @@
 ### IRIShub core-sdk
 - Provides great convenience for users to quickly develop applications based on irishub.
 
-### install
 ### Requirement
 Go version above 1.16.4
 
@@ -47,17 +46,17 @@ The initialization SDK code is as follows:
 ```
 The NewClientConfig component mainly contains the parameters used in the SDK, the specific meaning is shown in the table below.
 
-|Iterm	|Type|	Description|
-|  ----          | ----   | ----  |
-NodeURI	|string|	The RPC address of the irishub node connected to the SDK, for example: localhost: 26657
-GRPCAddr|string	|The GRPC address of the irishub node connected to the SDK, for example: localhost: 9090
-Network	|enum|	irishub network type, value: Testnet,Mainnet
-ChainID	|string|	ChainID of irishub, for example: irishub
-Gas     |uint64|	The maximum gas to be paid for the transaction, for example: 20000
+|Iterm	|Type    |	Description|
+|  ---- | ----   | ----  |
+NodeURI	|string  |	The RPC address of the irishub node connected to the SDK, for example: localhost: 26657
+GRPCAddr|string	 |  The GRPC address of the irishub node connected to the SDK, for example: localhost: 9090
+Network	|enum    |	irishub network type, value: Testnet,Mainnet
+ChainID	|string  |	ChainID of irishub, for example: irishub
+Gas     |uint64  |	The maximum gas to be paid for the transaction, for example: 20000
 Fee 	|DecCoins|	Transaction fees to be paid for transactions
-KeyDAO	|KeyDAO|	Private key management interface, If the user does not provide it, the default LevelDB will be used
-Mode	|enum|	Transaction broadcast mode, value: Sync,Async, Commit
-StoreType|enum|	Private key storage method, value: Keystore,PrivKey
+KeyDAO	|KeyDAO  |	Private key management interface, If the user does not provide it, the default LevelDB will be used
+Mode	|enum    |	Transaction broadcast mode, value: Sync,Async, Commit
+StoreType|enum   |	Private key storage method, value: Keystore,PrivKey
 Timeout	|time.Duration|	Transaction timeout, for example: 5s
 Level	|string|	Log output level, for example: info
 

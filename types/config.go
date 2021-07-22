@@ -291,8 +291,8 @@ func Bech32AddressPrefixOption(bech32AddressPrefix AddrPrefixCfg) Option {
 		if bech32AddressPrefix.Bech32AddressPrefix == nil {
 			bech32AddressPrefix = *PrefixCfg
 		}
-		if v, is := bech32AddressPrefix.Bech32AddressPrefix["account_addr"]; is == true {
-			if v == "" {
+		if value, ok := bech32AddressPrefix.Bech32AddressPrefix["account_addr"]; ok == true {
+			if value == "" {
 				bech32AddressPrefix = *PrefixCfg
 			}
 		}
