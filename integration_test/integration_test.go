@@ -50,13 +50,12 @@ func TestSuite(t *testing.T) {
 
 func (s *IntegrationTestSuite) SetupSuite() {
 	bech32AddressPrefix := types.AddrPrefixCfg{
-		Bech32AddressPrefix: map[string]string{
-			"account_addr":   "iaa",
-			"validator_addr": "iva",
-			"consensus_addr": "ica",
-			"account_pub":    "iap",
-			"validator_pub":  "ivp",
-			"consensus_pub":  "icp"},
+		AccountAddr:   "iaa",
+		ValidatorAddr: "iva",
+		ConsensusAddr: "ica",
+		AccountPub:    "iap",
+		ValidatorPub:  "ivp",
+		ConsensusPub:  "icp",
 	}
 	options := []types.Option{
 		types.KeyDAOOption(store.NewMemory(nil)),
