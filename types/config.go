@@ -288,7 +288,11 @@ func KeyManagerOption(keyManager crypto.KeyManager) Option {
 
 func Bech32AddressPrefixOption(bech32AddressPrefix AddrPrefixCfg) Option {
 	return func(cfg *ClientConfig) error {
-		if bech32AddressPrefix.Bech32AddressPrefix == nil {
+
+		if bech32AddressPrefix.AccountAddr == "" || bech32AddressPrefix.ValidatorAddr == "" || bech32AddressPrefix.ConsensusAddr == "" {
+			bech32AddressPrefix = *PrefixCfg
+		}
+		if bech32AddressPrefix.AccountPub == "" || bech32AddressPrefix.ValidatorPub == "" || bech32AddressPrefix.ConsensusPub == "" {
 			bech32AddressPrefix = *PrefixCfg
 		}
 		cfg.Bech32AddressPrefix = bech32AddressPrefix
