@@ -3,6 +3,9 @@ package sdk
 import (
 	"github.com/tendermint/tendermint/libs/log"
 
+	"github.com/irisnet/core-sdk-go/gov"
+	"github.com/irisnet/core-sdk-go/staking"
+
 	"github.com/irisnet/core-sdk-go/bank"
 	"github.com/irisnet/core-sdk-go/client"
 	keys "github.com/irisnet/core-sdk-go/client"
@@ -18,8 +21,10 @@ type Client struct {
 	moduleManager  map[string]types.Module
 	encodingConfig types.EncodingConfig
 	types.BaseClient
-	Bank bank.Client
-	Key  keys.Client
+	Bank    bank.Client
+	Key     keys.Client
+	Staking staking.Client
+	Gov     gov.Client
 }
 
 func NewClient(cfg types.ClientConfig) Client {
@@ -31,7 +36,8 @@ func NewClient(cfg types.ClientConfig) Client {
 	bankClient := bank.NewClient(baseClient, encodingConfig.Marshaler)
 
 	keysClient := keys.NewKeysClient(cfg, baseClient)
-
+	stakingClient := staking.NewClient(baseClient, encodingConfig.Marshaler)
+	govClient := gov.NewClient(baseClient, encodingConfig.Marshaler)
 	client := Client{
 		logger:         baseClient.Logger(),
 		BaseClient:     baseClient,
@@ -39,9 +45,13 @@ func NewClient(cfg types.ClientConfig) Client {
 		encodingConfig: encodingConfig,
 		Bank:           bankClient,
 		Key:            keysClient,
+		Staking:        stakingClient,
+		Gov:            govClient,
 	}
 	client.RegisterModule(
 		bankClient,
+		stakingClient,
+		govClient,
 	)
 	return client
 }
