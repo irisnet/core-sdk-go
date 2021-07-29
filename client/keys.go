@@ -2,12 +2,11 @@ package client
 
 import (
 	"fmt"
-
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 
 	kmg "github.com/irisnet/core-sdk-go/common/crypto"
 	cryptoamino "github.com/irisnet/core-sdk-go/common/crypto/codec"
-	hd "github.com/irisnet/core-sdk-go/common/crypto/hd"
+	"github.com/irisnet/core-sdk-go/common/crypto/hd"
 	"github.com/irisnet/core-sdk-go/common/crypto/keys/secp256k1"
 	"github.com/irisnet/core-sdk-go/common/crypto/keys/sm2"
 	commoncryptotypes "github.com/irisnet/core-sdk-go/common/crypto/types"
