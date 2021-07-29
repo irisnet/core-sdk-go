@@ -8,16 +8,18 @@ import (
 type Client interface {
 	sdk.Module
 
-	CreatePool(request CreatePoolRequest, baseTx sdk.BaseTx) (sdk.ResultTx, sdk.Error)
+	Transfer(request TransferRequest, baseTx sdk.BaseTx) (sdk.ResultTx, sdk.Error)
+
+	QueryDenomTrace(request QueryDenomTraceRequest) (QueryDenomTraceResponse, sdk.Error)
+	QueryDenomTraces(request QueryDenomTracesRequest) (QueryDenomTracesResponse, sdk.Error)
 }
 
-type CreatePoolRequest struct {
-	Name           string    `json:"name"`
-	Description    string    `json:"description"`
-	LpTokenDenom   string    `json:"lp_token_denom"`
-	StartHeight    int64     `json:"start_height"`
-	RewardPerBlock sdk.Coins `json:"reward_per_block"`
-	TotalReward    sdk.Coins `json:"total_reward"`
-	Editable       bool      `json:"editable"`
-	Creator        string    `json:"creator"`
+type TransferRequest struct {
+	SourcePort       string   `json:"source_port"`
+	SourceChannel    string   `json:"source_channel"`
+	Token            sdk.Coin `json:"token"`
+	Sender           string   `json:"sender"`
+	Receiver         string   `json:"receiver"`
+	TimeoutHeight    Height   `json:"timeout_height"`
+	TimeoutTimestamp uint64   `json:"timeout_timestamp"`
 }

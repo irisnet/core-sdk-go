@@ -1,5 +1,5 @@
 syntax = "proto3";
-package ibc.applications.transfer.v1;
+package ibc.transfer.v1;
 
 option go_package = "github.com/irisnet/core-sdk-go/ibc/transfer";
 

@@ -19,7 +19,6 @@ service Query {
   rpc DenomTraces(QueryDenomTracesRequest) returns (QueryDenomTracesResponse) {
     option (google.api.http).get = "/ibc/transfer/v1beta1/denom_traces";
   }
-
 }
 
 // QueryDenomTraceRequest is the request type for the Query/DenomTrace RPC
