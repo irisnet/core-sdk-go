@@ -4,6 +4,13 @@ import (
 	sdk "github.com/irisnet/core-sdk-go/types"
 )
 
+const (
+	// ModuleName defines the IBC transfer name
+	ModuleName = "transfer"
+	// DenomPrefix is the prefix used for internal SDK coin representation.
+	DenomPrefix = "ibc"
+)
+
 var (
 	_ sdk.Msg = &MsgTransfer{}
 )

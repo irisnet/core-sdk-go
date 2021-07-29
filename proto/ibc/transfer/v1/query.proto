@@ -20,10 +20,6 @@ service Query {
     option (google.api.http).get = "/ibc/transfer/v1beta1/denom_traces";
   }
 
-  // Params queries all parameters of the ibc-transfer module.
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/ibc/transfer/v1beta1/params";
-  }
 }
 
 // QueryDenomTraceRequest is the request type for the Query/DenomTrace RPC
