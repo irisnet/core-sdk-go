@@ -52,7 +52,6 @@ message MsgTransferResponse {}
 // be monitonically increasing even as the RevisionHeight gets reset
 message Height {
   option (gogoproto.goproto_getters)  = false;
-  option (gogoproto.goproto_stringer) = false;
 
   // the revision that the client is currently on
   uint64 revision_number = 1 [(gogoproto.moretags) = "yaml:\"revision_number\""];
