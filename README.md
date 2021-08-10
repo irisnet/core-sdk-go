@@ -1,6 +1,7 @@
-# IRIShub Core Go SDK
+# Core SDK
 
-* IRIShub Core Go SDK for Tendermint &amp; Cosmos-SDK Core Modules
+* Golang SDK for Tendermint & Cosmos-SDK Core Modules
+
 # install
 
 ## Requirement
