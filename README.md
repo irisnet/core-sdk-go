@@ -1,6 +1,6 @@
 # Core SDK
 
-* Golang SDK for Tendermint & Cosmos-SDK Core Modules
+Golang SDK for Tendermint & Cosmos-SDK Core Modules
 
 # install
 
