@@ -7,14 +7,14 @@ require (
 	github.com/bluele/gcache v0.0.2
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/btcsuite/btcutil v1.0.2
-	github.com/cosmos/go-bip39 v1.0.0
+	github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d
 	github.com/gogo/protobuf v1.3.3
-	github.com/golang/protobuf v1.5.2
-	github.com/magiconair/properties v1.8.5
+	github.com/golang/protobuf v1.4.3
+	github.com/magiconair/properties v1.8.1
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/common v0.23.0
+	github.com/prometheus/common v0.14.0
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.7.0
@@ -23,11 +23,11 @@ require (
 	github.com/tendermint/tendermint v0.34.11
 	github.com/tendermint/tm-db v0.6.4
 	github.com/tjfoc/gmsm v1.4.0
-	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
-	google.golang.org/genproto v0.0.0-20210114201628-6edceaf6022f
+	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9
+	google.golang.org/genproto v0.0.0-20201119123407-9b1e624d6bc4
 	google.golang.org/grpc v1.37.0
-	google.golang.org/protobuf v1.26.0
-	gopkg.in/yaml.v2 v2.4.0
+	google.golang.org/protobuf v1.25.0
+	gopkg.in/yaml.v2 v2.3.0
 
 )
 

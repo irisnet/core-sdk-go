@@ -3,15 +3,15 @@ package sdk
 import (
 	"github.com/tendermint/tendermint/libs/log"
 
+	"github.com/irisnet/core-sdk-go/gov"
+	"github.com/irisnet/core-sdk-go/staking"
+
 	"github.com/irisnet/core-sdk-go/bank"
 	"github.com/irisnet/core-sdk-go/client"
 	keys "github.com/irisnet/core-sdk-go/client"
 	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
 	cryptotypes "github.com/irisnet/core-sdk-go/common/codec/types"
 	commoncryptocodec "github.com/irisnet/core-sdk-go/common/crypto/codec"
-	"github.com/irisnet/core-sdk-go/gov"
-	"github.com/irisnet/core-sdk-go/ibc/transfer"
-	"github.com/irisnet/core-sdk-go/staking"
 	"github.com/irisnet/core-sdk-go/types"
 	txtypes "github.com/irisnet/core-sdk-go/types/tx"
 )
@@ -21,11 +21,10 @@ type Client struct {
 	moduleManager  map[string]types.Module
 	encodingConfig types.EncodingConfig
 	types.BaseClient
-	Bank     bank.Client
-	Key      keys.Client
-	Staking  staking.Client
-	Gov      gov.Client
-	Transfer transfer.Client
+	Bank    bank.Client
+	Key     keys.Client
+	Staking staking.Client
+	Gov     gov.Client
 }
 
 func NewClient(cfg types.ClientConfig) Client {
@@ -33,12 +32,12 @@ func NewClient(cfg types.ClientConfig) Client {
 
 	// create a instance of baseClient
 	baseClient := client.NewBaseClient(cfg, encodingConfig, nil)
+
 	bankClient := bank.NewClient(baseClient, encodingConfig.Marshaler)
+
 	keysClient := keys.NewKeysClient(cfg, baseClient)
-	transferClient := transfer.NewClient(baseClient, encodingConfig.Marshaler)
 	stakingClient := staking.NewClient(baseClient, encodingConfig.Marshaler)
 	govClient := gov.NewClient(baseClient, encodingConfig.Marshaler)
-
 	client := Client{
 		logger:         baseClient.Logger(),
 		BaseClient:     baseClient,
@@ -48,13 +47,11 @@ func NewClient(cfg types.ClientConfig) Client {
 		Key:            keysClient,
 		Staking:        stakingClient,
 		Gov:            govClient,
-		Transfer:       transferClient,
 	}
 	client.RegisterModule(
 		bankClient,
 		stakingClient,
 		govClient,
-		transferClient,
 	)
 	return client
 }
