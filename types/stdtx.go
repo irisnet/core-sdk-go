@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
-	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
 )
 
 const (
@@ -18,9 +16,40 @@ const (
 	Commit BroadcastMode = "commit"
 )
 
-type BroadcastMode string
+type (
+	UnwrappedTx struct {
+		Body     UnwrappedTxBody
+		AuthInfo UnwrappedAuthInfo
+	}
 
-type Msgs []Msg
+	UnwrappedTxBody struct {
+		Msgs []Msg
+		// memo is any arbitrary memo to be added to the transaction
+		Memo string
+		// timeout is the block height after which this transaction will not
+		// be processed by the chain
+		TimeoutHeight uint64
+	}
+
+	UnwrappedAuthInfo struct {
+		Signatures []UnwrappedSignature
+		Fee        *StdFee
+	}
+
+	UnwrappedSignature struct {
+		PubKey   UnwrappedPubKey
+		Sig      []byte
+		Sequence uint64
+	}
+
+	UnwrappedPubKey struct {
+		Type  string
+		Value string
+	}
+
+	BroadcastMode string
+	Msgs          []Msg
+)
 
 func (m Msgs) Len() int {
 	return len(m)
@@ -38,15 +67,16 @@ type StdFee struct {
 	Gas    uint64 `json:"gas"`
 }
 
-func NewStdFee(gas uint64, amount ...Coin) StdFee {
-	return StdFee{
-		Amount: amount,
-		Gas:    gas,
-	}
-}
-
 // Fee bytes for signing later
 func (fee StdFee) Bytes() []byte {
+	//if len(fee.Amount) == 0 {
+	//	fee.Amount = Coins{}
+	//}
+	//bz, err := NewCodec().MarshalJSON(fee)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//return bz
 	//TODO
 	return nil
 }
@@ -67,26 +97,6 @@ type StdSignMsg struct {
 	Fee           StdFee `json:"fee"`
 	Msgs          []Msg  `json:"msgs"`
 	Memo          string `json:"memo"`
-}
-
-// get message bytes
-func (msg StdSignMsg) Bytes(cdc commoncodec.Marshaler) []byte {
-	var msgsBytes []json.RawMessage
-	for _, msg := range msg.Msgs {
-		msgsBytes = append(msgsBytes, json.RawMessage(msg.GetSignBytes()))
-	}
-	bz, err := json.Marshal(StdSignDoc{
-		AccountNumber: msg.AccountNumber,
-		ChainID:       msg.ChainID,
-		Fee:           json.RawMessage(msg.Fee.Bytes()),
-		Memo:          msg.Memo,
-		Msgs:          msgsBytes,
-		Sequence:      msg.Sequence,
-	})
-	if err != nil {
-		panic(err)
-	}
-	return MustSortJSON(bz)
 }
 
 // StdSignDoc is replay-prevention structure.
@@ -124,13 +134,6 @@ func NewStdTx(msgs []Msg, fee StdFee, sigs []StdSignature, memo string) StdTx {
 //nolint
 // GetMsgs returns the all the transaction's messages.
 func (tx StdTx) GetMsgs() []Msg { return tx.Msgs }
-func (tx StdTx) GetSignBytes() []string {
-	var bz []string
-	for _, msg := range tx.Msgs {
-		bz = append(bz, string(msg.GetSignBytes()))
-	}
-	return bz
-}
 
 // ValidateBasic does a simple and lightweight validation check that doesn't
 // require access to any other information.
@@ -206,6 +209,7 @@ type BaseTx struct {
 type ResultTx struct {
 	GasWanted int64        `json:"gas_wanted"`
 	GasUsed   int64        `json:"gas_used"`
+	Data      []byte       `json:"data"`
 	Events    StringEvents `json:"events"`
 	Hash      string       `json:"hash"`
 	Height    int64        `json:"height"`
@@ -213,11 +217,11 @@ type ResultTx struct {
 
 // ResultQueryTx is used to prepare info to display
 type ResultQueryTx struct {
-	Hash      string   `json:"hash"`
-	Height    int64    `json:"height"`
-	Tx        Tx       `json:"tx"`
-	Result    TxResult `json:"result"`
-	Timestamp string   `json:"timestamp"`
+	Hash      string      `json:"hash"`
+	Height    int64       `json:"height"`
+	Tx        UnwrappedTx `json:"tx"`
+	Result    TxResult    `json:"result"`
+	Timestamp string      `json:"timestamp"`
 }
 
 // ResultSearchTxs defines a structure for querying txs pageable

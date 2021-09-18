@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/irisnet/core-sdk-go/common/crypto"
+	"github.com/irisnet/core-sdk-go/crypto"
 	"github.com/irisnet/core-sdk-go/types/store"
 )
 
@@ -64,10 +64,13 @@ type ClientConfig struct {
 	// whether to enable caching
 	Cached bool
 
+	// 
 	TokenManager TokenManager
 
+	// 
 	KeyManager crypto.KeyManager
 
+	// 
 	TxSizeLimit uint64
 
 	// bech32 Address Prefix

@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/irisnet/core-sdk-go/common/bech32"
+	"github.com/irisnet/core-sdk-go/types/bech32"
 )
 
 const (
@@ -20,21 +20,21 @@ const (
 type AccAddress []byte
 
 // AccAddressFromBech32 creates an AccAddress from a Bech32 string.
-func AccAddressFromBech32(address string) (AccAddress, Error) {
+func AccAddressFromBech32(address string) (AccAddress, error) {
 	bech32PrefixAccAddr := GetAddrPrefixCfg().GetBech32AccountAddrPrefix()
-	bz, err := GetFromBech32(address, bech32PrefixAccAddr)
+	bz, err := bech32.GetFromBech32(address, bech32PrefixAccAddr)
 	if err != nil {
-		return nil, Wrap(err)
+		return nil, err
 	}
 
 	return AccAddress(bz), nil
 }
 
-func ValidateAccAddress(address string) Error {
+func ValidateAccAddress(address string) error {
 	bech32PrefixAccAddr := GetAddrPrefixCfg().GetBech32AccountAddrPrefix()
-	_, err := GetFromBech32(address, bech32PrefixAccAddr)
+	_, err := bech32.GetFromBech32(address, bech32PrefixAccAddr)
 	if err != nil {
-		return Wrap(err)
+		return err
 	}
 	return nil
 }
@@ -130,11 +130,11 @@ func (aa AccAddress) Bytes() []byte {
 type ValAddress []byte
 
 // ValAddressFromBech32 creates a ValAddress from a Bech32 string.
-func ValAddressFromBech32(address string) (ValAddress, Error) {
+func ValAddressFromBech32(address string) (ValAddress, error) {
 	bech32PrefixValAddr := GetAddrPrefixCfg().GetBech32ValidatorAddrPrefix()
 	bz, err := bech32.GetFromBech32(address, bech32PrefixValAddr)
 	if err != nil {
-		return nil, Wrap(err)
+		return nil, err
 	}
 
 	return ValAddress(bz), nil
@@ -324,29 +324,4 @@ func Bech32ifyPubKey(pkt Bech32PubKeyType, pubkey TmPubKey) (string, error) {
 	}
 
 	return bech32.ConvertAndEncode(bech32Prefix, pubkey.Bytes())
-}
-
-// GetPubKeyFromBech32 returns a PublicKey from a bech32-encoded PublicKey with
-// a given key type.
-func GetPubKeyFromBech32(pkt Bech32PubKeyType, pubkeyStr string) (TmPubKey, error) {
-	var bech32Prefix string
-
-	switch pkt {
-	case Bech32PubKeyTypeAccPub:
-		bech32Prefix = GetAddrPrefixCfg().GetBech32AccountPubPrefix()
-
-	case Bech32PubKeyTypeValPub:
-		bech32Prefix = GetAddrPrefixCfg().GetBech32ValidatorPubPrefix()
-
-	case Bech32PubKeyTypeConsPub:
-		bech32Prefix = GetAddrPrefixCfg().GetBech32ConsensusPubPrefix()
-
-	}
-
-	bz, err := GetFromBech32(pubkeyStr, bech32Prefix)
-	if err != nil {
-		return nil, err
-	}
-
-	return PubKeyFromBytes(bz)
 }

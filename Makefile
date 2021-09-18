@@ -17,4 +17,7 @@ test-integration:
 	cd integration_test/scripts/ && sh clean.sh
 
 proto-gen:
-	@./third_party/protocgen.sh
+	@./scripts/protocgen.sh
+
+proto-gen-any:
+	@./scripts/protocgen-any.sh

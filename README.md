@@ -2,22 +2,22 @@
 
 Golang SDK for Tendermint & Cosmos-SDK Core Modules
 
-# install
+## install
 
-## Requirement
+### Requirement
 
 Go version above 1.16.4
 
-## Use Go Mod
+### Use Go Mod
 
-```
+```go
 replace (
     github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
     github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irita-210113
 )
 ```
 
-## Init Client
+### Init Client
 
 The initialization SDK code is as follows:
 
@@ -50,7 +50,7 @@ The NewClientConfig component mainly contains the parameters used in the SDK, th
 below.
 
 | Iterm     | Type           | Description                                                                                         |
-|-----------|----------------|-----------------------------------------------------------------------------------------------------|
+| --------- | -------------- | --------------------------------------------------------------------------------------------------- |
 | NodeURI   | string         | The RPC address of the IRIShub node connected to the SDK, for example: localhost: 26657             |
 | GRPCAddr  | string         | The GRPC address of the IRIShub node connected to the SDK, for example: localhost: 9090             |
 | Network   | enum           | IRIShub network type, value: Testnet, Mainnet                                                       |

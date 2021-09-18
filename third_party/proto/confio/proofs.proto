@@ -10,7 +10,7 @@ enum HashOp {
     SHA512 = 2;
     KECCAK = 3;
     RIPEMD160 = 4;
-    BITCOIN = 5;  // ripemd160(sha256(x))
+    BITCOIN = 5; // ripemd160(sha256(x))
 }
 
 /**
@@ -21,15 +21,15 @@ algorithm, the length will be prepended to the key and value bytes.
 */
 enum LengthOp {
     // NO_PREFIX don't include any length info
-    NO_PREFIX = 0; 
+    NO_PREFIX = 0;
     // VAR_PROTO uses protobuf (and go-amino) varint encoding of the length
-    VAR_PROTO = 1; 
+    VAR_PROTO = 1;
     // VAR_RLP uses rlp int encoding of the length
-    VAR_RLP = 2; 
+    VAR_RLP = 2;
     // FIXED32_BIG uses big-endian encoding of the length as a 32 bit integer
-    FIXED32_BIG = 3; 
+    FIXED32_BIG = 3;
     // FIXED32_LITTLE uses little-endian encoding of the length as a 32 bit integer
-    FIXED32_LITTLE = 4; 
+    FIXED32_LITTLE = 4;
     // FIXED64_BIG uses big-endian encoding of the length as a 64 bit integer
     FIXED64_BIG = 5;
     // FIXED64_LITTLE uses little-endian encoding of the length as a 64 bit integer
@@ -65,7 +65,7 @@ message ExistenceProof {
     bytes key = 1;
     bytes value = 2;
     LeafOp leaf = 3;
-    repeated InnerOp path = 4;    
+    repeated InnerOp path = 4;
 }
 
 /*
@@ -140,7 +140,6 @@ message InnerOp {
     bytes suffix = 3;
 }
 
-
 /**
 ProofSpec defines what the expected parameters are for a given proof type.
 This can be stored in the client and used to validate any incoming proofs.
@@ -154,14 +153,14 @@ We need this for proper security, requires client knows a priori what
 tree format server uses. But not in code, rather a configuration object.
 */
 message ProofSpec {
-  // any field in the ExistenceProof must be the same as in this spec.
-  // except Prefix, which is just the first bytes of prefix (spec can be longer) 
-  LeafOp leaf_spec = 1;
-  InnerSpec inner_spec = 2;
-  // max_depth (if > 0) is the maximum number of InnerOps allowed (mainly for fixed-depth tries)
-  int32 max_depth = 3;
-  // min_depth (if > 0) is the minimum number of InnerOps allowed (mainly for fixed-depth tries)
-  int32 min_depth = 4;
+    // any field in the ExistenceProof must be the same as in this spec.
+    // except Prefix, which is just the first bytes of prefix (spec can be longer)
+    LeafOp leaf_spec = 1;
+    InnerSpec inner_spec = 2;
+    // max_depth (if > 0) is the maximum number of InnerOps allowed (mainly for fixed-depth tries)
+    int32 max_depth = 3;
+    // min_depth (if > 0) is the minimum number of InnerOps allowed (mainly for fixed-depth tries)
+    int32 min_depth = 4;
 }
 
 /*
@@ -192,43 +191,42 @@ message InnerSpec {
 BatchProof is a group of multiple proof types than can be compressed
 */
 message BatchProof {
-  repeated BatchEntry entries = 1;
+    repeated BatchEntry entries = 1;
 }
 
 // Use BatchEntry not CommitmentProof, to avoid recursion
 message BatchEntry {
-  oneof proof {
-    ExistenceProof exist = 1;
-    NonExistenceProof nonexist = 2;
-  }
+    oneof proof {
+        ExistenceProof exist = 1;
+        NonExistenceProof nonexist = 2;
+    }
 }
-
 
 /****** all items here are compressed forms *******/
 
 message CompressedBatchProof {
-  repeated CompressedBatchEntry entries = 1;
-  repeated InnerOp lookup_inners = 2;
+    repeated CompressedBatchEntry entries = 1;
+    repeated InnerOp lookup_inners = 2;
 }
 
 // Use BatchEntry not CommitmentProof, to avoid recursion
 message CompressedBatchEntry {
-  oneof proof {
-    CompressedExistenceProof exist = 1;
-    CompressedNonExistenceProof nonexist = 2;
-  }
+    oneof proof {
+        CompressedExistenceProof exist = 1;
+        CompressedNonExistenceProof nonexist = 2;
+    }
 }
 
 message CompressedExistenceProof {
-  bytes key = 1;
-  bytes value = 2;
-  LeafOp leaf = 3;
-  // these are indexes into the lookup_inners table in CompressedBatchProof
-  repeated int32 path = 4;    
+    bytes key = 1;
+    bytes value = 2;
+    LeafOp leaf = 3;
+    // these are indexes into the lookup_inners table in CompressedBatchProof
+    repeated int32 path = 4;
 }
 
 message CompressedNonExistenceProof {
-  bytes key = 1; // TODO: remove this as unnecessary??? we prove a range
-  CompressedExistenceProof left = 2;
-  CompressedExistenceProof right = 3;
+    bytes key = 1; // TODO: remove this as unnecessary??? we prove a range
+    CompressedExistenceProof left = 2;
+    CompressedExistenceProof right = 3;
 }

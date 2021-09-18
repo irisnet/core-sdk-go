@@ -5,7 +5,7 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 
-	"github.com/irisnet/core-sdk-go/common/crypto/hd"
+	"github.com/irisnet/core-sdk-go/crypto/hd"
 )
 
 var (
@@ -93,15 +93,4 @@ func (i localInfo) GetAlgo() hd.PubKeyType {
 // GetType implements Info interface
 func (i localInfo) GetPath() (*hd.BIP44Params, error) {
 	return nil, fmt.Errorf("BIP44 Paths are not available for this type")
-}
-
-// encoding info
-func marshalInfo(i Info) []byte {
-	return cdc.MustMarshalBinaryLengthPrefixed(i)
-}
-
-// decoding info
-func unmarshalInfo(bz []byte) (info Info, err error) {
-	err = cdc.UnmarshalBinaryLengthPrefixed(bz, &info)
-	return
 }

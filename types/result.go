@@ -7,16 +7,12 @@ import (
 	"math"
 	"strings"
 
-	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
-
 	yaml "gopkg.in/yaml.v2"
 
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
-	cryptotypes "github.com/irisnet/core-sdk-go/common/codec/types"
+	codectypes "github.com/irisnet/core-sdk-go/codec/types"
 )
-
-var cdc = commoncodec.NewLegacyAmino()
 
 func (gi GasInfo) String() string {
 	bz, _ := yaml.Marshal(gi)
@@ -40,20 +36,16 @@ func (r Result) GetEvents() Events {
 // ABCIMessageLogs represents a slice of ABCIMessageLog.
 type ABCIMessageLogs []ABCIMessageLog
 
-// String implements the fmt.Stringer interface for the ABCIMessageLogs type.
-func (logs ABCIMessageLogs) String() (str string) {
-	if logs != nil {
-		raw, err := cdc.MarshalJSON(logs)
-		if err == nil {
-			str = string(raw)
-		}
+func NewABCIMessageLog(i uint32, log string, events Events) ABCIMessageLog {
+	return ABCIMessageLog{
+		MsgIndex: i,
+		Log:      log,
+		Events:   StringifyEvents(events.ToABCIEvents()),
 	}
-
-	return str
 }
 
 // NewResponseResultTx returns a TxResponse given a ResultTx from tendermint
-func NewResponseResultTx(res *ctypes.ResultTx, anyTx *cryptotypes.Any, timestamp string) *TxResponse {
+func NewResponseResultTx(res *ctypes.ResultTx, anyTx *codectypes.Any, timestamp string) *TxResponse {
 	if res == nil {
 		return nil
 	}
@@ -224,15 +216,15 @@ func ParseABCILogs(logs string) (res ABCIMessageLogs, err error) {
 	return res, err
 }
 
-var _, _ cryptotypes.UnpackInterfacesMessage = SearchTxsResult{}, TxResponse{}
+var _, _ codectypes.UnpackInterfacesMessage = SearchTxsResult{}, TxResponse{}
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
 //
 // types.UnpackInterfaces needs to be called for each nested Tx because
 // there are generally interfaces to unpack in Tx's
-func (s SearchTxsResult) UnpackInterfaces(unpacker cryptotypes.AnyUnpacker) error {
+func (s SearchTxsResult) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	for _, tx := range s.Txs {
-		err := cryptotypes.UnpackInterfaces(tx, unpacker)
+		err := codectypes.UnpackInterfaces(tx, unpacker)
 		if err != nil {
 			return err
 		}
@@ -241,7 +233,7 @@ func (s SearchTxsResult) UnpackInterfaces(unpacker cryptotypes.AnyUnpacker) erro
 }
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
-func (r TxResponse) UnpackInterfaces(unpacker cryptotypes.AnyUnpacker) error {
+func (r TxResponse) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	if r.Tx != nil {
 		var tx Tx
 		return unpacker.UnpackAny(r.Tx, &tx)
