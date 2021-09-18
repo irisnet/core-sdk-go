@@ -1,13 +1,14 @@
 package client
 
 import (
+	grpc1 "github.com/gogo/protobuf/grpc"
 	"github.com/irisnet/core-sdk-go/types"
 	"github.com/prometheus/common/log"
 	"google.golang.org/grpc"
 )
 
 type grpcClient struct {
-	clientConn *grpc.ClientConn
+	clientConn *grpc1.ClientConn
 }
 
 func NewGRPCClient(url string) types.GRPCClient {
@@ -19,9 +20,11 @@ func NewGRPCClient(url string) types.GRPCClient {
 		log.Error(err.Error())
 		panic(err)
 	}
-	return &grpcClient{clientConn: clientConn}
+	conn := grpc1.ClientConn(clientConn)
+
+	return &grpcClient{clientConn: &conn}
 }
 
-func (g grpcClient) GenConn() (*grpc.ClientConn, error) {
+func (g grpcClient) GenConn() (*grpc1.ClientConn, error) {
 	return g.clientConn, nil
 }

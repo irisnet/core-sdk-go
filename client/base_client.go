@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	grpc1 "github.com/gogo/protobuf/grpc"
 	"strings"
 	"time"
 
@@ -16,8 +17,6 @@ import (
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/log"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
-
-	"google.golang.org/grpc"
 
 	"github.com/irisnet/core-sdk-go/common"
 	commoncache "github.com/irisnet/core-sdk-go/common/cache"
@@ -93,7 +92,7 @@ func (base *baseClient) Marshaler() commoncodec.Marshaler {
 	return base.encodingConfig.Marshaler
 }
 
-func (base *baseClient) GenConn() (*grpc.ClientConn, error) {
+func (base *baseClient) GenConn() (*grpc1.ClientConn, error) {
 	return base.AccountQuery.GenConn()
 }
 

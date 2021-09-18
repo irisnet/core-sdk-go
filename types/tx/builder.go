@@ -3,17 +3,18 @@ package tx
 import (
 	"fmt"
 
+	cryptotypes "github.com/irisnet/core-sdk-go/common/crypto/types"
+
 	"github.com/gogo/protobuf/proto"
 
 	"github.com/tendermint/tendermint/crypto"
 
 	codectypes "github.com/irisnet/core-sdk-go/common/codec/types"
-	"github.com/irisnet/core-sdk-go/types"
 	sdk "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/core-sdk-go/types/tx/signing"
 )
 
-// wrapper is a wrapper around the tx.Tx proto.Message which retain the raw
+// wrapper is a wrapper around the Tx proto.Message which retain the raw
 // body and auth_info bytes.
 type wrapper struct {
 	tx *Tx
@@ -34,7 +35,7 @@ var (
 	_ codectypes.IntoAny        = &wrapper{}
 )
 
-// ExtensionOptionsTxBuilder defines a TxBuilder that can also set extensions.
+// ExtensionOptionsTxBuilder defines a Factory that can also set extensions.
 type ExtensionOptionsTxBuilder interface {
 	SetExtensionOptions(...*codectypes.Any)
 	SetNonCriticalExtensionOptions(...*codectypes.Any)
@@ -95,11 +96,11 @@ func (w *wrapper) GetSigners() []sdk.AccAddress {
 	return w.tx.GetSigners()
 }
 
-func (w *wrapper) GetPubKeys() []crypto.PubKey {
+func (w *wrapper) GetPubKeys(anyUnpacker codectypes.AnyUnpacker) []crypto.PubKey {
 	signerInfos := w.tx.AuthInfo.SignerInfos
-	pks := make([]crypto.PubKey, len(signerInfos))
+	pks := make([]crypto.PubKey, 0, len(signerInfos))
 
-	for i, si := range signerInfos {
+	for _, si := range signerInfos {
 		// NOTE: it is okay to leave this nil if there is no PubKey in the SignerInfo.
 		// PubKey's can be left unset in SignerInfo.
 		if si.PublicKey == nil {
@@ -108,10 +109,14 @@ func (w *wrapper) GetPubKeys() []crypto.PubKey {
 
 		pk, ok := si.PublicKey.GetCachedValue().(crypto.PubKey)
 		if ok {
-			pks[i] = pk
+			pks = append(pks, pk)
+		} else {
+			var pubkey cryptotypes.PubKey
+			if err := anyUnpacker.UnpackAny(si.PublicKey, &pubkey); err == nil {
+				pks = append(pks, pubkey)
+			}
 		}
 	}
-
 	return pks
 }
 
@@ -124,28 +129,7 @@ func (w *wrapper) GetFee() sdk.Coins {
 }
 
 func (w *wrapper) FeePayer() sdk.AccAddress {
-	feePayer := w.tx.AuthInfo.Fee.Payer
-	if feePayer != "" {
-		payerAddr, err := sdk.AccAddressFromBech32(feePayer)
-		if err != nil {
-			panic(err)
-		}
-		return payerAddr
-	}
-	// use first signer as default if no payer specified
 	return w.GetSigners()[0]
-}
-
-func (w *wrapper) FeeGranter() sdk.AccAddress {
-	feePayer := w.tx.AuthInfo.Fee.Granter
-	if feePayer != "" {
-		granterAddr, err := sdk.AccAddressFromBech32(feePayer)
-		if err != nil {
-			panic(err)
-		}
-		return granterAddr
-	}
-	return nil
 }
 
 func (w *wrapper) GetMemo() string {
@@ -159,37 +143,6 @@ func (w *wrapper) GetSignatures() [][]byte {
 // GetTimeoutHeight returns the transaction's timeout height (if set).
 func (w *wrapper) GetTimeoutHeight() uint64 {
 	return w.tx.Body.TimeoutHeight
-}
-
-func (w *wrapper) GetSignaturesV2() ([]signing.SignatureV2, error) {
-	signerInfos := w.tx.AuthInfo.SignerInfos
-	sigs := w.tx.Signatures
-	pubKeys := w.GetPubKeys()
-	n := len(signerInfos)
-	res := make([]signing.SignatureV2, n)
-
-	for i, si := range signerInfos {
-		// handle nil signatures (in case of simulation)
-		if si.ModeInfo == nil {
-			res[i] = signing.SignatureV2{
-				PubKey: pubKeys[i],
-			}
-		} else {
-			var err error
-			sigData, err := ModeInfoAndSigToSignatureData(si.ModeInfo, sigs[i])
-			if err != nil {
-				return nil, err
-			}
-			res[i] = signing.SignatureV2{
-				PubKey:   pubKeys[i],
-				Data:     sigData,
-				Sequence: si.GetSequence(),
-			}
-
-		}
-	}
-
-	return res, nil
 }
 
 func (w *wrapper) SetMsgs(msgs ...sdk.Msg) error {
@@ -248,28 +201,6 @@ func (w *wrapper) SetFeeAmount(coins sdk.Coins) {
 	w.authInfoBz = nil
 }
 
-func (w *wrapper) SetFeePayer(feePayer sdk.AccAddress) {
-	if w.tx.AuthInfo.Fee == nil {
-		w.tx.AuthInfo.Fee = &Fee{}
-	}
-
-	w.tx.AuthInfo.Fee.Payer = feePayer.String()
-
-	// set authInfoBz to nil because the cached authInfoBz no longer matches tx.AuthInfo
-	w.authInfoBz = nil
-}
-
-func (w *wrapper) SetFeeGranter(feeGranter sdk.AccAddress) {
-	if w.tx.AuthInfo.Fee == nil {
-		w.tx.AuthInfo.Fee = &Fee{}
-	}
-
-	w.tx.AuthInfo.Fee.Granter = feeGranter.String()
-
-	// set authInfoBz to nil because the cached authInfoBz no longer matches tx.AuthInfo
-	w.authInfoBz = nil
-}
-
 func (w *wrapper) SetSignatures(signatures ...signing.SignatureV2) error {
 	n := len(signatures)
 	signerInfos := make([]*SignerInfo, n)
@@ -316,13 +247,6 @@ func (w *wrapper) AsAny() *codectypes.Any {
 	return codectypes.UnsafePackAny(w.tx)
 }
 
-// WrapTx creates a TxBuilder wrapper around a tx.Tx proto message.
-func WrapTx(protoTx *Tx) types.TxBuilder {
-	return &wrapper{
-		tx: protoTx,
-	}
-}
-
 func (w *wrapper) GetExtensionOptions() []*codectypes.Any {
 	return w.tx.Body.ExtensionOptions
 }
@@ -345,7 +269,7 @@ func (w *wrapper) SetNonCriticalExtensionOptions(extOpts ...*codectypes.Any) {
 func PubKeyToAny(key crypto.PubKey) (*codectypes.Any, error) {
 	protoMsg, ok := key.(proto.Message)
 	if !ok {
-		return nil, sdk.Wrap(fmt.Errorf("err invalid key, can't proto encode %T", protoMsg))
+		return nil, fmt.Errorf("can't proto encode %T", protoMsg)
 	}
 	return codectypes.NewAnyWithValue(protoMsg)
 }

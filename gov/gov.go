@@ -106,7 +106,7 @@ func (gc govClient) QueryProposal(proposalId uint64) (QueryProposalResp, sdk.Err
 		return QueryProposalResp{}, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).Proposal(
+	res, err := NewQueryClient(*conn).Proposal(
 		context.Background(),
 		&QueryProposalRequest{
 			ProposalId: proposalId,
@@ -126,7 +126,7 @@ func (gc govClient) QueryProposals(proposalStatus string) ([]QueryProposalResp, 
 		return nil, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).Proposals(
+	res, err := NewQueryClient(*conn).Proposals(
 		context.Background(),
 		&QueryProposalsRequest{
 			ProposalStatus: ProposalStatus(VoteOption_value[proposalStatus]),
@@ -150,7 +150,7 @@ func (gc govClient) QueryVote(proposalId uint64, voter string) (QueryVoteResp, s
 		return QueryVoteResp{}, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).Vote(
+	res, err := NewQueryClient(*conn).Vote(
 		context.Background(),
 		&QueryVoteRequest{
 			ProposalId: proposalId,
@@ -169,7 +169,7 @@ func (gc govClient) QueryVotes(proposalId uint64) ([]QueryVoteResp, sdk.Error) {
 		return nil, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).Votes(
+	res, err := NewQueryClient(*conn).Votes(
 		context.Background(),
 		&QueryVotesRequest{
 			ProposalId: proposalId,
@@ -193,7 +193,7 @@ func (gc govClient) QueryParams(paramsType string) (QueryParamsResp, sdk.Error) 
 		return QueryParamsResp{}, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).Params(
+	res, err := NewQueryClient(*conn).Params(
 		context.Background(),
 		&QueryParamsRequest{
 			ParamsType: paramsType,
@@ -212,7 +212,7 @@ func (gc govClient) QueryDeposit(proposalId uint64, depositor string) (QueryDepo
 		return QueryDepositResp{}, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).Deposit(
+	res, err := NewQueryClient(*conn).Deposit(
 		context.Background(),
 		&QueryDepositRequest{
 			ProposalId: proposalId,
@@ -232,7 +232,7 @@ func (gc govClient) QueryDeposits(proposalId uint64) ([]QueryDepositResp, sdk.Er
 		return nil, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).Deposits(
+	res, err := NewQueryClient(*conn).Deposits(
 		context.Background(),
 		&QueryDepositsRequest{
 			ProposalId: proposalId,
@@ -256,7 +256,7 @@ func (gc govClient) QueryTallyResult(proposalId uint64) (QueryTallyResultResp, s
 		return QueryTallyResultResp{}, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).TallyResult(
+	res, err := NewQueryClient(*conn).TallyResult(
 		context.Background(),
 		&QueryTallyResultRequest{
 			ProposalId: proposalId,

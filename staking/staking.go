@@ -163,7 +163,7 @@ func (sc stakingClient) QueryValidators(status string, page, size uint64) (Query
 	}
 
 	offset, limit := common.ParsePage(page, size)
-	res, err := NewQueryClient(conn).Validators(
+	res, err := NewQueryClient(*conn).Validators(
 		context.Background(),
 		&QueryValidatorsRequest{
 			Status: status,
@@ -187,7 +187,7 @@ func (sc stakingClient) QueryValidator(validatorAddr string) (QueryValidatorResp
 		return QueryValidatorResp{}, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).Validator(
+	res, err := NewQueryClient(*conn).Validator(
 		context.Background(),
 		&QueryValidatorRequest{
 			ValidatorAddr: validatorAddr,
@@ -207,7 +207,7 @@ func (sc stakingClient) QueryValidatorDelegations(validatorAddr string, page, si
 	}
 
 	offset, limit := common.ParsePage(page, size)
-	res, err := NewQueryClient(conn).ValidatorDelegations(
+	res, err := NewQueryClient(*conn).ValidatorDelegations(
 		context.Background(),
 		&QueryValidatorDelegationsRequest{
 			ValidatorAddr: validatorAddr,
@@ -232,7 +232,7 @@ func (sc stakingClient) QueryValidatorUnbondingDelegations(validatorAddr string,
 	}
 
 	offset, limit := common.ParsePage(page, size)
-	res, err := NewQueryClient(conn).ValidatorUnbondingDelegations(
+	res, err := NewQueryClient(*conn).ValidatorUnbondingDelegations(
 		context.Background(),
 		&QueryValidatorUnbondingDelegationsRequest{
 			ValidatorAddr: validatorAddr,
@@ -256,7 +256,7 @@ func (sc stakingClient) QueryDelegation(delegatorAddr string, validatorAddr stri
 		return QueryDelegationResp{}, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).Delegation(
+	res, err := NewQueryClient(*conn).Delegation(
 		context.Background(),
 		&QueryDelegationRequest{
 			DelegatorAddr: delegatorAddr,
@@ -276,7 +276,7 @@ func (sc stakingClient) QueryUnbondingDelegation(delegatorAddr string, validator
 		return QueryUnbondingDelegationResp{}, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).UnbondingDelegation(
+	res, err := NewQueryClient(*conn).UnbondingDelegation(
 		context.Background(),
 		&QueryUnbondingDelegationRequest{
 			DelegatorAddr: delegatorAddr,
@@ -297,7 +297,7 @@ func (sc stakingClient) QueryDelegatorDelegations(delegatorAddr string, page, si
 	}
 
 	offset, limit := common.ParsePage(page, size)
-	res, err := NewQueryClient(conn).DelegatorDelegations(
+	res, err := NewQueryClient(*conn).DelegatorDelegations(
 		context.Background(),
 		&QueryDelegatorDelegationsRequest{
 			DelegatorAddr: delegatorAddr,
@@ -322,7 +322,7 @@ func (sc stakingClient) QueryDelegatorUnbondingDelegations(delegatorAddr string,
 	}
 
 	offset, limit := common.ParsePage(page, size)
-	res, err := NewQueryClient(conn).DelegatorUnbondingDelegations(
+	res, err := NewQueryClient(*conn).DelegatorUnbondingDelegations(
 		context.Background(),
 		&QueryDelegatorUnbondingDelegationsRequest{
 			DelegatorAddr: delegatorAddr,
@@ -347,7 +347,7 @@ func (sc stakingClient) QueryRedelegations(request QueryRedelegationsReq) (Query
 	}
 
 	offset, limit := common.ParsePage(request.Page, request.Size)
-	res, err := NewQueryClient(conn).Redelegations(
+	res, err := NewQueryClient(*conn).Redelegations(
 		context.Background(),
 		&QueryRedelegationsRequest{
 			DelegatorAddr:    request.DelegatorAddr,
@@ -374,7 +374,7 @@ func (sc stakingClient) QueryDelegatorValidators(delegatorAddr string, page, siz
 	}
 
 	offset, limit := common.ParsePage(page, size)
-	res, err := NewQueryClient(conn).DelegatorValidators(
+	res, err := NewQueryClient(*conn).DelegatorValidators(
 		context.Background(),
 		&QueryDelegatorValidatorsRequest{
 			DelegatorAddr: delegatorAddr,
@@ -398,7 +398,7 @@ func (sc stakingClient) QueryDelegatorValidator(delegatorAddr string, validatorA
 		return QueryValidatorResp{}, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).DelegatorValidator(
+	res, err := NewQueryClient(*conn).DelegatorValidator(
 		context.Background(),
 		&QueryDelegatorValidatorRequest{
 			DelegatorAddr: delegatorAddr,
@@ -419,7 +419,7 @@ func (sc stakingClient) QueryHistoricalInfo(height int64) (QueryHistoricalInfoRe
 		return QueryHistoricalInfoResp{}, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).HistoricalInfo(
+	res, err := NewQueryClient(*conn).HistoricalInfo(
 		context.Background(),
 		&QueryHistoricalInfoRequest{
 			Height: height,
@@ -438,7 +438,7 @@ func (sc stakingClient) QueryPool() (QueryPoolResp, sdk.Error) {
 		return QueryPoolResp{}, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).Pool(
+	res, err := NewQueryClient(*conn).Pool(
 		context.Background(),
 		&QueryPoolRequest{},
 	)
@@ -459,7 +459,7 @@ func (sc stakingClient) QueryParams() (QueryParamsResp, sdk.Error) {
 		return QueryParamsResp{}, sdk.Wrap(err)
 	}
 
-	res, err := NewQueryClient(conn).Params(
+	res, err := NewQueryClient(*conn).Params(
 		context.Background(),
 		&QueryParamsRequest{},
 	)

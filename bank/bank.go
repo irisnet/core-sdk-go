@@ -49,7 +49,7 @@ func (b bankClient) TotalSupply() (sdk.Coins, sdk.Error) {
 		return nil, sdk.Wrap(err)
 	}
 
-	resp, err := NewQueryClient(conn).TotalSupply(
+	resp, err := NewQueryClient(*conn).TotalSupply(
 		context.Background(),
 		&QueryTotalSupplyRequest{},
 	)
