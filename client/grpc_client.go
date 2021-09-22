@@ -8,7 +8,7 @@ import (
 )
 
 type grpcClient struct {
-	clientConn *grpc1.ClientConn
+	clientConn grpc1.ClientConn
 }
 
 func NewGRPCClient(url string) types.GRPCClient {
@@ -22,9 +22,9 @@ func NewGRPCClient(url string) types.GRPCClient {
 	}
 	conn := grpc1.ClientConn(clientConn)
 
-	return &grpcClient{clientConn: &conn}
+	return &grpcClient{clientConn: conn}
 }
 
-func (g grpcClient) GenConn() (*grpc1.ClientConn, error) {
+func (g grpcClient) GenConn() (grpc1.ClientConn, error) {
 	return g.clientConn, nil
 }

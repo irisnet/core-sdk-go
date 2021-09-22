@@ -54,7 +54,7 @@ func (a AccountQuery) QueryAccount(address string) (sdk.BaseAccount, sdk.Error) 
 		Address: address,
 	}
 
-	response, err := auth.NewQueryClient(*conn).Account(context.Background(), request)
+	response, err := auth.NewQueryClient(conn).Account(context.Background(), request)
 	if err != nil {
 		return sdk.BaseAccount{}, sdk.Wrap(err)
 	}
@@ -70,7 +70,7 @@ func (a AccountQuery) QueryAccount(address string) (sdk.BaseAccount, sdk.Error) 
 		Address:    address,
 		Pagination: nil,
 	}
-	balances, err := bank.NewQueryClient(*conn).AllBalances(context.Background(), breq)
+	balances, err := bank.NewQueryClient(conn).AllBalances(context.Background(), breq)
 	if err != nil {
 		return sdk.BaseAccount{}, sdk.Wrap(err)
 	}

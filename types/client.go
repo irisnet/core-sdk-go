@@ -22,7 +22,7 @@ type Queries interface {
 }
 
 type GRPCClient interface {
-	GenConn() (*grpc1.ClientConn, error)
+	GenConn() (grpc1.ClientConn, error)
 }
 
 type ParamQuery interface {
