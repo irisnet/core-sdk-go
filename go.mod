@@ -31,7 +31,6 @@ require (
 )
 
 replace (
-	github.com/irisnet/core-sdk-go => D:\desktop\tibc\core-sdk-go
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 	github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.1-irita-210113
 )
