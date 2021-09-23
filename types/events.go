@@ -334,3 +334,29 @@ func MarkEventsToIndex(events []abci.Event, indexSet map[string]struct{}) []abci
 
 	return updatedEvents
 }
+
+func (se StringEvents) GetValues(typ, key string) (res []string) {
+
+	for _, e := range se {
+		if e.Type == typ {
+			for _, attr := range e.Attributes {
+				if attr.Key == key {
+					res = append(res,attr.Value)
+				}
+			}
+		}
+	}
+	return res
+}
+func (se StringEvents) GetValue(typ, key string) (string, error) {
+	for _, e := range se {
+		if e.Type == typ {
+			for _, attr := range e.Attributes {
+				if attr.Key == key {
+					return attr.Value, nil
+				}
+			}
+		}
+	}
+	return "", fmt.Errorf("not found type:%s key:%s", typ, key)
+}
