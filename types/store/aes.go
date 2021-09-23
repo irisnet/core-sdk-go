@@ -5,7 +5,6 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
-	"fmt"
 	"io"
 )
 
@@ -48,7 +47,7 @@ func (AES) Decrypt(cryptoText string, key string) (string, error) {
 
 	stream := cipher.NewCFBDecrypter(block, iv)
 	stream.XORKeyStream(cipherText, cipherText)
-	return fmt.Sprintf("%s", cipherText), nil
+	return string(cipherText), nil
 }
 
 func generateKey(key string) (genKey []byte) {

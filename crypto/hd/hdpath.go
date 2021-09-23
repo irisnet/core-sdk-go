@@ -13,6 +13,12 @@ import (
 	"github.com/btcsuite/btcd/btcec"
 )
 
+const (
+	BIP44Prefix = "44'/118'/"
+	PartialPath = "0'/0/0"
+	FullPath    = BIP44Prefix + PartialPath
+)
+
 // BIP44Params wraps BIP 44 params (5 level BIP 32 path).
 // To receive a canonical string representation ala
 // m / purpose' / coinType' / account' / change / addressIndex

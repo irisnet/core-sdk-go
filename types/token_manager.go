@@ -7,7 +7,7 @@ func (TokenManager DefaultTokenManager) QueryToken(denom string) (Token, error) 
 }
 
 func (TokenManager DefaultTokenManager) SaveTokens(tokens ...Token) {
-	return
+	// TODO: ?
 }
 
 func (TokenManager DefaultTokenManager) ToMinCoin(coins ...DecCoin) (Coins, error) {

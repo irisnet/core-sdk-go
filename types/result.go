@@ -44,6 +44,18 @@ func NewABCIMessageLog(i uint32, log string, events Events) ABCIMessageLog {
 	}
 }
 
+// String implements the fmt.Stringer interface for the ABCIMessageLogs type.
+func (logs ABCIMessageLogs) String() (str string) {
+	if logs != nil {
+		raw, err := json.Marshal(logs)
+		if err == nil {
+			str = string(raw)
+		}
+	}
+
+	return str
+}
+
 // NewResponseResultTx returns a TxResponse given a ResultTx from tendermint
 func NewResponseResultTx(res *ctypes.ResultTx, anyTx *codectypes.Any, timestamp string) *TxResponse {
 	if res == nil {

@@ -14,9 +14,6 @@ const RootCodespace = "sdk"
 const UndefinedCodespace = "undefined"
 
 var (
-	// errInternal should never be exposed, but we reserve this code for non-specified errors
-	errInternal = Register(UndefinedCodespace, 1, "internal")
-
 	// ErrTxDecode is returned if we cannot parse a transaction
 	ErrTxDecode = Register(RootCodespace, 2, "tx parse error")
 
@@ -185,22 +182,6 @@ func setUsed(err *Error) {
 	usedCodes[errorID(err.codespace, err.code)] = err
 }
 
-// ABCIError will resolve an error code/log from an abci result into
-// an error message. If the code is registered, it will map it back to
-// the canonical error, so we can do eg. ErrNotFound.Is(err) on something
-// we get back from an external API.
-//
-// This should *only* be used in clients, not in the server side.
-// The server (abci app / blockchain) should only refer to registered errors
-func ABCIError(codespace string, code uint32, log string) error {
-	if e := getUsed(codespace, code); e != nil {
-		return Wrap(e, log)
-	}
-	// This is a unique error, will never match on .Is()
-	// Use Wrap here to get a stack trace
-	return Wrap(New(codespace, code, "unknown"), log)
-}
-
 // Error represents a root error.
 //
 // Weave framework is using root error to categorize issues. Each instance
@@ -224,7 +205,7 @@ func (e Error) Error() string {
 	return e.desc
 }
 
-func (e Error) ABCICode() uint32 {
+func (e Error) Code() uint32 {
 	return e.code
 }
 
@@ -393,4 +374,24 @@ type causer interface {
 
 type unpacker interface {
 	Unpack() []error
+}
+
+// stackTrace returns the first found stack trace frame carried by given error
+// or any wrapped error. It returns nil if no stack trace is found.
+func stackTrace(err error) errors.StackTrace {
+	type stackTracer interface {
+		StackTrace() errors.StackTrace
+	}
+
+	for {
+		if st, ok := err.(stackTracer); ok {
+			return st.StackTrace()
+		}
+
+		if c, ok := err.(causer); ok {
+			err = c.Cause()
+		} else {
+			return nil
+		}
+	}
 }

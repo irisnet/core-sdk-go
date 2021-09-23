@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/irisnet/core-sdk-go/crypto"
 	"github.com/irisnet/core-sdk-go/types/store"
@@ -16,7 +15,6 @@ const (
 	defaultMaxTxsBytes   = 1073741824
 	defaultAlgo          = "secp256k1"
 	defaultMode          = Sync
-	defaultPath          = "$HOME/irishub-sdk-go/leveldb"
 	defaultGasAdjustment = 1.0
 	defaultTxSizeLimit   = 1048576
 	BIP44Prefix          = "44'/118'/"
@@ -64,13 +62,13 @@ type ClientConfig struct {
 	// whether to enable caching
 	Cached bool
 
-	// 
+	//
 	TokenManager TokenManager
 
-	// 
+	//
 	KeyManager crypto.KeyManager
 
-	// 
+	//
 	TxSizeLimit uint64
 
 	// bech32 Address Prefix
@@ -172,14 +170,6 @@ func FeeOption(fee DecCoins) Option {
 
 func KeyDAOOption(dao store.KeyDAO) Option {
 	return func(cfg *ClientConfig) error {
-		if dao == nil {
-			defaultPath := os.ExpandEnv(defaultPath)
-			levelDB, err := store.NewLevelDB(defaultPath, nil)
-			if err != nil {
-				return err
-			}
-			dao = levelDB
-		}
 		cfg.KeyDAO = dao
 		return nil
 	}
