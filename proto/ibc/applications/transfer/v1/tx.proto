@@ -32,8 +32,7 @@ message MsgTransfer {
     string receiver = 5;
     // Timeout height relative to the current block height.
     // The timeout is disabled when set to 0.
-    Height timeout_height = 6
-        [ (gogoproto.moretags) = "yaml:\"timeout_height\"", (gogoproto.nullable) = false ];
+    Height timeout_height = 6 [ (gogoproto.moretags) = "yaml:\"timeout_height\"", (gogoproto.nullable) = false ];
     // Timeout timestamp (in nanoseconds) relative to the current block timestamp.
     // The timeout is disabled when set to 0.
     uint64 timeout_timestamp = 7 [ (gogoproto.moretags) = "yaml:\"timeout_timestamp\"" ];

@@ -11,7 +11,6 @@ require (
 	github.com/hdevalence/ed25519consensus v0.0.0-20210430192048-0962ce16b305
 	github.com/pkg/errors v0.9.1
 	github.com/regen-network/cosmos-proto v0.3.1
-	github.com/stretchr/testify v1.7.0
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.34.12
 	github.com/tjfoc/gmsm v1.4.0
