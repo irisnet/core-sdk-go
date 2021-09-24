@@ -6,8 +6,6 @@ func (TokenManager DefaultTokenManager) QueryToken(denom string) (Token, error) 
 	return Token{}, nil
 }
 
-func (TokenManager DefaultTokenManager) SaveTokens(tokens ...Token) {}
-
 func (TokenManager DefaultTokenManager) ToMinCoin(coins ...DecCoin) (Coins, error) {
 	for i := range coins {
 		if coins[i].Denom == "iris" {
