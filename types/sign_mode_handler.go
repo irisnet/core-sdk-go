@@ -1,6 +1,8 @@
 package types
 
-import "github.com/irisnet/core-sdk-go/types/tx/signing"
+import (
+	"github.com/irisnet/core-sdk-go/types/tx/signing"
+)
 
 // SignModeHandler defines a interface to be implemented by types which will handle
 // SignMode's by generating sign bytes from a Tx and SignerData

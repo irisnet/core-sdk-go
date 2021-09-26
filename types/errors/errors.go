@@ -14,6 +14,8 @@ const RootCodespace = "sdk"
 const UndefinedCodespace = "undefined"
 
 var (
+	ErrTodo = Register(RootCodespace, 100, "error todo")
+
 	// ErrTxDecode is returned if we cannot parse a transaction
 	ErrTxDecode = Register(RootCodespace, 2, "tx parse error")
 

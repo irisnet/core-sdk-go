@@ -2,12 +2,12 @@ package bank
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/irisnet/core-sdk-go/codec"
 	codectypes "github.com/irisnet/core-sdk-go/codec/types"
 	"github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/core-sdk-go/types/errors"
 )
 
 type bankClient struct {
@@ -35,17 +35,17 @@ func (b bankClient) RegisterInterfaceTypes(registry codectypes.InterfaceRegistry
 func (b bankClient) QueryAccount(address string) (types.BaseAccount, error) {
 	account, err := b.BaseClient.QueryAccount(address)
 	if err != nil {
-		return sdk.BaseAccount{}, sdk.Wrap(err)
+		return types.BaseAccount{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	return account, nil
 }
 
 //  TotalSupply queries the total supply of all coins.
-func (b bankClient) TotalSupply() (sdk.Coins, error) {
+func (b bankClient) TotalSupply() (types.Coins, error) {
 	conn, err := b.GenConn()
 	if err != nil {
-		return nil, sdk.Wrap(err)
+		return nil, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	resp, err := NewQueryClient(conn).TotalSupply(
@@ -53,56 +53,56 @@ func (b bankClient) TotalSupply() (sdk.Coins, error) {
 		&QueryTotalSupplyRequest{},
 	)
 	if err != nil {
-		return nil, sdk.Wrap(err)
+		return nil, errors.Wrap(ErrTodo, err.Error())
 	}
 	return resp.Supply, nil
 }
 
 // Send is responsible for transferring tokens from `From` to `to` account
-func (b bankClient) Send(to string, amount sdk.DecCoins, baseTx sdk.BaseTx) (sdk.ResultTx, error) {
+func (b bankClient) Send(to string, amount types.DecCoins, baseTx types.BaseTx) (types.ResultTx, error) {
 	sender, err := b.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return sdk.ResultTx{}, sdk.Wrapf("%s not found", baseTx.From)
+		return types.ResultTx{}, errors.Wrapf(err, "%s not found", baseTx.From)
 	}
 
 	amt, err := b.ToMinCoin(amount...)
 	if err != nil {
-		return sdk.ResultTx{}, sdk.Wrap(err)
+		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
-	outAddr, err := sdk.AccAddressFromBech32(to)
+	outAddr, err := types.AccAddressFromBech32(to)
 	if err != nil {
-		return sdk.ResultTx{}, sdk.Wrapf(fmt.Sprintf("%s invalid address", to))
+		return types.ResultTx{}, errors.Wrapf(err, "%s invalid address", to)
 	}
 
 	msg := NewMsgSend(sender, outAddr, amt)
-	return b.BuildAndSend([]sdk.Msg{msg}, baseTx)
+	return b.BuildAndSend([]types.Msg{msg}, baseTx)
 }
 
-func (b bankClient) SendWitchSpecAccountInfo(to string, sequence, accountNumber uint64, amount sdk.DecCoins, baseTx sdk.BaseTx) (sdk.ResultTx, error) {
+func (b bankClient) SendWitchSpecAccountInfo(to string, sequence, accountNumber uint64, amount types.DecCoins, baseTx types.BaseTx) (types.ResultTx, error) {
 	sender, err := b.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return sdk.ResultTx{}, sdk.Wrapf("%s not found", baseTx.From)
+		return types.ResultTx{}, errors.Wrapf(err, "%s not found", baseTx.From)
 	}
 
 	amt, err := b.ToMinCoin(amount...)
 	if err != nil {
-		return sdk.ResultTx{}, sdk.Wrap(err)
+		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
-	outAddr, err := sdk.AccAddressFromBech32(to)
+	outAddr, err := types.AccAddressFromBech32(to)
 	if err != nil {
-		return sdk.ResultTx{}, sdk.Wrapf(fmt.Sprintf("%s invalid address", to))
+		return types.ResultTx{}, errors.Wrapf(err, "%s invalid address", to)
 	}
 
 	msg := NewMsgSend(sender, outAddr, amt)
-	return b.BuildAndSendWithAccount(sender.String(), accountNumber, sequence, []sdk.Msg{msg}, baseTx)
+	return b.BuildAndSendWithAccount(sender.String(), accountNumber, sequence, []types.Msg{msg}, baseTx)
 }
 
-func (b bankClient) MultiSend(request MultiSendRequest, baseTx sdk.BaseTx) (resTxs []sdk.ResultTx, err error) {
+func (b bankClient) MultiSend(request MultiSendRequest, baseTx types.BaseTx) (resTxs []types.ResultTx, err error) {
 	sender, err := b.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return nil, sdk.Wrapf("%s not found", baseTx.From)
+		return nil, errors.Wrapf(err, "%s not found", baseTx.From)
 	}
 
 	if len(request.Receipts) > maxMsgLen {
@@ -114,12 +114,12 @@ func (b bankClient) MultiSend(request MultiSendRequest, baseTx sdk.BaseTx) (resT
 	for i, receipt := range request.Receipts {
 		amt, err := b.ToMinCoin(receipt.Amount...)
 		if err != nil {
-			return nil, sdk.Wrap(err)
+			return nil, errors.Wrap(ErrTodo, err.Error())
 		}
 
-		outAddr, e := sdk.AccAddressFromBech32(receipt.Address)
+		outAddr, e := types.AccAddressFromBech32(receipt.Address)
 		if e != nil {
-			return nil, sdk.Wrapf(fmt.Sprintf("%s invalid address", receipt.Address))
+			return nil, errors.Wrapf(err, "%s invalid address", receipt.Address)
 		}
 
 		inputs[i] = NewInput(sender, amt)
@@ -127,19 +127,19 @@ func (b bankClient) MultiSend(request MultiSendRequest, baseTx sdk.BaseTx) (resT
 	}
 
 	msg := NewMsgMultiSend(inputs, outputs)
-	res, err := b.BuildAndSend([]sdk.Msg{msg}, baseTx)
+	res, err := b.BuildAndSend([]types.Msg{msg}, baseTx)
 	if err != nil {
-		return nil, sdk.Wrap(err)
+		return nil, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	resTxs = append(resTxs, res)
 	return
 }
 
-func (b bankClient) SendBatch(sender sdk.AccAddress, request MultiSendRequest, baseTx sdk.BaseTx) ([]sdk.ResultTx, error) {
-	batchReceipts := SubArray(maxMsgLen, request)
+func (b bankClient) SendBatch(sender types.AccAddress, request MultiSendRequest, baseTx types.BaseTx) ([]types.ResultTx, error) {
+	batchReceipts := types.SubArray(maxMsgLen, request)
 
-	var msgs sdk.Msgs
+	var msgs types.Msgs
 	for _, receipts := range batchReceipts {
 
 		req := receipts.(MultiSendRequest)
@@ -148,12 +148,12 @@ func (b bankClient) SendBatch(sender sdk.AccAddress, request MultiSendRequest, b
 		for i, receipt := range req.Receipts {
 			amt, err := b.ToMinCoin(receipt.Amount...)
 			if err != nil {
-				return nil, sdk.Wrap(err)
+				return nil, errors.Wrap(ErrTodo, err.Error())
 			}
 
-			outAddr, e := sdk.AccAddressFromBech32(receipt.Address)
+			outAddr, e := types.AccAddressFromBech32(receipt.Address)
 			if e != nil {
-				return nil, sdk.Wrapf(fmt.Sprintf("%s invalid address", receipt.Address))
+				return nil, errors.Wrapf(err, "%s invalid address", receipt.Address)
 			}
 
 			inputs[i] = NewInput(sender, amt)
@@ -165,21 +165,21 @@ func (b bankClient) SendBatch(sender sdk.AccAddress, request MultiSendRequest, b
 }
 
 // SubscribeSendTx Subscribe MsgSend event and return subscription
-func (b bankClient) SubscribeSendTx(from, to string, callback EventMsgSendCallback) sdk.Subscription {
-	var builder = sdk.NewEventQueryBuilder()
+func (b bankClient) SubscribeSendTx(from, to string, callback EventMsgSendCallback) types.Subscription {
+	var builder = types.NewEventQueryBuilder()
 
 	from = strings.TrimSpace(from)
 	if len(from) != 0 {
-		builder.AddCondition(sdk.NewCond(sdk.EventTypeMessage,
-			sdk.AttributeKeySender).EQ(sdk.EventValue(from)))
+		builder.AddCondition(types.NewCond(types.EventTypeMessage,
+			types.AttributeKeySender).EQ(types.EventValue(from)))
 	}
 
 	to = strings.TrimSpace(to)
 	if len(to) != 0 {
-		builder.AddCondition(sdk.Cond("transfer.recipient").EQ(sdk.EventValue(to)))
+		builder.AddCondition(types.Cond("transfer.recipient").EQ(types.EventValue(to)))
 	}
 
-	subscription, _ := b.SubscribeTx(builder, func(data sdk.EventDataTx) {
+	subscription, _ := b.SubscribeTx(builder, func(data types.EventDataTx) {
 		for _, msg := range data.Tx.GetMsgs() {
 			if value, ok := msg.(*MsgSend); ok {
 				callback(EventDataMsgSend{

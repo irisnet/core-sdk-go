@@ -1,7 +1,7 @@
 package types
 
 import (
-signingtypes "github.com/irisnet/core-sdk-go/types/tx/signing"
+	"github.com/irisnet/core-sdk-go/types/tx/signing"
 )
 
 type (
@@ -13,7 +13,7 @@ type (
 		GetTx() Tx
 
 		SetMsgs(msgs ...Msg) error
-		SetSignatures(signatures ...signingtypes.SignatureV2) error
+		SetSignatures(signatures ...signing.SignatureV2) error
 		SetMemo(memo string)
 		SetFeeAmount(amount Coins)
 		SetGasLimit(limit uint64)
@@ -27,8 +27,8 @@ type (
 		TxDecoder() TxDecoder
 		TxJSONEncoder() TxEncoder
 		TxJSONDecoder() TxDecoder
-		MarshalSignatureJSON([]signingtypes.SignatureV2) ([]byte, error)
-		UnmarshalSignatureJSON([]byte) ([]signingtypes.SignatureV2, error)
+		MarshalSignatureJSON([]signing.SignatureV2) ([]byte, error)
+		UnmarshalSignatureJSON([]byte) ([]signing.SignatureV2, error)
 	}
 
 	// TxConfig defines an interface a client can utilize to generate an
