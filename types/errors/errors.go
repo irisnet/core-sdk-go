@@ -397,3 +397,15 @@ func stackTrace(err error) errors.StackTrace {
 		}
 	}
 }
+func CatchPanic(fn func(errMsg string)) {
+	if err := recover(); err != nil {
+		var msg string
+		switch e := err.(type) {
+		case error:
+			msg = e.Error()
+		case string:
+			msg = e
+		}
+		fn(msg)
+	}
+}
