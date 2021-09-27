@@ -1,6 +1,7 @@
 package types
 
 import (
+	signing2 "github.com/irisnet/core-sdk-go/types/signing"
 	"github.com/irisnet/core-sdk-go/types/tx/signing"
 )
 
@@ -39,6 +40,6 @@ type (
 
 		NewTxBuilder() TxBuilder
 		WrapTxBuilder(Tx) (TxBuilder, error)
-		SignModeHandler() SignModeHandler
+		SignModeHandler() signing2.SignModeHandler
 	}
 )

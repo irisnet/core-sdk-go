@@ -1,6 +1,7 @@
-package types
+package signing
 
 import (
+	sdk "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/core-sdk-go/types/tx/signing"
 )
 
@@ -13,9 +14,10 @@ type SignModeHandler interface {
 
 	// Modes is the list of modes supporting by this handler
 	Modes() []signing.SignMode
-
 	// GetSignBytes returns the sign bytes for the provided SignMode, SignerData and Tx,
 	// or an error
+	GetSignBytes(mode signing.SignMode, data SignerData, tx sdk.Tx) ([]byte, error)
+
 }
 
 // SignerData is the specific information needed to sign a transaction that generally
@@ -32,4 +34,8 @@ type SignerData struct {
 	// since in SIGN_MODE_DIRECT the account sequence is already in the signer
 	// info.
 	Sequence uint64
+
+	// SignerIndex index of signer in the signer_infos array
+	SignerIndex int
 }
+

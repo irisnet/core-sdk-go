@@ -1,9 +1,8 @@
 package types
 
 import (
-	"github.com/tendermint/tendermint/crypto"
-
 	cdctypes "github.com/irisnet/core-sdk-go/codec/types"
+	crypto "github.com/irisnet/core-sdk-go/crypto/types"
 )
 
 //The purpose of this interface is to convert the irita system type to the user receiving type
