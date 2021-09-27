@@ -3,7 +3,6 @@ package authtx
 import (
 	"fmt"
 	sdk "github.com/irisnet/core-sdk-go/types"
-	"github.com/irisnet/core-sdk-go/types/signing"
 	"github.com/irisnet/core-sdk-go/types/tx"
 	signingtypes "github.com/irisnet/core-sdk-go/types/tx/signing"
 )
@@ -11,7 +10,7 @@ import (
 // signModeDirectHandler defines the SIGN_MODE_DIRECT SignModeHandler
 type signModeDirectHandler struct{}
 
-var _ signing.SignModeHandler = signModeDirectHandler{}
+var _ sdk.SignModeHandler = signModeDirectHandler{}
 
 // DefaultMode implements SignModeHandler.DefaultMode
 func (signModeDirectHandler) DefaultMode() signingtypes.SignMode {
@@ -25,7 +24,7 @@ func (signModeDirectHandler) Modes() []signingtypes.SignMode {
 
 
 // GetSignBytes implements SignModeHandler.GetSignBytes
-func (signModeDirectHandler) GetSignBytes(mode signingtypes.SignMode, data signing.SignerData, tx sdk.Tx) ([]byte, error) {
+func (signModeDirectHandler) GetSignBytes(mode signingtypes.SignMode, data sdk.SignerData, tx sdk.Tx) ([]byte, error) {
 	if mode != signingtypes.SignMode_SIGN_MODE_DIRECT {
 		return nil, fmt.Errorf("expected %s, got %s", signingtypes.SignMode_SIGN_MODE_DIRECT, mode)
 	}

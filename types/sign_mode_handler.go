@@ -1,7 +1,6 @@
-package signing
+package types
 
 import (
-	sdk "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/core-sdk-go/types/tx/signing"
 )
 
@@ -16,7 +15,7 @@ type SignModeHandler interface {
 	Modes() []signing.SignMode
 	// GetSignBytes returns the sign bytes for the provided SignMode, SignerData and Tx,
 	// or an error
-	GetSignBytes(mode signing.SignMode, data SignerData, tx sdk.Tx) ([]byte, error)
+	GetSignBytes(mode signing.SignMode, data SignerData, tx Tx) ([]byte, error)
 
 }
 
