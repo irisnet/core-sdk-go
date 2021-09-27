@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"github.com/tendermint/tendermint/crypto"
 
 	"github.com/gogo/protobuf/proto"
 
@@ -114,4 +115,31 @@ func (acc BaseAccount) MarshalYAML() (interface{}, error) {
 		return nil, err
 	}
 	return string(bz), err
+}
+// Convert return a sdk.BaseAccount
+// in order to unpack pubKey so not use Convert()
+func (acc *BaseAccount) ConvertAccount(cdc codec.Codec) interface{} {
+	account := sdk.BaseAccount{
+		Address:       acc.Address,
+		AccountNumber: acc.AccountNumber,
+		Sequence:      acc.Sequence,
+	}
+
+	var pkStr string
+	if acc.PubKey == nil {
+		return account
+	}
+
+	var pk crypto.PubKey
+	if err := cdc.UnpackAny(acc.PubKey, &pk); err != nil {
+		return sdk.BaseAccount{}
+	}
+
+	pkStr, err := sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, pk)
+	if err != nil {
+		panic(err)
+	}
+
+	account.PubKey = pkStr
+	return account
 }

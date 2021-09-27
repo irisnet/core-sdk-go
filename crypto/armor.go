@@ -2,7 +2,6 @@ package crypto
 
 import (
 	"fmt"
-
 	"github.com/tendermint/tendermint/crypto/armor"
 )
 
