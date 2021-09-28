@@ -210,18 +210,18 @@ func (tp *TextProposal) ProposalType() string { return ProposalTypeText }
 func (tp *TextProposal) ValidateBasic() error {
 	title := tp.GetTitle()
 	if len(strings.TrimSpace(title)) == 0 {
-		return errors.Wrapf(ErrTodo, "proposal title cannot be blank")
+		return errors.Wrapf(ErrInvalidTitle, "proposal title cannot be blank")
 	}
 	if len(title) > MaxTitleLength {
-		return errors.Wrapf(ErrTodo, "proposal title is longer than max length of %d", MaxTitleLength)
+		return errors.Wrapf(ErrInvalidTitle, "proposal title is longer than max length of %d", MaxTitleLength)
 	}
 
 	description := tp.GetDescription()
 	if len(description) == 0 {
-		return errors.Wrapf(ErrTodo, "proposal description cannot be blank")
+		return errors.Wrapf(ErrInvalidDescription, "proposal description cannot be blank")
 	}
 	if len(description) > MaxDescriptionLength {
-		return errors.Wrapf(ErrTodo, "proposal description is longer than max length of %d", MaxDescriptionLength)
+		return errors.Wrapf(ErrInvalidDescription, "proposal description is longer than max length of %d", MaxDescriptionLength)
 	}
 	return nil
 }

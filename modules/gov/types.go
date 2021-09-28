@@ -75,18 +75,18 @@ func (m MsgSubmitProposal) Type() string { return "submit_proposal" }
 // ValidateBasic implements Msg
 func (m MsgSubmitProposal) ValidateBasic() error {
 	if m.Proposer == "" {
-		return errors.Wrapf(ErrTodo, "missing Proposer")
+		return errors.Wrapf(ErrInvalidProposer, "missing Proposer")
 	}
 	if !m.InitialDeposit.IsValid() {
-		return errors.Wrapf(ErrTodo, "invalidCoins coins, %s", m.InitialDeposit.String())
+		return errors.Wrapf(ErrInvalidCoin, "invalidCoins coins, %s", m.InitialDeposit.String())
 	}
 	if m.InitialDeposit.IsAnyNegative() {
-		return errors.Wrapf(ErrTodo, "invalidCoins coins, %s", m.InitialDeposit.String())
+		return errors.Wrapf(ErrInvalidCoin, "invalidCoins coins, %s", m.InitialDeposit.String())
 	}
 
 	content := m.GetContent()
 	if content == nil {
-		return errors.Wrapf(ErrTodo, "missing content")
+		return errors.Wrapf(ErrMissingContent, "missing content")
 	}
 
 	if err := content.ValidateBasic(); err != nil {
@@ -117,13 +117,13 @@ func (m MsgSubmitProposal) UnpackInterfaces(unpacker codectypes.AnyUnpacker) err
 // ValidateBasic implements Msg
 func (msg MsgDeposit) ValidateBasic() error {
 	if msg.Depositor == "" {
-		return errors.Wrapf(ErrTodo, "missing Proposer")
+		return errors.Wrapf(ErrMissingProposer, "missing Proposer")
 	}
 	if !msg.Amount.IsValid() {
-		return errors.Wrapf(ErrTodo, "invalidCoins coins, %s", msg.Amount.String())
+		return errors.Wrapf(ErrInvalidAmount, "invalidCoins coins, %s", msg.Amount.String())
 	}
 	if msg.Amount.IsAnyNegative() {
-		return errors.Wrapf(ErrTodo, "invalidCoins coins, %s", msg.Amount.String())
+		return errors.Wrapf(ErrInvalidCoin, "invalidCoins coins, %s", msg.Amount.String())
 	}
 
 	return nil
@@ -144,11 +144,11 @@ func (msg MsgDeposit) GetSigners() []types.AccAddress {
 // ValidateBasic implements Msg
 func (msg MsgVote) ValidateBasic() error {
 	if msg.Voter == "" {
-		return errors.Wrapf(ErrTodo, "missing Proposer")
+		return errors.Wrapf(ErrMissingProposer, "missing Proposer")
 	}
 
 	if !ValidVoteOption(msg.Option) {
-		return errors.Wrapf(ErrTodo, "invalid vote option %s", msg.Option.String())
+		return errors.Wrapf(ErrInvalidVoteOption, "invalid vote option %s", msg.Option.String())
 	}
 
 	return nil
@@ -190,21 +190,21 @@ func (msg MsgVoteWeighted) ValidateBasic() error {
 	usedOptions := make(map[VoteOption]bool)
 	for _, option := range msg.Options {
 		if !ValidWeightedVoteOption(option) {
-			return errors.Wrap(ErrTodo, option.String())
+			return errors.Wrap(ErrInvalidWeightedVoteOption, option.String())
 		}
 		totalWeight = totalWeight.Add(option.Weight)
 		if usedOptions[option.Option] {
-			return errors.Wrap(ErrTodo, "Duplicated vote option")
+			return errors.Wrap(ErrDuplicatedVoteOption, "Duplicated vote option")
 		}
 		usedOptions[option.Option] = true
 	}
 
 	if totalWeight.GT(types.NewDec(1)) {
-		return errors.Wrap(ErrTodo, "Total weight overflow 1.00")
+		return errors.Wrap(ErrInvalidTotalWeight, "Total weight overflow 1.00")
 	}
 
 	if totalWeight.LT(types.NewDec(1)) {
-		return errors.Wrap(ErrTodo, "Total weight lower than 1.00")
+		return errors.Wrap(ErrInvalidTotalWeight, "Total weight lower than 1.00")
 	}
 
 	return nil
