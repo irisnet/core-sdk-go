@@ -35,7 +35,7 @@ func (b bankClient) RegisterInterfaceTypes(registry codectypes.InterfaceRegistry
 func (b bankClient) QueryAccount(address string) (types.BaseAccount, error) {
 	account, err := b.BaseClient.QueryAccount(address)
 	if err != nil {
-		return types.BaseAccount{}, errors.Wrap(ErrTodo, err.Error())
+		return types.BaseAccount{}, errors.Wrap(ErrQueryAccount, err.Error())
 	}
 
 	return account, nil
@@ -45,7 +45,7 @@ func (b bankClient) QueryAccount(address string) (types.BaseAccount, error) {
 func (b bankClient) TotalSupply() (types.Coins, error) {
 	conn, err := b.GenConn()
 	if err != nil {
-		return nil, errors.Wrap(ErrTodo, err.Error())
+		return nil, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	resp, err := NewQueryClient(conn).TotalSupply(
@@ -53,7 +53,7 @@ func (b bankClient) TotalSupply() (types.Coins, error) {
 		&QueryTotalSupplyRequest{},
 	)
 	if err != nil {
-		return nil, errors.Wrap(ErrTodo, err.Error())
+		return nil, errors.Wrap(ErrQueryTotalSupply, err.Error())
 	}
 	return resp.Supply, nil
 }
@@ -67,7 +67,7 @@ func (b bankClient) Send(to string, amount types.DecCoins, baseTx types.BaseTx) 
 
 	amt, err := b.ToMinCoin(amount...)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return types.ResultTx{}, errors.Wrap(ErrToMinCoin, err.Error())
 	}
 
 	outAddr, err := types.AccAddressFromBech32(to)
@@ -87,7 +87,7 @@ func (b bankClient) SendWitchSpecAccountInfo(to string, sequence, accountNumber 
 
 	amt, err := b.ToMinCoin(amount...)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return types.ResultTx{}, errors.Wrap(ErrToMinCoin, err.Error())
 	}
 
 	outAddr, err := types.AccAddressFromBech32(to)
@@ -114,7 +114,7 @@ func (b bankClient) MultiSend(request MultiSendRequest, baseTx types.BaseTx) (re
 	for i, receipt := range request.Receipts {
 		amt, err := b.ToMinCoin(receipt.Amount...)
 		if err != nil {
-			return nil, errors.Wrap(ErrTodo, err.Error())
+			return nil, errors.Wrap(ErrToMinCoin, err.Error())
 		}
 
 		outAddr, e := types.AccAddressFromBech32(receipt.Address)
@@ -129,7 +129,7 @@ func (b bankClient) MultiSend(request MultiSendRequest, baseTx types.BaseTx) (re
 	msg := NewMsgMultiSend(inputs, outputs)
 	res, err := b.BuildAndSend([]types.Msg{msg}, baseTx)
 	if err != nil {
-		return nil, errors.Wrap(ErrTodo, err.Error())
+		return nil, errors.Wrap(ErrBuildAndSend, err.Error())
 	}
 
 	resTxs = append(resTxs, res)
@@ -148,7 +148,7 @@ func (b bankClient) SendBatch(sender types.AccAddress, request MultiSendRequest,
 		for i, receipt := range req.Receipts {
 			amt, err := b.ToMinCoin(receipt.Amount...)
 			if err != nil {
-				return nil, errors.Wrap(ErrTodo, err.Error())
+				return nil, errors.Wrap(ErrToMinCoin, err.Error())
 			}
 
 			outAddr, e := types.AccAddressFromBech32(receipt.Address)

@@ -7,5 +7,9 @@ import (
 const Codespace = ModuleName
 
 var (
-	ErrTodo = errors.Register(Codespace, 2, "tx parse error")
+	ErrQueryAccount     = errors.Register(Codespace, 1, "query account")
+	ErrQueryTotalSupply = errors.Register(Codespace, 1, "query total supply option")
+	ErrBuildAndSend     = errors.Register(Codespace, 7, "BuildAndSend error")
+	ErrToMinCoin        = errors.Register(Codespace, 22, "ToMinCoin error")
+	ErrGenConn          = errors.Register(Codespace, 24, "generate conn error")
 )
