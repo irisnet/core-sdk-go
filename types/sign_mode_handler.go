@@ -16,7 +16,6 @@ type SignModeHandler interface {
 	// GetSignBytes returns the sign bytes for the provided SignMode, SignerData and Tx,
 	// or an error
 	GetSignBytes(mode signing.SignMode, data SignerData, tx Tx) ([]byte, error)
-
 }
 
 // SignerData is the specific information needed to sign a transaction that generally
@@ -37,4 +36,3 @@ type SignerData struct {
 	// SignerIndex index of signer in the signer_infos array
 	SignerIndex int
 }
-

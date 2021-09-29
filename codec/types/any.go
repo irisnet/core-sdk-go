@@ -135,3 +135,8 @@ func (any *Any) String() string {
 	return fmt.Sprintf("&Any{TypeUrl:%v,Value:%v,XXX_unrecognized:%v}",
 		any.TypeUrl, any.Value, any.XXX_unrecognized)
 }
+
+// IntoAny represents a type that can be wrapped into an Any.
+type IntoAny interface {
+	AsAny() *Any
+}

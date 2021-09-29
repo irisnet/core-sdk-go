@@ -12,8 +12,7 @@ import (
 	cryptotypes "github.com/irisnet/core-sdk-go/crypto/types"
 )
 
-// RegisterCrypto registers all crypto dependency types with the provided Amino
-// codec.
+// RegisterCrypto registers all crypto dependency types with the provided Amino codec.
 func RegisterCrypto(cdc *codec.LegacyAmino) {
 	cdc.RegisterInterface((*tmcrypto.PubKey)(nil), nil)
 	cdc.RegisterInterface((*cryptotypes.PubKey)(nil), nil)

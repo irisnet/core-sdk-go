@@ -6,7 +6,8 @@ import (
 )
 
 func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	registry.RegisterImplementations((*types.Msg)(nil),
+	registry.RegisterImplementations(
+		(*types.Msg)(nil),
 		&MsgTransfer{},
 	)
 }

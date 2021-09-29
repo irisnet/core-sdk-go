@@ -11,4 +11,5 @@ type EncodingConfig struct {
 	InterfaceRegistry types.InterfaceRegistry
 	Codec             codec.Codec
 	TxConfig          TxConfig
+	Amino             *codec.LegacyAmino
 }
