@@ -15,6 +15,7 @@ require (
 	github.com/prometheus/common v0.14.0
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/sirupsen/logrus v1.6.0
+	github.com/stretchr/testify v1.7.0
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.34.12
