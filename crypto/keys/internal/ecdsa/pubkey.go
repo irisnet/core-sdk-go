@@ -9,7 +9,7 @@ import (
 
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 
-	"github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/core-sdk-go/types/address"
 	"github.com/irisnet/core-sdk-go/types/errors"
 )
 
@@ -40,7 +40,7 @@ type PubKey struct {
 // protoName is a concrete proto structure id.
 func (pk *PubKey) Address(protoName string) tmcrypto.Address {
 	if pk.address == nil {
-		pk.address = types.Hash(protoName, pk.Bytes())
+		pk.address = address.Hash(protoName, pk.Bytes())
 	}
 	return pk.address
 }

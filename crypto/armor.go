@@ -1,8 +1,16 @@
 package crypto
 
 import (
+	"encoding/hex"
 	"fmt"
+
+	"github.com/tendermint/crypto/bcrypt"
+	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/armor"
+	"github.com/tendermint/tendermint/crypto/xsalsa20symmetric"
+
+	"github.com/irisnet/core-sdk-go/codec/legacy"
+	"github.com/irisnet/core-sdk-go/types/errors"
 )
 
 const (
@@ -109,4 +117,92 @@ func unarmorBytes(armorStr, blockType string) (bz []byte, header map[string]stri
 	}
 
 	return
+}
+
+//-----------------------------------------------------------------
+// encrypt/decrypt with armor
+
+// Encrypt and armor the private key.
+func EncryptArmorPrivKey(privKey crypto.PrivKey, passphrase string, algo string) string {
+	saltBytes, encBytes := encryptPrivKey(privKey, passphrase)
+	header := map[string]string{
+		"kdf":  "bcrypt",
+		"salt": fmt.Sprintf("%X", saltBytes),
+	}
+
+	if algo != "" {
+		header[headerType] = algo
+	}
+
+	armorStr := armor.EncodeArmor(blockTypePrivKey, header, encBytes)
+
+	return armorStr
+}
+
+// encrypt the given privKey with the passphrase using a randomly
+// generated salt and the xsalsa20 cipher. returns the salt and the
+// encrypted priv key.
+func encryptPrivKey(privKey crypto.PrivKey, passphrase string) (saltBytes []byte, encBytes []byte) {
+	saltBytes = crypto.CRandBytes(16)
+	key, err := bcrypt.GenerateFromPassword(saltBytes, []byte(passphrase), BcryptSecurityParameter)
+
+	if err != nil {
+		panic(errors.Wrap(err, "error generating bcrypt key from passphrase"))
+	}
+
+	key = crypto.Sha256(key) // get 32 bytes
+	privKeyBytes := legacy.Cdc.Amino.MustMarshalBinaryBare(privKey)
+
+	return saltBytes, xsalsa20symmetric.EncryptSymmetric(privKeyBytes, key)
+}
+
+// UnarmorDecryptPrivKey returns the privkey byte slice, a string of the algo type, and an error
+func UnarmorDecryptPrivKey(armorStr string, passphrase string) (privKey crypto.PrivKey, algo string, err error) {
+	blockType, header, encBytes, err := armor.DecodeArmor(armorStr)
+	if err != nil {
+		return privKey, "", err
+	}
+
+	if blockType != blockTypePrivKey {
+		return privKey, "", fmt.Errorf("unrecognized armor type: %v", blockType)
+	}
+
+	if header["kdf"] != "bcrypt" {
+		return privKey, "", fmt.Errorf("unrecognized KDF type: %v", header["kdf"])
+	}
+
+	if header["salt"] == "" {
+		return privKey, "", fmt.Errorf("missing salt bytes")
+	}
+
+	saltBytes, err := hex.DecodeString(header["salt"])
+	if err != nil {
+		return privKey, "", fmt.Errorf("error decoding salt: %v", err.Error())
+	}
+
+	privKey, err = decryptPrivKey(saltBytes, encBytes, passphrase)
+
+	if header[headerType] == "" {
+		header[headerType] = defaultAlgo
+	}
+
+	return privKey, header[headerType], err
+}
+
+func decryptPrivKey(saltBytes []byte, encBytes []byte, passphrase string) (privKey crypto.PrivKey, err error) {
+	key, err := bcrypt.GenerateFromPassword(saltBytes, []byte(passphrase), BcryptSecurityParameter)
+	if err != nil {
+		return privKey, errors.Wrap(err, "error generating bcrypt key from passphrase")
+	}
+
+	key = crypto.Sha256(key) // Get 32 bytes
+
+	privKeyBytes, err := xsalsa20symmetric.DecryptSymmetric(encBytes, key)
+	if err != nil && err.Error() == "Ciphertext decryption failed" {
+		return privKey, errors.ErrWrongPassword
+	} else if err != nil {
+		return privKey, err
+	}
+
+	return legacy.PrivKeyFromBytes(privKeyBytes)
 }

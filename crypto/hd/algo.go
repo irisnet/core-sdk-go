@@ -1,12 +1,29 @@
 package hd
 
 import (
+	"fmt"
+
 	bip39 "github.com/cosmos/go-bip39"
 
 	"github.com/irisnet/core-sdk-go/crypto/keys/secp256k1"
 	"github.com/irisnet/core-sdk-go/crypto/keys/sm2"
 	"github.com/irisnet/core-sdk-go/crypto/types"
 )
+
+type SignatureAlgo interface {
+	Name() PubKeyType
+	Derive() DeriveFn
+	Generate() GenerateFn
+}
+
+func NewSigningAlgoFromString(str string) (SignatureAlgo, error) {
+	switch str {
+	case string(Secp256k1.Name()):
+		return Secp256k1, nil
+	default:
+		return nil, fmt.Errorf("provided algorithm `%s` is not supported", str)
+	}
+}
 
 // PubKeyType defines an algorithm to derive key-pairs which can be used for cryptographic signing.
 type PubKeyType string

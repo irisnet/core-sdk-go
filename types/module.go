@@ -1,8 +1,9 @@
 package types
 
 import (
+	tmcrypto "github.com/tendermint/tendermint/crypto"
+
 	cdctypes "github.com/irisnet/core-sdk-go/codec/types"
-	crypto "github.com/irisnet/core-sdk-go/crypto/types"
 )
 
 //The purpose of this interface is to convert the irita system type to the user receiving type
@@ -22,12 +23,12 @@ type Module interface {
 }
 
 type KeyManager interface {
-	Sign(name, password string, data []byte) ([]byte, crypto.PubKey, error)
+	Sign(name, password string, data []byte) ([]byte, tmcrypto.PubKey, error)
 	Insert(name, password string) (string, string, error)
 	Recover(name, password, mnemonic, hdPath string) (string, error)
 	Import(name, password string, privKeyArmor string) (address string, err error)
 	Export(name, password string) (privKeyArmor string, err error)
 	Delete(name, password string) error
-	Find(name, password string) (crypto.PubKey, AccAddress, error)
+	Find(name, password string) (tmcrypto.PubKey, AccAddress, error)
 	Add(name, password string) (address string, mnemonic string, err error)
 }

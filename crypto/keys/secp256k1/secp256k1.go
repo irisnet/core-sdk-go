@@ -9,16 +9,14 @@ import (
 	"math/big"
 
 	secp256k1 "github.com/btcsuite/btcd/btcec"
-	"github.com/tendermint/tendermint/crypto"
 	"golang.org/x/crypto/ripemd160" // nolint: staticcheck // necessary for Bitcoin address format
 
-	"github.com/irisnet/core-sdk-go/codec"
+	tmcrypto "github.com/tendermint/tendermint/crypto"
+
 	cryptotypes "github.com/irisnet/core-sdk-go/crypto/types"
-	"github.com/irisnet/core-sdk-go/types/errors"
 )
 
 var _ cryptotypes.PrivKey = &PrivKey{}
-var _ codec.AminoMarshaler = &PrivKey{}
 
 const (
 	PrivKeySize = 32
@@ -34,7 +32,7 @@ func (privKey *PrivKey) Bytes() []byte {
 
 // PubKey performs the point-scalar multiplication from the privKey on the
 // generator point to get the pubkey.
-func (privKey *PrivKey) PubKey() cryptotypes.PubKey {
+func (privKey *PrivKey) PubKey() tmcrypto.PubKey {
 	_, pubkeyObject := secp256k1.PrivKeyFromBytes(secp256k1.S256(), privKey.Key)
 	pk := pubkeyObject.SerializeCompressed()
 	return &PubKey{Key: pk}
@@ -42,7 +40,7 @@ func (privKey *PrivKey) PubKey() cryptotypes.PubKey {
 
 // Equals - you probably don't need to use this.
 // Runs in constant time based on length of the
-func (privKey *PrivKey) Equals(other cryptotypes.LedgerPrivKey) bool {
+func (privKey *PrivKey) Equals(other tmcrypto.PrivKey) bool {
 	return privKey.Type() == other.Type() && subtle.ConstantTimeCompare(privKey.Bytes(), other.Bytes()) == 1
 }
 
@@ -50,37 +48,10 @@ func (privKey *PrivKey) Type() string {
 	return keyType
 }
 
-// MarshalAmino overrides Amino binary marshalling.
-func (privKey PrivKey) MarshalAmino() ([]byte, error) {
-	return privKey.Key, nil
-}
-
-// UnmarshalAmino overrides Amino binary marshalling.
-func (privKey *PrivKey) UnmarshalAmino(bz []byte) error {
-	if len(bz) != PrivKeySize {
-		return fmt.Errorf("invalid privkey size")
-	}
-	privKey.Key = bz
-
-	return nil
-}
-
-// MarshalAminoJSON overrides Amino JSON marshalling.
-func (privKey PrivKey) MarshalAminoJSON() ([]byte, error) {
-	// When we marshal to Amino JSON, we don't marshal the "key" field itself,
-	// just its contents (i.e. the key bytes).
-	return privKey.MarshalAmino()
-}
-
-// UnmarshalAminoJSON overrides Amino JSON marshalling.
-func (privKey *PrivKey) UnmarshalAminoJSON(bz []byte) error {
-	return privKey.UnmarshalAmino(bz)
-}
-
 // GenPrivKey generates a new ECDSA private key on curve secp256k1 private key.
 // It uses OS randomness to generate the private key.
 func GenPrivKey() *PrivKey {
-	return &PrivKey{Key: genPrivKey(crypto.CReader())}
+	return &PrivKey{Key: genPrivKey(tmcrypto.CReader())}
 }
 
 // genPrivKey generates a new secp256k1 private key using the provided reader.
@@ -139,14 +110,13 @@ func GenPrivKeyFromSecret(secret []byte) *PrivKey {
 //-------------------------------------
 
 var _ cryptotypes.PubKey = &PubKey{}
-var _ codec.AminoMarshaler = &PubKey{}
 
 // PubKeySize is comprised of 32 bytes for one field element
 // (the x-coordinate), plus one byte for the parity of the y-coordinate.
 const PubKeySize = 33
 
 // Address returns a Bitcoin style addresses: RIPEMD160(SHA256(pubkey))
-func (pubKey *PubKey) Address() crypto.Address {
+func (pubKey *PubKey) Address() tmcrypto.Address {
 	if len(pubKey.Key) != PubKeySize {
 		panic("length of pubkey is incorrect")
 	}
@@ -154,7 +124,7 @@ func (pubKey *PubKey) Address() crypto.Address {
 	sha := sha256.Sum256(pubKey.Key)
 	hasherRIPEMD160 := ripemd160.New()
 	hasherRIPEMD160.Write(sha[:]) // does not error
-	return crypto.Address(hasherRIPEMD160.Sum(nil))
+	return tmcrypto.Address(hasherRIPEMD160.Sum(nil))
 }
 
 // Bytes returns the pubkey byte format.
@@ -170,33 +140,6 @@ func (pubKey *PubKey) Type() string {
 	return keyType
 }
 
-func (pubKey *PubKey) Equals(other cryptotypes.PubKey) bool {
+func (pubKey *PubKey) Equals(other tmcrypto.PubKey) bool {
 	return pubKey.Type() == other.Type() && bytes.Equal(pubKey.Bytes(), other.Bytes())
-}
-
-// MarshalAmino overrides Amino binary marshalling.
-func (pubKey PubKey) MarshalAmino() ([]byte, error) {
-	return pubKey.Key, nil
-}
-
-// UnmarshalAmino overrides Amino binary marshalling.
-func (pubKey *PubKey) UnmarshalAmino(bz []byte) error {
-	if len(bz) != PubKeySize {
-		return errors.Wrap(errors.ErrInvalidPubKey, "invalid pubkey size")
-	}
-	pubKey.Key = bz
-
-	return nil
-}
-
-// MarshalAminoJSON overrides Amino JSON marshalling.
-func (pubKey PubKey) MarshalAminoJSON() ([]byte, error) {
-	// When we marshal to Amino JSON, we don't marshal the "key" field itself,
-	// just its contents (i.e. the key bytes).
-	return pubKey.MarshalAmino()
-}
-
-// UnmarshalAminoJSON overrides Amino JSON marshalling.
-func (pubKey *PubKey) UnmarshalAminoJSON(bz []byte) error {
-	return pubKey.UnmarshalAmino(bz)
 }

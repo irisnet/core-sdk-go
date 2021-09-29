@@ -5,7 +5,6 @@ import (
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 
 	ecdsa "github.com/irisnet/core-sdk-go/crypto/keys/internal/ecdsa"
-	cryptotypes "github.com/irisnet/core-sdk-go/crypto/types"
 )
 
 // String implements proto.Message interface.
@@ -22,7 +21,7 @@ func (m *PubKey) Bytes() []byte {
 }
 
 // Equals implements SDK PubKey interface.
-func (m *PubKey) Equals(other cryptotypes.PubKey) bool {
+func (m *PubKey) Equals(other tmcrypto.PubKey) bool {
 	pk2, ok := other.(*PubKey)
 	if !ok {
 		return false

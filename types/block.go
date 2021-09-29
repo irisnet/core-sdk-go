@@ -17,7 +17,7 @@ type Block struct {
 }
 
 type Data struct {
-	Txs []StdTx `json:"txs"`
+	Txs []Tx `json:"txs"`
 }
 
 type BlockResult struct {
@@ -64,6 +64,21 @@ func ParseValidatorUpdate(updates []abci.ValidatorUpdate) []ValidatorUpdate {
 	return vUpdates
 }
 
+func ParseBlock(txDecoder TxDecoder, block *tmtypes.Block) Block {
+	var txs []Tx
+	for _, tmTx := range block.Txs {
+		tx, _ := txDecoder(tmTx)
+		txs = append(txs, tx)
+	}
+
+	return Block{
+		Header:     block.Header,
+		Data:       Data{Txs: txs},
+		Evidence:   block.Evidence,
+		LastCommit: block.LastCommit,
+	}
+}
+
 func ParseBlockResult(res *ctypes.ResultBlockResults) BlockResult {
 	var txResults = make([]TxResult, len(res.TxsResults))
 	for i, r := range res.TxsResults {
@@ -88,4 +103,25 @@ func ParseBlockResult(res *ctypes.ResultBlockResults) BlockResult {
 			},
 		},
 	}
+}
+
+func ParseValidators(vs []*tmtypes.Validator) []Validator {
+	var validators = make([]Validator, len(vs))
+	for i, v := range vs {
+		bech32Addr, _ := ConsAddressFromHex(v.Address.String())
+
+		pubKey := PubKey{
+			Type:  v.PubKey.Type(),
+			Value: base64.StdEncoding.EncodeToString(v.PubKey.Bytes()),
+		}
+
+		validators[i] = Validator{
+			Bech32Address:    bech32Addr.String(),
+			Address:          v.Address.String(),
+			PubKey:           pubKey,
+			VotingPower:      v.VotingPower,
+			ProposerPriority: v.ProposerPriority,
+		}
+	}
+	return validators
 }

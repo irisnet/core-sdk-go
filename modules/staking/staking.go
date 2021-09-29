@@ -3,6 +3,8 @@ package staking
 import (
 	"context"
 
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+
 	"github.com/irisnet/core-sdk-go/codec"
 	codectypes "github.com/irisnet/core-sdk-go/codec/types"
 	cryptotypes "github.com/irisnet/core-sdk-go/crypto/types"
@@ -31,38 +33,38 @@ func (sc stakingClient) RegisterInterfaceTypes(registry codectypes.InterfaceRegi
 	RegisterInterfaces(registry)
 }
 
-func (sc stakingClient) CreateValidator(request CreateValidatorRequest, baseTx types.BaseTx) (types.ResultTx, error) {
+func (sc stakingClient) CreateValidator(request CreateValidatorRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	delegatorAddr, err := sc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 	valAddr, err := types.ValAddressFromBech32(delegatorAddr.String())
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	values, err := sc.ToMinCoin(request.Value)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	// pk, err := types.GetPubKeyFromBech32(types.Bech32PubKeyTypeConsPub, request.Pubkey)
 	// if err != nil {
-	// 	return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+	// 	return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	// }
 	// pkAny, err := codectypes.PackAny(pk)
 	// if err != nil {
-	// 	return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+	// 	return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	// }
 
 	var pk cryptotypes.PubKey
 	if err := sc.Codec.UnmarshalInterfaceJSON([]byte(request.Pubkey), &pk); err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	pkAny, err := codectypes.NewAnyWithValue(pk)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	msg := &MsgCreateValidator{
@@ -82,14 +84,14 @@ func (sc stakingClient) CreateValidator(request CreateValidatorRequest, baseTx t
 	return sc.BuildAndSend([]types.Msg{msg}, baseTx)
 }
 
-func (sc stakingClient) EditValidator(request EditValidatorRequest, baseTx types.BaseTx) (types.ResultTx, error) {
+func (sc stakingClient) EditValidator(request EditValidatorRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	delegatorAddr, err := sc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 	valAddr, err := types.ValAddressFromBech32(delegatorAddr.String())
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	msg := &MsgEditValidator{
@@ -107,15 +109,15 @@ func (sc stakingClient) EditValidator(request EditValidatorRequest, baseTx types
 	return sc.BuildAndSend([]types.Msg{msg}, baseTx)
 }
 
-func (sc stakingClient) Delegate(request DelegateRequest, baseTx types.BaseTx) (types.ResultTx, error) {
+func (sc stakingClient) Delegate(request DelegateRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	delegatorAddr, err := sc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	coins, err := sc.ToMinCoin(request.Amount)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	msg := &MsgDelegate{
@@ -126,15 +128,15 @@ func (sc stakingClient) Delegate(request DelegateRequest, baseTx types.BaseTx) (
 	return sc.BuildAndSend([]types.Msg{msg}, baseTx)
 }
 
-func (sc stakingClient) Undelegate(request UndelegateRequest, baseTx types.BaseTx) (types.ResultTx, error) {
+func (sc stakingClient) Undelegate(request UndelegateRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	delegatorAddr, err := sc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	coins, err := sc.ToMinCoin(request.Amount)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 	msg := &MsgUndelegate{
 		DelegatorAddress: delegatorAddr.String(),
@@ -144,15 +146,15 @@ func (sc stakingClient) Undelegate(request UndelegateRequest, baseTx types.BaseT
 	return sc.BuildAndSend([]types.Msg{msg}, baseTx)
 }
 
-func (sc stakingClient) BeginRedelegate(request BeginRedelegateRequest, baseTx types.BaseTx) (types.ResultTx, error) {
+func (sc stakingClient) BeginRedelegate(request BeginRedelegateRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	delegatorAddr, err := sc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	coins, err := sc.ToMinCoin(request.Amount)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 	msg := &MsgBeginRedelegate{
 		DelegatorAddress:    delegatorAddr.String(),

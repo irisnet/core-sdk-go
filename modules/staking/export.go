@@ -3,18 +3,20 @@ package staking
 import (
 	"time"
 
-	sdk "github.com/irisnet/core-sdk-go/types"
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+
+	"github.com/irisnet/core-sdk-go/types"
 )
 
 // expose Staking module api for user
 type Client interface {
-	sdk.Module
+	types.Module
 
-	CreateValidator(request CreateValidatorRequest, baseTx sdk.BaseTx) (sdk.ResultTx, error)
-	EditValidator(request EditValidatorRequest, baseTx sdk.BaseTx) (sdk.ResultTx, error)
-	Delegate(request DelegateRequest, baseTx sdk.BaseTx) (sdk.ResultTx, error)
-	Undelegate(request UndelegateRequest, baseTx sdk.BaseTx) (sdk.ResultTx, error)
-	BeginRedelegate(request BeginRedelegateRequest, baseTx sdk.BaseTx) (sdk.ResultTx, error)
+	CreateValidator(request CreateValidatorRequest, baseTx types.BaseTx) (ctypes.ResultTx, error)
+	EditValidator(request EditValidatorRequest, baseTx types.BaseTx) (ctypes.ResultTx, error)
+	Delegate(request DelegateRequest, baseTx types.BaseTx) (ctypes.ResultTx, error)
+	Undelegate(request UndelegateRequest, baseTx types.BaseTx) (ctypes.ResultTx, error)
+	BeginRedelegate(request BeginRedelegateRequest, baseTx types.BaseTx) (ctypes.ResultTx, error)
 
 	QueryValidators(status string, page, size uint64) (QueryValidatorsResp, error)
 	QueryValidator(validatorAddr string) (QueryValidatorResp, error)
@@ -33,39 +35,39 @@ type Client interface {
 }
 
 type CreateValidatorRequest struct {
-	Moniker           string      `json:"moniker"`
-	Rate              sdk.Dec     `json:"rate"`
-	MaxRate           sdk.Dec     `json:"max_rate"`
-	MaxChangeRate     sdk.Dec     `json:"max_change_rate"`
-	MinSelfDelegation sdk.Int     `json:"min_self_delegation"`
-	Pubkey            string      `json:"pubkey"`
-	Value             sdk.DecCoin `json:"value"`
+	Moniker           string        `json:"moniker"`
+	Rate              types.Dec     `json:"rate"`
+	MaxRate           types.Dec     `json:"max_rate"`
+	MaxChangeRate     types.Dec     `json:"max_change_rate"`
+	MinSelfDelegation types.Int     `json:"min_self_delegation"`
+	Pubkey            string        `json:"pubkey"`
+	Value             types.DecCoin `json:"value"`
 }
 
 type EditValidatorRequest struct {
-	Moniker           string  `json:"moniker"`
-	Identity          string  `json:"identity"`
-	Website           string  `json:"website"`
-	SecurityContact   string  `json:"security_contact"`
-	Details           string  `json:"details"`
-	CommissionRate    sdk.Dec `json:"commission_rate"`
-	MinSelfDelegation sdk.Int `json:"min_self_delegation"`
+	Moniker           string    `json:"moniker"`
+	Identity          string    `json:"identity"`
+	Website           string    `json:"website"`
+	SecurityContact   string    `json:"security_contact"`
+	Details           string    `json:"details"`
+	CommissionRate    types.Dec `json:"commission_rate"`
+	MinSelfDelegation types.Int `json:"min_self_delegation"`
 }
 
 type DelegateRequest struct {
-	ValidatorAddr string      `json:"validator_address"`
-	Amount        sdk.DecCoin `json:"amount"`
+	ValidatorAddr string        `json:"validator_address"`
+	Amount        types.DecCoin `json:"amount"`
 }
 
 type UndelegateRequest struct {
-	ValidatorAddr string      `json:"validator_address"`
-	Amount        sdk.DecCoin `json:"amount"`
+	ValidatorAddr string        `json:"validator_address"`
+	Amount        types.DecCoin `json:"amount"`
 }
 
 type BeginRedelegateRequest struct {
 	ValidatorSrcAddress string
 	ValidatorDstAddress string
-	Amount              sdk.DecCoin
+	Amount              types.DecCoin
 }
 
 type (
@@ -81,9 +83,9 @@ type (
 		UpdateTime time.Time `json:"update_time"`
 	}
 	commissionRates struct {
-		Rate          sdk.Dec `json:"rate"`
-		MaxRate       sdk.Dec `json:"max_rate"`
-		MaxChangeRate sdk.Dec `json:"max_change_rate"`
+		Rate          types.Dec `json:"rate"`
+		MaxRate       types.Dec `json:"max_rate"`
+		MaxChangeRate types.Dec `json:"max_change_rate"`
 	}
 
 	QueryValidatorsResp struct {
@@ -96,26 +98,26 @@ type (
 		ConsensusPubkey   string      `json:"consensus_pubkey"`
 		Jailed            bool        `json:"jailed"`
 		Status            string      `json:"status"`
-		Tokens            sdk.Int     `json:"tokens"`
-		DelegatorShares   sdk.Dec     `json:"delegator_shares"`
+		Tokens            types.Int   `json:"tokens"`
+		DelegatorShares   types.Dec   `json:"delegator_shares"`
 		Description       description `json:"description"`
 		UnbondingHeight   int64       `json:"unbonding_height"`
 		UnbondingTime     time.Time   `json:"unbonding_time"`
 		Commission        commission  `json:"commission"`
-		MinSelfDelegation sdk.Int     `json:"min_self_delegation"`
+		MinSelfDelegation types.Int   `json:"min_self_delegation"`
 	}
 )
 
 type (
 	delegation struct {
-		DelegatorAddress string  `json:"delegator_address"`
-		Shares           sdk.Dec `json:"shares"`
-		ValidatorAddress string  `json:"validator_address"`
+		DelegatorAddress string    `json:"delegator_address"`
+		Shares           types.Dec `json:"shares"`
+		ValidatorAddress string    `json:"validator_address"`
 	}
 
 	QueryDelegationResp struct {
 		Delegation delegation `json:"delegation"`
-		Balance    sdk.Coin   `json:"balance"`
+		Balance    types.Coin `json:"balance"`
 	}
 
 	QueryValidatorDelegationsResp struct {
@@ -128,8 +130,8 @@ type (
 	unbondingDelegationEntry struct {
 		CreationHeight int64     `json:"creation_height"`
 		CompletionTime time.Time `json:"completion_time"`
-		InitialBalance sdk.Int   `json:"initial_balance"`
-		Balance        sdk.Int   `json:"balance"`
+		InitialBalance types.Int `json:"initial_balance"`
+		Balance        types.Int `json:"balance"`
 	}
 
 	QueryUnbondingDelegationResp struct {
@@ -171,12 +173,12 @@ type (
 	redelegationEntry struct {
 		CreationHeight int64     `json:"creation_height"`
 		CompletionTime time.Time `json:"completion_time"`
-		InitialBalance sdk.Int   `json:"initial_balance"`
-		SharesDst      sdk.Dec   `json:"shares_dst"`
+		InitialBalance types.Int `json:"initial_balance"`
+		SharesDst      types.Dec `json:"shares_dst"`
 	}
 	redelegationEntryResponse struct {
 		RedelegationEntry redelegationEntry `json:"redelegation_entry"`
-		Balance           sdk.Int           `json:"balance"`
+		Balance           types.Int         `json:"balance"`
 	}
 	redelegation struct {
 		DelegatorAddress    string              `json:"delegator_address"`
@@ -197,13 +199,13 @@ type QueryDelegatorValidatorsResp struct {
 }
 
 type QueryHistoricalInfoResp struct {
-	Header sdk.Header           `json:"header"`
+	Header types.Header         `json:"header"`
 	Valset []QueryValidatorResp `json:"valset"`
 }
 
 type QueryPoolResp struct {
-	NotBondedTokens sdk.Int `json:"not_bonded_tokens"`
-	BondedTokens    sdk.Int `json:"bonded_tokens"`
+	NotBondedTokens types.Int `json:"not_bonded_tokens"`
+	BondedTokens    types.Int `json:"bonded_tokens"`
 }
 
 type QueryParamsResp struct {

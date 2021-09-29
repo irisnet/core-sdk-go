@@ -66,7 +66,7 @@ type ClientConfig struct {
 	TokenManager TokenManager
 
 	//
-	KeyManager crypto.KeyManager
+	Keyring crypto.Keyring
 
 	//
 	TxSizeLimit uint64
@@ -272,9 +272,9 @@ func TxSizeLimitOption(txSizeLimit uint64) Option {
 	}
 }
 
-func KeyManagerOption(keyManager crypto.KeyManager) Option {
+func KeyManagerOption(keyring crypto.Keyring) Option {
 	return func(cfg *ClientConfig) error {
-		cfg.KeyManager = keyManager
+		cfg.Keyring = keyring
 		return nil
 	}
 }

@@ -1,8 +1,9 @@
 package secp256r1
 
 import (
+	tmcrypto "github.com/tendermint/tendermint/crypto"
+
 	"github.com/irisnet/core-sdk-go/crypto/keys/internal/ecdsa"
-	cryptotypes "github.com/irisnet/core-sdk-go/crypto/types"
 )
 
 // GenPrivKey generates a new secp256r1 private key. It uses operating system randomness.
@@ -12,7 +13,7 @@ func GenPrivKey() (*PrivKey, error) {
 }
 
 // PubKey implements SDK PrivKey interface.
-func (m *PrivKey) PubKey() cryptotypes.PubKey {
+func (m *PrivKey) PubKey() tmcrypto.PubKey {
 	return &PubKey{&ecdsaPK{m.Secret.PubKey()}}
 }
 
@@ -40,7 +41,7 @@ func (m *PrivKey) Bytes() []byte {
 }
 
 // Equals implements SDK PrivKey interface.
-func (m *PrivKey) Equals(other cryptotypes.LedgerPrivKey) bool {
+func (m *PrivKey) Equals(other tmcrypto.PrivKey) bool {
 	sk2, ok := other.(*PrivKey)
 	if !ok {
 		return false

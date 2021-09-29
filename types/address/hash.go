@@ -1,4 +1,4 @@
-package types
+package address
 
 import (
 	"crypto/sha256"

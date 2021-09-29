@@ -3,15 +3,17 @@ package gov
 import (
 	"time"
 
-	sdk "github.com/irisnet/core-sdk-go/types"
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+
+	"github.com/irisnet/core-sdk-go/types"
 )
 
 // expose Gov module api for user
 type Client interface {
-	sdk.Module
-	SubmitProposal(request SubmitProposalRequest, baseTx sdk.BaseTx) (uint64, sdk.ResultTx, error)
-	Deposit(request DepositRequest, baseTx sdk.BaseTx) (sdk.ResultTx, error)
-	Vote(request VoteRequest, baseTx sdk.BaseTx) (sdk.ResultTx, error)
+	types.Module
+	SubmitProposal(request SubmitProposalRequest, baseTx types.BaseTx) (uint64, ctypes.ResultTx, error)
+	Deposit(request DepositRequest, baseTx types.BaseTx) (ctypes.ResultTx, error)
+	Vote(request VoteRequest, baseTx types.BaseTx) (ctypes.ResultTx, error)
 
 	QueryProposal(proposalId uint64) (QueryProposalResp, error)
 	QueryProposals(proposalStatus string) ([]QueryProposalResp, error)
@@ -24,15 +26,15 @@ type Client interface {
 }
 
 type SubmitProposalRequest struct {
-	Title          string       `json:"title"`
-	Description    string       `json:"description"`
-	Type           string       `json:"type"`
-	InitialDeposit sdk.DecCoins `json:"initial_deposit"`
+	Title          string         `json:"title"`
+	Description    string         `json:"description"`
+	Type           string         `json:"type"`
+	InitialDeposit types.DecCoins `json:"initial_deposit"`
 }
 
 type DepositRequest struct {
-	ProposalId uint64       `json:"proposal_id"`
-	Amount     sdk.DecCoins `json:"amount"`
+	ProposalId uint64         `json:"proposal_id"`
+	Amount     types.DecCoins `json:"amount"`
 }
 
 type VoteRequest struct {
@@ -47,7 +49,7 @@ type QueryProposalResp struct {
 	FinalTallyResult QueryTallyResultResp `json:"final_tally_result"`
 	SubmitTime       time.Time            `json:"submit_time"`
 	DepositEndTime   time.Time            `json:"deposit_end_time"`
-	TotalDeposit     sdk.Coins            `json:"total_deposit"`
+	TotalDeposit     types.Coins          `json:"total_deposit"`
 	VotingStartTime  time.Time            `json:"voting_start_time"`
 	VotingEndTime    time.Time            `json:"voting_end_time"`
 }
@@ -63,13 +65,13 @@ type (
 		VotingPeriod time.Duration `json:"voting_period"`
 	}
 	depositParams struct {
-		MinDeposit       sdk.Coins     `json:"min_deposit"`
+		MinDeposit       types.Coins   `json:"min_deposit"`
 		MaxDepositPeriod time.Duration `json:"max_deposit_period"`
 	}
 	tallyParams struct {
-		Quorum        sdk.Dec `json:"quorum"`
-		Threshold     sdk.Dec `json:"threshold"`
-		VetoThreshold sdk.Dec `json:"veto_threshold"`
+		Quorum        types.Dec `json:"quorum"`
+		Threshold     types.Dec `json:"threshold"`
+		VetoThreshold types.Dec `json:"veto_threshold"`
 	}
 	QueryParamsResp struct {
 		VotingParams  votingParams  `json:"voting_params"`
@@ -79,14 +81,14 @@ type (
 )
 
 type QueryDepositResp struct {
-	ProposalId uint64    `json:"proposal_id"`
-	Depositor  string    `json:"depositor"`
-	Amount     sdk.Coins `json:"amount"`
+	ProposalId uint64      `json:"proposal_id"`
+	Depositor  string      `json:"depositor"`
+	Amount     types.Coins `json:"amount"`
 }
 
 type QueryTallyResultResp struct {
-	Yes        sdk.Int `json:"yes"`
-	Abstain    sdk.Int `json:"abstain"`
-	No         sdk.Int `json:"no"`
-	NoWithVeto sdk.Int `json:"no_with_veto"`
+	Yes        types.Int `json:"yes"`
+	Abstain    types.Int `json:"abstain"`
+	No         types.Int `json:"no"`
+	NoWithVeto types.Int `json:"no_with_veto"`
 }

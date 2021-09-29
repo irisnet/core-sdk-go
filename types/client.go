@@ -5,15 +5,16 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 type TxManager interface {
 	TmQuery
-	SendBatch(msgs Msgs, baseTx BaseTx) ([]ResultTx, error)
-	BuildAndSend(msg []Msg, baseTx BaseTx) (ResultTx, error)
+	SendBatch(msgs Msgs, baseTx BaseTx) ([]ctypes.ResultTx, error)
+	BuildAndSend(msg []Msg, baseTx BaseTx) (ctypes.ResultTx, error)
 	BuildAndSign(msg []Msg, baseTx BaseTx) ([]byte, error)
 	BuildTxHash(msg []Msg, baseTx BaseTx) (string, error)
-	BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) (ResultTx, error)
+	BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) (ctypes.ResultTx, error)
 }
 
 type Queries interface {
@@ -42,8 +43,8 @@ type AccountQuery interface {
 }
 
 type TmQuery interface {
-	QueryTx(hash string) (ResultQueryTx, error)
-	QueryTxs(builder *EventQueryBuilder, page, size *int) (ResultSearchTxs, error)
+	QueryTx(hash string) (ctypes.ResultTx, error)
+	QueryTxs(builder *EventQueryBuilder, page, size *int) (ctypes.ResultTxSearch, error)
 	QueryBlock(height int64) (BlockDetail, error)
 }
 

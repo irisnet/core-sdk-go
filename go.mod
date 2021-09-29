@@ -3,6 +3,7 @@ module github.com/irisnet/core-sdk-go
 go 1.16
 
 require (
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/bluele/gcache v0.0.2
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/cosmos/go-bip39 v0.0.0-20180819234021-555e2067c45d
@@ -11,8 +12,10 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/hdevalence/ed25519consensus v0.0.0-20210430192048-0962ce16b305
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/common v0.14.0
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/sirupsen/logrus v1.6.0
+	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.34.12
 	github.com/tjfoc/gmsm v1.4.0

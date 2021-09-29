@@ -8,7 +8,7 @@ import (
 
 type (
 	// Codec defines a functionality for serializing other objects.
-	// Users can defin a custom Protobuf-based serialization.
+	// Users can define a custom Protobuf-based serialization.
 	// Note, Amino can still be used without any dependency on Protobuf.
 	// SDK provides to Codec implementations:
 	//
@@ -85,14 +85,5 @@ type (
 		MarshalToSizedBuffer(dAtA []byte) (int, error)
 		Size() int
 		Unmarshal(data []byte) error
-	}
-
-	// AminoMarshaler defines an interface a type must implement to serialize itself
-	// for Amino codec.
-	AminoMarshaler interface {
-		MarshalAmino() ([]byte, error)
-		UnmarshalAmino([]byte) error
-		MarshalAminoJSON() ([]byte, error)
-		UnmarshalAminoJSON([]byte) error
 	}
 )

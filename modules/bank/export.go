@@ -1,23 +1,25 @@
 package bank
 
 import (
-	sdk "github.com/irisnet/core-sdk-go/types"
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+
+	"github.com/irisnet/core-sdk-go/types"
 )
 
 // expose bank module api for user
 type Client interface {
-	sdk.Module
-	Send(to string, amount sdk.DecCoins, baseTx sdk.BaseTx) (sdk.ResultTx, error)
-	SendWitchSpecAccountInfo(to string, sequence, accountNumber uint64, amount sdk.DecCoins, baseTx sdk.BaseTx) (sdk.ResultTx, error)
-	MultiSend(receipts MultiSendRequest, baseTx sdk.BaseTx) ([]sdk.ResultTx, error)
-	SubscribeSendTx(from, to string, callback EventMsgSendCallback) sdk.Subscription
-	QueryAccount(address string) (sdk.BaseAccount, error)
-	TotalSupply() (sdk.Coins, error)
+	types.Module
+	Send(to string, amount types.DecCoins, baseTx types.BaseTx) (ctypes.ResultTx, error)
+	SendWitchSpecAccountInfo(to string, sequence, accountNumber uint64, amount types.DecCoins, baseTx types.BaseTx) (ctypes.ResultTx, error)
+	MultiSend(receipts MultiSendRequest, baseTx types.BaseTx) ([]ctypes.ResultTx, error)
+	SubscribeSendTx(from, to string, callback EventMsgSendCallback) types.Subscription
+	QueryAccount(address string) (types.BaseAccount, error)
+	TotalSupply() (types.Coins, error)
 }
 
 type Receipt struct {
-	Address string       `json:"address"`
-	Amount  sdk.DecCoins `json:"amount"`
+	Address string         `json:"address"`
+	Amount  types.DecCoins `json:"amount"`
 }
 
 type MultiSendRequest struct {
@@ -28,16 +30,16 @@ func (msr MultiSendRequest) Len() int {
 	return len(msr.Receipts)
 }
 
-func (msr MultiSendRequest) Sub(begin, end int) sdk.SplitAble {
+func (msr MultiSendRequest) Sub(begin, end int) types.SplitAble {
 	return MultiSendRequest{Receipts: msr.Receipts[begin:end]}
 }
 
 type EventDataMsgSend struct {
-	Height int64      `json:"height"`
-	Hash   string     `json:"hash"`
-	From   string     `json:"from"`
-	To     string     `json:"to"`
-	Amount []sdk.Coin `json:"amount"`
+	Height int64        `json:"height"`
+	Hash   string       `json:"hash"`
+	From   string       `json:"from"`
+	To     string       `json:"to"`
+	Amount []types.Coin `json:"amount"`
 }
 
 type EventMsgSendCallback func(EventDataMsgSend)

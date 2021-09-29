@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+
 	"github.com/irisnet/core-sdk-go/codec"
 	codetypes "github.com/irisnet/core-sdk-go/codec/types"
 	"github.com/irisnet/core-sdk-go/types"
@@ -31,29 +33,29 @@ func (gc govClient) RegisterInterfaceTypes(registry codetypes.InterfaceRegistry)
 	RegisterInterfaces(registry)
 }
 
-func (gc govClient) SubmitProposal(request SubmitProposalRequest, baseTx types.BaseTx) (uint64, types.ResultTx, error) {
+func (gc govClient) SubmitProposal(request SubmitProposalRequest, baseTx types.BaseTx) (uint64, ctypes.ResultTx, error) {
 	proposer, err := gc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return 0, types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return 0, ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	deposit, err := gc.ToMinCoin(request.InitialDeposit...)
 	if err != nil {
-		return 0, types.ResultTx{}, errors.Wrapf(ErrTodo, err.Error())
+		return 0, ctypes.ResultTx{}, errors.Wrapf(ErrTodo, err.Error())
 	}
 
 	content := ContentFromProposalType(request.Title, request.Description, request.Type)
 	msg, err := NewMsgSubmitProposal(content, deposit, proposer)
 	if err != nil {
-		return 0, types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return 0, ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	result, err := gc.BuildAndSend([]types.Msg{msg}, baseTx)
 	if err != nil {
-		return 0, types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return 0, ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
-	proposalIdStr, err := result.Events.GetValue(types.EventTypeSubmitProposal, AttributeKeyProposalID)
+	proposalIdStr, err := types.StringifyEvents(result.TxResult.Events).GetValue(types.EventTypeSubmitProposal, AttributeKeyProposalID)
 	if err != nil {
 		return 0, result, errors.Wrap(ErrTodo, err.Error())
 	}
@@ -65,15 +67,15 @@ func (gc govClient) SubmitProposal(request SubmitProposalRequest, baseTx types.B
 	return uint64(proposalId), result, err
 }
 
-func (gc govClient) Deposit(request DepositRequest, baseTx types.BaseTx) (types.ResultTx, error) {
+func (gc govClient) Deposit(request DepositRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	depositor, err := gc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	amount, err := gc.ToMinCoin(request.Amount...)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	msg := &MsgDeposit{
@@ -85,10 +87,10 @@ func (gc govClient) Deposit(request DepositRequest, baseTx types.BaseTx) (types.
 }
 
 // about VoteRequest.Option see  VoteOption_value
-func (gc govClient) Vote(request VoteRequest, baseTx types.BaseTx) (types.ResultTx, error) {
+func (gc govClient) Vote(request VoteRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	voter, err := gc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	option := VoteOption_value[request.Option]

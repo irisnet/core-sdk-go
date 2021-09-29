@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+
 	"github.com/irisnet/core-sdk-go/codec"
 	codectypes "github.com/irisnet/core-sdk-go/codec/types"
 	"github.com/irisnet/core-sdk-go/types"
@@ -59,47 +61,47 @@ func (b bankClient) TotalSupply() (types.Coins, error) {
 }
 
 // Send is responsible for transferring tokens from `From` to `to` account
-func (b bankClient) Send(to string, amount types.DecCoins, baseTx types.BaseTx) (types.ResultTx, error) {
+func (b bankClient) Send(to string, amount types.DecCoins, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	sender, err := b.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrapf(err, "%s not found", baseTx.From)
+		return ctypes.ResultTx{}, errors.Wrapf(err, "%s not found", baseTx.From)
 	}
 
 	amt, err := b.ToMinCoin(amount...)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	outAddr, err := types.AccAddressFromBech32(to)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrapf(err, "%s invalid address", to)
+		return ctypes.ResultTx{}, errors.Wrapf(err, "%s invalid address", to)
 	}
 
 	msg := NewMsgSend(sender, outAddr, amt)
 	return b.BuildAndSend([]types.Msg{msg}, baseTx)
 }
 
-func (b bankClient) SendWitchSpecAccountInfo(to string, sequence, accountNumber uint64, amount types.DecCoins, baseTx types.BaseTx) (types.ResultTx, error) {
+func (b bankClient) SendWitchSpecAccountInfo(to string, sequence, accountNumber uint64, amount types.DecCoins, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	sender, err := b.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrapf(err, "%s not found", baseTx.From)
+		return ctypes.ResultTx{}, errors.Wrapf(err, "%s not found", baseTx.From)
 	}
 
 	amt, err := b.ToMinCoin(amount...)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
 	}
 
 	outAddr, err := types.AccAddressFromBech32(to)
 	if err != nil {
-		return types.ResultTx{}, errors.Wrapf(err, "%s invalid address", to)
+		return ctypes.ResultTx{}, errors.Wrapf(err, "%s invalid address", to)
 	}
 
 	msg := NewMsgSend(sender, outAddr, amt)
 	return b.BuildAndSendWithAccount(sender.String(), accountNumber, sequence, []types.Msg{msg}, baseTx)
 }
 
-func (b bankClient) MultiSend(request MultiSendRequest, baseTx types.BaseTx) (resTxs []types.ResultTx, err error) {
+func (b bankClient) MultiSend(request MultiSendRequest, baseTx types.BaseTx) (resTxs []ctypes.ResultTx, err error) {
 	sender, err := b.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
 		return nil, errors.Wrapf(err, "%s not found", baseTx.From)
@@ -136,7 +138,7 @@ func (b bankClient) MultiSend(request MultiSendRequest, baseTx types.BaseTx) (re
 	return
 }
 
-func (b bankClient) SendBatch(sender types.AccAddress, request MultiSendRequest, baseTx types.BaseTx) ([]types.ResultTx, error) {
+func (b bankClient) SendBatch(sender types.AccAddress, request MultiSendRequest, baseTx types.BaseTx) ([]ctypes.ResultTx, error) {
 	batchReceipts := types.SubArray(maxMsgLen, request)
 
 	var msgs types.Msgs

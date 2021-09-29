@@ -14,138 +14,48 @@ const RootCodespace = "sdk"
 const UndefinedCodespace = "undefined"
 
 var (
-	ErrTodo = Register(RootCodespace, 100, "error todo")
-
-	// ErrTxDecode is returned if we cannot parse a transaction
-	ErrTxDecode = Register(RootCodespace, 2, "tx parse error")
-
-	// ErrInvalidSequence is used the sequence number (nonce) is incorrect
-	// for the signature
+	ErrPanic           = Register(UndefinedCodespace, 111222, "panic")
+	ErrTodo            = Register(RootCodespace, 100, "error todo")
+	ErrInvalidAddress  = Register(RootCodespace, 7, "invalid address")
+	ErrInvalidRequest  = Register(RootCodespace, 18, "invalid request")
+	ErrPackAny         = Register(RootCodespace, 33, "failed packing protobuf message to Any")
+	ErrUnpackAny       = Register(RootCodespace, 34, "failed unpacking protobuf message from Any")
+	ErrInvalidPubKey   = Register(RootCodespace, 8, "invalid pubkey")
+	ErrInvalidType     = Register(RootCodespace, 29, "invalid type")
 	ErrInvalidSequence = Register(RootCodespace, 3, "invalid sequence")
+	ErrTxTooLarge      = Register(RootCodespace, 21, "tx too large")
+	ErrWrongSequence   = Register(RootCodespace, 32, "incorrect account sequence")
+	ErrWrongPassword   = Register(RootCodespace, 23, "invalid account password")
 
-	// ErrUnauthorized is used whenever a request without sufficient
-	// authorization is handled.
-	ErrUnauthorized = Register(RootCodespace, 4, "unauthorized")
+	// ErrTxDecode = Register(RootCodespace, 2, "tx parse error")
+	// ErrUnauthorized = Register(RootCodespace, 4, "unauthorized")
+	// ErrInsufficientFunds = Register(RootCodespace, 5, "insufficient funds")
+	// ErrUnknownRequest = Register(RootCodespace, 6, "unknown request")
+	// ErrUnknownAddress = Register(RootCodespace, 9, "unknown address")
+	// ErrInvalidCoins = Register(RootCodespace, 10, "invalid coins")
+	// ErrOutOfGas = Register(RootCodespace, 11, "out of gas")
+	// ErrMemoTooLarge = Register(RootCodespace, 12, "memo too large")
+	// ErrInsufficientFee = Register(RootCodespace, 13, "insufficient fee")
+	// ErrTooManySignatures = Register(RootCodespace, 14, "maximum number of signatures exceeded")
+	// ErrNoSignatures = Register(RootCodespace, 15, "no signatures supplied")
+	// ErrJSONMarshal = Register(RootCodespace, 16, "failed to marshal JSON bytes")
+	// ErrJSONUnmarshal = Register(RootCodespace, 17, "failed to unmarshal JSON bytes")
+	// ErrTxInMempoolCache = Register(RootCodespace, 19, "tx already in mempool")
+	// ErrMempoolIsFull = Register(RootCodespace, 20, "mempool is full")
+	// ErrKeyNotFound = Register(RootCodespace, 22, "key not found")
+	// ErrorInvalidSigner = Register(RootCodespace, 24, "tx intended signer does not match the given signer")
+	// ErrorInvalidGasAdjustment = Register(RootCodespace, 25, "invalid gas adjustment")
+	// ErrInvalidHeight = Register(RootCodespace, 26, "invalid height")
+	// ErrInvalidVersion = Register(RootCodespace, 27, "invalid version")
+	// ErrInvalidChainID = Register(RootCodespace, 28, "invalid chain-id")
+	// ErrTxTimeoutHeight = Register(RootCodespace, 30, "tx timeout height")
+	// ErrUnknownExtensionOptions = Register(RootCodespace, 31, "unknown extension options")
+	// ErrLogic = Register(RootCodespace, 35, "internal logic error")
+	// ErrConflict = Register(RootCodespace, 36, "conflict")
+	// ErrNotSupported = Register(RootCodespace, 37, "feature not supported")
+	// ErrNotFound = Register(RootCodespace, 38, "not found")
+	// ErrIO = Register(RootCodespace, 39, "Internal IO error")
 
-	// ErrInsufficientFunds is used when the account cannot pay requested amount.
-	ErrInsufficientFunds = Register(RootCodespace, 5, "insufficient funds")
-
-	// ErrUnknownRequest to doc
-	ErrUnknownRequest = Register(RootCodespace, 6, "unknown request")
-
-	// ErrInvalidAddress to doc
-	ErrInvalidAddress = Register(RootCodespace, 7, "invalid address")
-
-	// ErrInvalidPubKey to doc
-	ErrInvalidPubKey = Register(RootCodespace, 8, "invalid pubkey")
-
-	// ErrUnknownAddress to doc
-	ErrUnknownAddress = Register(RootCodespace, 9, "unknown address")
-
-	// ErrInvalidCoins to doc
-	ErrInvalidCoins = Register(RootCodespace, 10, "invalid coins")
-
-	// ErrOutOfGas to doc
-	ErrOutOfGas = Register(RootCodespace, 11, "out of gas")
-
-	// ErrMemoTooLarge to doc
-	ErrMemoTooLarge = Register(RootCodespace, 12, "memo too large")
-
-	// ErrInsufficientFee to doc
-	ErrInsufficientFee = Register(RootCodespace, 13, "insufficient fee")
-
-	// ErrTooManySignatures to doc
-	ErrTooManySignatures = Register(RootCodespace, 14, "maximum number of signatures exceeded")
-
-	// ErrNoSignatures to doc
-	ErrNoSignatures = Register(RootCodespace, 15, "no signatures supplied")
-
-	// ErrJSONMarshal defines an ABCI typed JSON marshalling error
-	ErrJSONMarshal = Register(RootCodespace, 16, "failed to marshal JSON bytes")
-
-	// ErrJSONUnmarshal defines an ABCI typed JSON unmarshalling error
-	ErrJSONUnmarshal = Register(RootCodespace, 17, "failed to unmarshal JSON bytes")
-
-	// ErrInvalidRequest defines an ABCI typed error where the request contains
-	// invalid data.
-	ErrInvalidRequest = Register(RootCodespace, 18, "invalid request")
-
-	// ErrTxInMempoolCache defines an ABCI typed error where a tx already exists
-	// in the mempool.
-	ErrTxInMempoolCache = Register(RootCodespace, 19, "tx already in mempool")
-
-	// ErrMempoolIsFull defines an ABCI typed error where the mempool is full.
-	ErrMempoolIsFull = Register(RootCodespace, 20, "mempool is full")
-
-	// ErrTxTooLarge defines an ABCI typed error where tx is too large.
-	ErrTxTooLarge = Register(RootCodespace, 21, "tx too large")
-
-	// ErrKeyNotFound defines an error when the key doesn't exist
-	ErrKeyNotFound = Register(RootCodespace, 22, "key not found")
-
-	// ErrWrongPassword defines an error when the key password is invalid.
-	ErrWrongPassword = Register(RootCodespace, 23, "invalid account password")
-
-	// ErrorInvalidSigner defines an error when the tx intended signer does not match the given signer.
-	ErrorInvalidSigner = Register(RootCodespace, 24, "tx intended signer does not match the given signer")
-
-	// ErrorInvalidGasAdjustment defines an error for an invalid gas adjustment
-	ErrorInvalidGasAdjustment = Register(RootCodespace, 25, "invalid gas adjustment")
-
-	// ErrInvalidHeight defines an error for an invalid height
-	ErrInvalidHeight = Register(RootCodespace, 26, "invalid height")
-
-	// ErrInvalidVersion defines a general error for an invalid version
-	ErrInvalidVersion = Register(RootCodespace, 27, "invalid version")
-
-	// ErrInvalidChainID defines an error when the chain-id is invalid.
-	ErrInvalidChainID = Register(RootCodespace, 28, "invalid chain-id")
-
-	// ErrInvalidType defines an error an invalid type.
-	ErrInvalidType = Register(RootCodespace, 29, "invalid type")
-
-	// ErrTxTimeoutHeight defines an error for when a tx is rejected out due to an
-	// explicitly set timeout height.
-	ErrTxTimeoutHeight = Register(RootCodespace, 30, "tx timeout height")
-
-	// ErrUnknownExtensionOptions defines an error for unknown extension options.
-	ErrUnknownExtensionOptions = Register(RootCodespace, 31, "unknown extension options")
-
-	// ErrWrongSequence defines an error where the account sequence defined in
-	// the signer info doesn't match the account's actual sequence number.
-	ErrWrongSequence = Register(RootCodespace, 32, "incorrect account sequence")
-
-	// ErrPackAny defines an error when packing a protobuf message to Any fails.
-	ErrPackAny = Register(RootCodespace, 33, "failed packing protobuf message to Any")
-
-	// ErrUnpackAny defines an error when unpacking a protobuf message from Any fails.
-	ErrUnpackAny = Register(RootCodespace, 34, "failed unpacking protobuf message from Any")
-
-	// ErrLogic defines an internal logic error, e.g. an invariant or assertion
-	// that is violated. It is a programmer error, not a user-facing error.
-	ErrLogic = Register(RootCodespace, 35, "internal logic error")
-
-	// ErrConflict defines a conflict error, e.g. when two goroutines try to access
-	// the same resource and one of them fails.
-	ErrConflict = Register(RootCodespace, 36, "conflict")
-
-	// ErrNotSupported is returned when we call a branch of a code which is currently not
-	// supported.
-	ErrNotSupported = Register(RootCodespace, 37, "feature not supported")
-
-	// ErrNotFound defines an error when requested entity doesn't exist in the state.
-	ErrNotFound = Register(RootCodespace, 38, "not found")
-
-	// ErrIO should be used to wrap internal errors caused by external operation.
-	// Examples: not DB domain error, file writing etc...
-	ErrIO = Register(RootCodespace, 39, "Internal IO error")
-
-	// ErrPanic is only set when we recover from a panic, so we know to
-	// redact potentially sensitive system info
-	ErrPanic = Register(UndefinedCodespace, 111222, "panic")
-
-	// ErrAppConfig defines an error occurred if min-gas-prices field in BaseConfig is empty.
-	ErrAppConfig = Register(RootCodespace, 40, "error in app.toml")
 )
 
 // Register returns an error instance that should be used as the base for
@@ -397,6 +307,7 @@ func stackTrace(err error) errors.StackTrace {
 		}
 	}
 }
+
 func CatchPanic(fn func(errMsg string)) {
 	if err := recover(); err != nil {
 		var msg string

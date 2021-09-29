@@ -1,8 +1,7 @@
-package authtx
+package tx
 
 import (
 	"github.com/gogo/protobuf/proto"
-	"github.com/irisnet/core-sdk-go/types/tx"
 
 	sdk "github.com/irisnet/core-sdk-go/types"
 )
@@ -10,7 +9,7 @@ import (
 // wrapper is a wrapper around the tx.Tx proto.Message which retain the raw
 // body and auth_info bytes.
 type wrapper struct {
-	tx *tx.Tx
+	tx *Tx
 
 	// bodyBz represents the protobuf encoding of TxBody. This should be encoding
 	// from the client using TxRaw if the tx was decoded from the wire

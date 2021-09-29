@@ -1,9 +1,9 @@
-package authtx
+package tx
 
 import (
 	"fmt"
+
 	sdk "github.com/irisnet/core-sdk-go/types"
-	"github.com/irisnet/core-sdk-go/types/tx"
 	signingtypes "github.com/irisnet/core-sdk-go/types/tx/signing"
 )
 
@@ -21,7 +21,6 @@ func (signModeDirectHandler) DefaultMode() signingtypes.SignMode {
 func (signModeDirectHandler) Modes() []signingtypes.SignMode {
 	return []signingtypes.SignMode{signingtypes.SignMode_SIGN_MODE_DIRECT}
 }
-
 
 // GetSignBytes implements SignModeHandler.GetSignBytes
 func (signModeDirectHandler) GetSignBytes(mode signingtypes.SignMode, data sdk.SignerData, tx sdk.Tx) ([]byte, error) {
@@ -43,7 +42,7 @@ func (signModeDirectHandler) GetSignBytes(mode signingtypes.SignMode, data sdk.S
 // DirectSignBytes returns the SIGN_MODE_DIRECT sign bytes for the provided TxBody bytes, AuthInfo bytes, chain ID,
 // account number and sequence.
 func DirectSignBytes(bodyBytes, authInfoBytes []byte, chainID string, accnum uint64) ([]byte, error) {
-	signDoc := tx.SignDoc{
+	signDoc := SignDoc{
 		BodyBytes:     bodyBytes,
 		AuthInfoBytes: authInfoBytes,
 		ChainId:       chainID,

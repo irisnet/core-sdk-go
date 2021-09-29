@@ -3,6 +3,8 @@ package signing
 import (
 	"fmt"
 
+	tmcrypto "github.com/tendermint/tendermint/crypto"
+
 	codectypes "github.com/irisnet/core-sdk-go/codec/types"
 	cryptotypes "github.com/irisnet/core-sdk-go/crypto/types"
 )
@@ -14,7 +16,7 @@ import (
 // signatures.
 type SignatureV2 struct {
 	// PubKey is the public key to use for verifying the signature
-	PubKey cryptotypes.PubKey
+	PubKey tmcrypto.PubKey
 
 	// Data is the actual data of the signature which includes SignMode's and
 	// the signatures themselves for either single or multi-signatures.
