@@ -114,7 +114,6 @@ func (m *keyring) ExportPrivKey(password string) (armor string, err error) {
 }
 
 func (m *keyring) ImportPrivKey(armor, passphrase string) (tmcrypto.PrivKey, string, error) {
-
 	privKey, algo, err := UnarmorDecryptPrivKey(armor, passphrase)
 	if err != nil {
 		return nil, "", errors.Wrap(err, "failed to decrypt private key")

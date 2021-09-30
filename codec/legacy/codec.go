@@ -17,6 +17,7 @@ func init() {
 	Cdc = codec.NewLegacyAmino()
 	cryptocodec.RegisterCrypto(Cdc)
 	codec.RegisterEvidences(Cdc)
+	Cdc.Seal()
 }
 
 // PrivKeyFromBytes unmarshals private key bytes and returns a PrivKey

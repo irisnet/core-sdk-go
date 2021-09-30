@@ -90,14 +90,16 @@ func (client *Client) Module(name string) types.Module {
 }
 
 func makeEncodingConfig() types.EncodingConfig {
+	amino := codec.NewLegacyAmino()
 	interfaceRegistry := cryptotypes.NewInterfaceRegistry()
-	marshaler := codec.NewProtoCodec(interfaceRegistry)
-	txCfg := txtypes.NewTxConfig(marshaler, txtypes.DefaultSignModes)
+	codec := codec.NewProtoCodec(interfaceRegistry)
+	txCfg := txtypes.NewTxConfig(codec, txtypes.DefaultSignModes)
 
 	encodingConfig := types.EncodingConfig{
 		InterfaceRegistry: interfaceRegistry,
-		Codec:             marshaler,
+		Codec:             codec,
 		TxConfig:          txCfg,
+		Amino:             amino,
 	}
 	RegisterLegacyAminoCodec(encodingConfig.Amino)
 	RegisterInterfaces(encodingConfig.InterfaceRegistry)

@@ -15,6 +15,7 @@ import (
 	tmsm2 "github.com/tendermint/tendermint/crypto/sm2"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 
+	"github.com/irisnet/core-sdk-go/codec"
 	cryptotypes "github.com/irisnet/core-sdk-go/crypto/types"
 )
 
@@ -30,10 +31,38 @@ const (
 )
 
 var _ cryptotypes.PrivKey = &PrivKey{}
+var _ codec.AminoMarshaler = &PrivKey{}
 
 // --------------------------------------------------------
 func (privKey PrivKey) Type() string {
 	return keyType
+}
+
+// MarshalAmino overrides Amino binary marshalling.
+func (privKey PrivKey) MarshalAmino() ([]byte, error) {
+	return privKey.Key, nil
+}
+
+// UnmarshalAmino overrides Amino binary marshalling.
+func (privKey *PrivKey) UnmarshalAmino(bz []byte) error {
+	if len(bz) != PrivKeySize {
+		return fmt.Errorf("invalid privkey size")
+	}
+	privKey.Key = bz
+
+	return nil
+}
+
+// MarshalAminoJSON overrides Amino JSON marshalling.
+func (privKey PrivKey) MarshalAminoJSON() ([]byte, error) {
+	// When we marshal to Amino JSON, we don't marshal the "key" field itself,
+	// just its contents (i.e. the key bytes).
+	return privKey.MarshalAmino()
+}
+
+// UnmarshalAminoJSON overrides Amino JSON marshalling.
+func (privKey *PrivKey) UnmarshalAminoJSON(bz []byte) error {
+	return privKey.UnmarshalAmino(bz)
 }
 
 func (privKey PrivKey) Bytes() []byte {
@@ -118,6 +147,7 @@ func GenPrivKeyFromSecret(secret []byte) PrivKey {
 }
 
 var _ cryptotypes.PubKey = &PubKey{}
+var _ codec.AminoMarshaler = &PubKey{}
 
 // --------------------------------------------------------
 
@@ -158,6 +188,33 @@ func (pubKey PubKey) Equals(other tmcrypto.PubKey) bool {
 	}
 
 	return subtle.ConstantTimeCompare(pubKey.Bytes(), other.Bytes()) == 1
+}
+
+// MarshalAmino overrides Amino binary marshalling.
+func (pubKey PubKey) MarshalAmino() ([]byte, error) {
+	return pubKey.Key, nil
+}
+
+// UnmarshalAmino overrides Amino binary marshalling.
+func (pubKey *PubKey) UnmarshalAmino(bz []byte) error {
+	if len(bz) != PubKeySize {
+		return fmt.Errorf("invalid pubkey size")
+	}
+	pubKey.Key = bz
+
+	return nil
+}
+
+// MarshalAminoJSON overrides Amino JSON marshalling.
+func (pubKey PubKey) MarshalAminoJSON() ([]byte, error) {
+	// When we marshal to Amino JSON, we don't marshal the "key" field itself,
+	// just its contents (i.e. the key bytes).
+	return pubKey.MarshalAmino()
+}
+
+// UnmarshalAminoJSON overrides Amino JSON marshalling.
+func (pubKey *PubKey) UnmarshalAminoJSON(bz []byte) error {
+	return pubKey.UnmarshalAmino(bz)
 }
 
 // AsTmPubKey converts our own PubKey into a Tendermint ED25519 pubkey.
