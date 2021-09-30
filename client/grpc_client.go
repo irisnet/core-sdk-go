@@ -17,7 +17,7 @@ func NewGRPCClient(url string) types.GRPCClient {
 	}
 	clientConn, err := grpc.Dial(url, dialOpts...)
 	if err != nil {
-		promlog.New(&promlog.Config{}).Log(err.Error())
+		_ = promlog.New(&promlog.Config{}).Log(err.Error())
 		panic(err)
 	}
 	return &grpcClient{clientConn: clientConn}

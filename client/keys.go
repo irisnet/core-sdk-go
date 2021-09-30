@@ -29,8 +29,7 @@ func NewKeyManager(keyDAO store.KeyDAO, algo string) KeyManager {
 }
 
 func (k KeyManager) Add(name, password string) (string, string, error) {
-	address, mnemonic, err := k.Insert(name, password)
-	return address, mnemonic, errors.Wrap(errors.ErrTodo, err.Error())
+	return k.Insert(name, password)
 }
 
 func (k KeyManager) Sign(name, password string, data []byte) ([]byte, tmcrypto.PubKey, error) {
@@ -214,33 +213,27 @@ func NewKeysClient(cfg types.ClientConfig, keyManager types.KeyManager) Client {
 }
 
 func (k keysClient) Add(name, password string) (string, string, error) {
-	address, mnemonic, err := k.Insert(name, password)
-	return address, mnemonic, errors.Wrap(errors.ErrTodo, err.Error())
+	return k.Insert(name, password)
 }
 
 func (k keysClient) Recover(name, password, mnemonic string) (string, error) {
-	address, err := k.KeyManager.Recover(name, password, mnemonic, "")
-	return address, errors.Wrap(errors.ErrTodo, err.Error())
+	return k.KeyManager.Recover(name, password, mnemonic, "")
 }
 
 func (k keysClient) RecoverWithHDPath(name, password, mnemonic, hdPath string) (string, error) {
-	address, err := k.KeyManager.Recover(name, password, mnemonic, hdPath)
-	return address, errors.Wrap(errors.ErrTodo, err.Error())
+	return k.KeyManager.Recover(name, password, mnemonic, hdPath)
 }
 
 func (k keysClient) Import(name, password, privKeyArmor string) (string, error) {
-	address, err := k.KeyManager.Import(name, password, privKeyArmor)
-	return address, errors.Wrap(errors.ErrTodo, err.Error())
+	return k.KeyManager.Import(name, password, privKeyArmor)
 }
 
 func (k keysClient) Export(name, password string) (string, error) {
-	keystore, err := k.KeyManager.Export(name, password)
-	return keystore, errors.Wrap(errors.ErrTodo, err.Error())
+	return k.KeyManager.Export(name, password)
 }
 
 func (k keysClient) Delete(name, password string) error {
-	err := k.KeyManager.Delete(name, password)
-	return errors.Wrap(errors.ErrTodo, err.Error())
+	return k.KeyManager.Delete(name, password)
 }
 
 func (k keysClient) Show(name, password string) (string, error) {

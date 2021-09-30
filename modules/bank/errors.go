@@ -7,5 +7,5 @@ import (
 const Codespace = ModuleName
 
 var (
-	ErrTodo = errors.Register(Codespace, 2, "tx parse error")
+	ErrTodo = errors.Register(Codespace, 2, "error todo")
 )
