@@ -5,8 +5,6 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 
-	"github.com/tendermint/tendermint/crypto"
-
 	"github.com/irisnet/core-sdk-go/codec"
 	codectypes "github.com/irisnet/core-sdk-go/codec/types"
 	cryptotypes "github.com/irisnet/core-sdk-go/crypto/types"
@@ -132,7 +130,7 @@ func (acc *BaseAccount) ConvertAccount(cdc codec.Codec) interface{} {
 		return account
 	}
 
-	var pk crypto.PubKey
+	var pk cryptotypes.PubKey
 	if err := cdc.UnpackAny(acc.PubKey, &pk); err != nil {
 		return types.BaseAccount{}
 	}
