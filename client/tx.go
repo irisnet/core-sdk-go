@@ -44,7 +44,23 @@ func (base baseClient) QueryTxs(builder *types.EventQueryBuilder, page, size *in
 		TotalCount: res.TotalCount,
 	}, nil
 }
+func (base baseClient) QueryBlock(height int64) (types.BlockDetail, error) {
+	block, err := base.Block(context.Background(), &height)
+	if err != nil {
+		return types.BlockDetail{}, err
+	}
 
+	blockResult, err := base.BlockResults(context.Background(), &height)
+	if err != nil {
+		return types.BlockDetail{}, err
+	}
+
+	return types.BlockDetail{
+		BlockID:     block.BlockID,
+		Block:       types.ParseBlock(base.encodingConfig.TxConfig.TxDecoder(), block.Block),
+		BlockResult: types.ParseBlockResult(blockResult),
+	}, nil
+}
 func (base baseClient) EstimateTxGas(txBytes []byte) (uint64, error) {
 	res, err := base.ABCIQuery(context.Background(), "/app/simulate", txBytes)
 	if err != nil {
