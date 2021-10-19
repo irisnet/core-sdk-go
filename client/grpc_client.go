@@ -1,6 +1,8 @@
 package client
 
 import (
+	grpc1 "github.com/gogo/protobuf/grpc"
+
 	"github.com/prometheus/common/promlog"
 	"google.golang.org/grpc"
 
@@ -8,7 +10,7 @@ import (
 )
 
 type grpcClient struct {
-	clientConn *grpc.ClientConn
+	clientConn grpc1.ClientConn
 }
 
 func NewGRPCClient(url string) types.GRPCClient {
@@ -20,9 +22,10 @@ func NewGRPCClient(url string) types.GRPCClient {
 		_ = promlog.New(&promlog.Config{}).Log(err.Error())
 		panic(err)
 	}
-	return &grpcClient{clientConn: clientConn}
+	conn := grpc1.ClientConn(clientConn)
+	return grpcClient{clientConn: conn}
 }
 
-func (g grpcClient) GenConn() (*grpc.ClientConn, error) {
+func (g grpcClient) GenConn() (grpc1.ClientConn, error) {
 	return g.clientConn, nil
 }

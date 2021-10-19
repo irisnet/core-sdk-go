@@ -8,9 +8,8 @@ import (
 	"time"
 
 	"github.com/avast/retry-go"
+	grpc1 "github.com/gogo/protobuf/grpc"
 	"github.com/gogo/protobuf/proto"
-	"google.golang.org/grpc"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/log"
@@ -87,7 +86,7 @@ func (base *baseClient) Marshaler() codec.Codec {
 	return base.encodingConfig.Codec
 }
 
-func (base *baseClient) GenConn() (*grpc.ClientConn, error) {
+func (base *baseClient) GenConn() (*grpc1.ClientConn, error) {
 	return base.AccountQuery.GenConn()
 }
 

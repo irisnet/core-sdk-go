@@ -1,7 +1,7 @@
 package types
 
 import (
-	"google.golang.org/grpc"
+	grpc1 "github.com/gogo/protobuf/grpc"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -24,7 +24,7 @@ type Queries interface {
 }
 
 type GRPCClient interface {
-	GenConn() (*grpc.ClientConn, error)
+	GenConn() (grpc1.ClientConn, error)
 }
 
 type ParamQuery interface {
