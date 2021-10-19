@@ -92,7 +92,7 @@ func (base *baseClient) Marshaler() commoncodec.Marshaler {
 	return base.encodingConfig.Marshaler
 }
 
-func (base *baseClient) GenConn() (*grpc1.ClientConn, error) {
+func (base *baseClient) GenConn() (grpc1.ClientConn, error) {
 	return base.AccountQuery.GenConn()
 }
 
