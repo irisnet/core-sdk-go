@@ -27,3 +27,4 @@ func (TokenManager DefaultTokenManager) ToMainCoin(coins ...Coin) (DecCoins, err
 	}
 	return decCoins, nil
 }
+func (TokenManager DefaultTokenManager)SaveTokens(tokens ...Token) {}
