@@ -22,7 +22,7 @@ const (
 	grpcAddr = "localhost:9090"
 	chainID  = "test"
 	charset  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	addr     = "iaa1w9lvhwlvkwqvg08q84n2k4nn896u9pqx93velx"
+	addr     = "iaa1x6nrhlx2he9kw73x8qcwgsl9tznh6z52msdkwx"
 )
 
 type IntegrationTestSuite struct {
