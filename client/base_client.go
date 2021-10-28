@@ -86,7 +86,7 @@ func (base *baseClient) Marshaler() codec.Codec {
 	return base.encodingConfig.Codec
 }
 
-func (base *baseClient) GenConn() (*grpc1.ClientConn, error) {
+func (base *baseClient) GenConn() (grpc1.ClientConn, error) {
 	return base.AccountQuery.GenConn()
 }
 

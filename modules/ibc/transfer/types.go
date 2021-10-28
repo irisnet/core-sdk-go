@@ -18,7 +18,7 @@ var _ types.Msg = &MsgTransfer{}
 
 func (msg MsgTransfer) ValidateBasic() error {
 	if _, err := types.AccAddressFromBech32(msg.Sender); err != nil {
-		return errors.Wrapf(ErrTodo, "invalid creator")
+		return errors.Wrapf(errors.ErrInvalidAddress, "invalid creator")
 	}
 	return nil
 }

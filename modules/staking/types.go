@@ -83,35 +83,35 @@ func (msg MsgCreateValidator) ValidateBasic() error {
 		return err
 	}
 	if delAddr.Empty() {
-		return errors.Wrapf(ErrTodo, "missing delegatorAddr")
+		return errors.Wrapf(errors.ErrInvalidAddress, "missing delegatorAddr")
 	}
 
 	if msg.ValidatorAddress == "" {
-		return errors.Wrapf(ErrTodo, "missing validatorAddr")
+		return errors.Wrapf(errors.ErrInvalidAddress, "missing validatorAddr")
 	}
 
 	valAddr, err := sdk.ValAddressFromBech32(msg.ValidatorAddress)
 	if err != nil {
-		return errors.Wrap(ErrTodo, err.Error())
+		return errors.Wrap(errors.ErrInvalidAddress, err.Error())
 	}
 	if !sdk.AccAddress(valAddr).Equals(delAddr) {
-		return errors.Wrapf(ErrTodo, "validatorAddr must equal delegatorAddr, validatorAddr:[%s], delegatorAddr:[%s]", valAddr, delAddr)
+		return errors.Wrapf(errors.ErrInvalidAddress, "validatorAddr must equal delegatorAddr, validatorAddr:[%s], delegatorAddr:[%s]", valAddr, delAddr)
 	}
 
 	if msg.Pubkey == nil {
-		return errors.Wrapf(ErrTodo, "missing validatorPubKey")
+		return errors.Wrapf(errors.ErrInvalidPubKey, "missing validatorPubKey")
 	}
 
 	if msg.Description == (Description{}) {
-		return errors.Wrapf(ErrTodo, "missing description")
+		return errors.Wrapf(ErrInvalidDescription, "missing description")
 	}
 
 	if msg.Commission == (CommissionRates{}) {
-		return errors.Wrapf(ErrTodo, "missing commission")
+		return errors.Wrapf(ErrInvalidCommission, "missing commission")
 	}
 
 	if !msg.MinSelfDelegation.IsPositive() {
-		return errors.Wrapf(ErrTodo, "minSelfDelegation isn't positive")
+		return errors.Wrapf(ErrInvalidMinSelfDelegation, "minSelfDelegation isn't positive")
 	}
 
 	return nil
@@ -132,15 +132,15 @@ func (msg MsgEditValidator) GetSigners() []sdk.AccAddress {
 
 func (msg MsgEditValidator) ValidateBasic() error {
 	if msg.ValidatorAddress == "" {
-		return errors.Wrapf(ErrTodo, "missing validatorAddress")
+		return errors.Wrapf(errors.ErrInvalidAddress, "missing validatorAddress")
 	}
 
 	if msg.Description == (Description{}) {
-		return errors.Wrapf(ErrTodo, "missing description")
+		return errors.Wrapf(ErrInvalidDescription, "missing description")
 	}
 
 	if msg.MinSelfDelegation != nil && !msg.MinSelfDelegation.IsPositive() {
-		return errors.Wrapf(ErrTodo, "minSelfDelegation isn't positive")
+		return errors.Wrapf(ErrInvalidMinSelfDelegation, "minSelfDelegation isn't positive")
 	}
 
 	return nil
@@ -156,15 +156,15 @@ func (msg MsgDelegate) GetSigners() []sdk.AccAddress {
 
 func (msg MsgDelegate) ValidateBasic() error {
 	if msg.DelegatorAddress == "" {
-		return errors.Wrapf(ErrTodo, "missing delegatorAddress")
+		return errors.Wrapf(errors.ErrInvalidAddress, "missing delegatorAddress")
 	}
 
 	if msg.ValidatorAddress == "" {
-		return errors.Wrapf(ErrTodo, "missing errEmptyValidatorAddr")
+		return errors.Wrapf(errors.ErrInvalidAddress, "missing errEmptyValidatorAddr")
 	}
 
 	if !msg.Amount.IsValid() || !msg.Amount.Amount.IsPositive() {
-		return errors.Wrapf(ErrTodo, "amount isn't positive or valid")
+		return errors.Wrapf(ErrInvalidAmount, "amount isn't positive or valid")
 	}
 
 	return nil
@@ -180,19 +180,19 @@ func (msg MsgBeginRedelegate) GetSigners() []sdk.AccAddress {
 
 func (msg MsgBeginRedelegate) ValidateBasic() error {
 	if msg.DelegatorAddress == "" {
-		return errors.Wrapf(ErrTodo, "missing delegatorAddress")
+		return errors.Wrapf(errors.ErrInvalidAddress, "missing delegatorAddress")
 	}
 
 	if msg.ValidatorSrcAddress == "" {
-		return errors.Wrapf(ErrTodo, "missing validatorSrcAddress")
+		return errors.Wrapf(errors.ErrInvalidAddress, "missing validatorSrcAddress")
 	}
 
 	if msg.ValidatorDstAddress == "" {
-		return errors.Wrapf(ErrTodo, "missing validatorDstAddress")
+		return errors.Wrapf(errors.ErrInvalidAddress, "missing validatorDstAddress")
 	}
 
 	if !msg.Amount.IsValid() || !msg.Amount.Amount.IsPositive() {
-		return errors.Wrapf(ErrTodo, "amount isn't positive or valid")
+		return errors.Wrapf(ErrInvalidAmount, "amount isn't positive or valid")
 	}
 
 	return nil
@@ -208,15 +208,15 @@ func (msg MsgUndelegate) GetSigners() []sdk.AccAddress {
 
 func (msg MsgUndelegate) ValidateBasic() error {
 	if msg.DelegatorAddress == "" {
-		return errors.Wrapf(ErrTodo, "missing delegatorAddr")
+		return errors.Wrapf(errors.ErrInvalidAddress, "missing delegatorAddr")
 	}
 
 	if msg.ValidatorAddress == "" {
-		return errors.Wrapf(ErrTodo, "missing validatorAddress")
+		return errors.Wrapf(errors.ErrInvalidAddress, "missing validatorAddress")
 	}
 
 	if !msg.Amount.IsValid() || !msg.Amount.Amount.IsPositive() {
-		return errors.Wrapf(ErrTodo, "amount isn't positive or valid")
+		return errors.Wrapf(ErrInvalidAmount, "amount isn't positive or valid")
 	}
 
 	return nil

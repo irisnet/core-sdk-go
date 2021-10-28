@@ -36,16 +36,16 @@ func (sc stakingClient) RegisterInterfaceTypes(registry codectypes.InterfaceRegi
 func (sc stakingClient) CreateValidator(request CreateValidatorRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	delegatorAddr, err := sc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrQueryAddress, err.Error())
 	}
 	valAddr, err := types.ValAddressFromBech32(delegatorAddr.String())
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(errors.ErrInvalidAddress, err.Error())
 	}
 
 	values, err := sc.ToMinCoin(request.Value)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrToMinCoin, err.Error())
 	}
 
 	// pk, err := types.GetPubKeyFromBech32(types.Bech32PubKeyTypeConsPub, request.Pubkey)
@@ -59,12 +59,12 @@ func (sc stakingClient) CreateValidator(request CreateValidatorRequest, baseTx t
 
 	var pk cryptotypes.PubKey
 	if err := sc.Codec.UnmarshalInterfaceJSON([]byte(request.Pubkey), &pk); err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(errors.ErrInvalidPubKey, err.Error())
 	}
 
 	pkAny, err := codectypes.NewAnyWithValue(pk)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrNewAnyWithValue, err.Error())
 	}
 
 	msg := &MsgCreateValidator{
@@ -87,11 +87,11 @@ func (sc stakingClient) CreateValidator(request CreateValidatorRequest, baseTx t
 func (sc stakingClient) EditValidator(request EditValidatorRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	delegatorAddr, err := sc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrQueryAddress, err.Error())
 	}
 	valAddr, err := types.ValAddressFromBech32(delegatorAddr.String())
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(errors.ErrInvalidAddress, err.Error())
 	}
 
 	msg := &MsgEditValidator{
@@ -112,12 +112,12 @@ func (sc stakingClient) EditValidator(request EditValidatorRequest, baseTx types
 func (sc stakingClient) Delegate(request DelegateRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	delegatorAddr, err := sc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrQueryAddress, err.Error())
 	}
 
 	coins, err := sc.ToMinCoin(request.Amount)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrToMinCoin, err.Error())
 	}
 
 	msg := &MsgDelegate{
@@ -131,12 +131,12 @@ func (sc stakingClient) Delegate(request DelegateRequest, baseTx types.BaseTx) (
 func (sc stakingClient) Undelegate(request UndelegateRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	delegatorAddr, err := sc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrQueryAddress, err.Error())
 	}
 
 	coins, err := sc.ToMinCoin(request.Amount)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrToMinCoin, err.Error())
 	}
 	msg := &MsgUndelegate{
 		DelegatorAddress: delegatorAddr.String(),
@@ -149,12 +149,12 @@ func (sc stakingClient) Undelegate(request UndelegateRequest, baseTx types.BaseT
 func (sc stakingClient) BeginRedelegate(request BeginRedelegateRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	delegatorAddr, err := sc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrQueryAddress, err.Error())
 	}
 
 	coins, err := sc.ToMinCoin(request.Amount)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrToMinCoin, err.Error())
 	}
 	msg := &MsgBeginRedelegate{
 		DelegatorAddress:    delegatorAddr.String(),
@@ -171,7 +171,7 @@ func (sc stakingClient) QueryValidators(status string, page, size uint64) (Query
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryValidatorsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryValidatorsResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	offset, limit := types.ParsePage(page, size)
@@ -187,7 +187,7 @@ func (sc stakingClient) QueryValidators(status string, page, size uint64) (Query
 		},
 	)
 	if err != nil {
-		return QueryValidatorsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryValidatorsResp{}, errors.Wrap(ErrQueryValidator, err.Error())
 	}
 	return res.Convert(sc.Codec).(QueryValidatorsResp), nil
 }
@@ -196,7 +196,7 @@ func (sc stakingClient) QueryValidator(validatorAddr string) (QueryValidatorResp
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryValidatorResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryValidatorResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).Validator(
@@ -206,7 +206,7 @@ func (sc stakingClient) QueryValidator(validatorAddr string) (QueryValidatorResp
 		},
 	)
 	if err != nil {
-		return QueryValidatorResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryValidatorResp{}, errors.Wrap(ErrQueryValidator, err.Error())
 	}
 	return res.Validator.Convert(sc.Codec).(QueryValidatorResp), nil
 }
@@ -215,7 +215,7 @@ func (sc stakingClient) QueryValidatorDelegations(validatorAddr string, page, si
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryValidatorDelegationsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryValidatorDelegationsResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	offset, limit := types.ParsePage(page, size)
@@ -231,7 +231,7 @@ func (sc stakingClient) QueryValidatorDelegations(validatorAddr string, page, si
 		},
 	)
 	if err != nil {
-		return QueryValidatorDelegationsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryValidatorDelegationsResp{}, errors.Wrap(ErrQueryValidatorDelegations, err.Error())
 	}
 	return res.Convert().(QueryValidatorDelegationsResp), nil
 }
@@ -240,7 +240,7 @@ func (sc stakingClient) QueryValidatorUnbondingDelegations(validatorAddr string,
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryValidatorUnbondingDelegationsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryValidatorUnbondingDelegationsResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	offset, limit := types.ParsePage(page, size)
@@ -256,7 +256,7 @@ func (sc stakingClient) QueryValidatorUnbondingDelegations(validatorAddr string,
 		},
 	)
 	if err != nil {
-		return QueryValidatorUnbondingDelegationsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryValidatorUnbondingDelegationsResp{}, errors.Wrap(ErrQueryValidatorUnbondingDelegations, err.Error())
 	}
 	return res.Convert().(QueryValidatorUnbondingDelegationsResp), nil
 }
@@ -265,7 +265,7 @@ func (sc stakingClient) QueryDelegation(delegatorAddr string, validatorAddr stri
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryDelegationResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryDelegationResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).Delegation(
@@ -276,7 +276,7 @@ func (sc stakingClient) QueryDelegation(delegatorAddr string, validatorAddr stri
 		},
 	)
 	if err != nil {
-		return QueryDelegationResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryDelegationResp{}, errors.Wrap(ErrQueryDelegation, err.Error())
 	}
 	return res.DelegationResponse.Convert().(QueryDelegationResp), nil
 }
@@ -285,7 +285,7 @@ func (sc stakingClient) QueryUnbondingDelegation(delegatorAddr string, validator
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryUnbondingDelegationResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryUnbondingDelegationResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).UnbondingDelegation(
@@ -296,7 +296,7 @@ func (sc stakingClient) QueryUnbondingDelegation(delegatorAddr string, validator
 		},
 	)
 	if err != nil {
-		return QueryUnbondingDelegationResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryUnbondingDelegationResp{}, errors.Wrap(ErrQueryUnbondingDelegation, err.Error())
 	}
 	return res.Unbond.Convert().(QueryUnbondingDelegationResp), nil
 }
@@ -305,7 +305,7 @@ func (sc stakingClient) QueryDelegatorDelegations(delegatorAddr string, page, si
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryDelegatorDelegationsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryDelegatorDelegationsResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	offset, limit := types.ParsePage(page, size)
@@ -321,7 +321,7 @@ func (sc stakingClient) QueryDelegatorDelegations(delegatorAddr string, page, si
 		},
 	)
 	if err != nil {
-		return QueryDelegatorDelegationsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryDelegatorDelegationsResp{}, errors.Wrap(ErrQueryDelegatorDelegations, err.Error())
 	}
 	return res.Convert().(QueryDelegatorDelegationsResp), nil
 }
@@ -330,7 +330,7 @@ func (sc stakingClient) QueryDelegatorUnbondingDelegations(delegatorAddr string,
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryDelegatorUnbondingDelegationsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryDelegatorUnbondingDelegationsResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	offset, limit := types.ParsePage(page, size)
@@ -346,7 +346,7 @@ func (sc stakingClient) QueryDelegatorUnbondingDelegations(delegatorAddr string,
 		},
 	)
 	if err != nil {
-		return QueryDelegatorUnbondingDelegationsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryDelegatorUnbondingDelegationsResp{}, errors.Wrap(ErrQueryDelegatorUnbondingDelegations, err.Error())
 	}
 	return res.Convert().(QueryDelegatorUnbondingDelegationsResp), nil
 }
@@ -355,7 +355,7 @@ func (sc stakingClient) QueryRedelegations(request QueryRedelegationsReq) (Query
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryRedelegationsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryRedelegationsResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	offset, limit := types.ParsePage(request.Page, request.Size)
@@ -373,7 +373,7 @@ func (sc stakingClient) QueryRedelegations(request QueryRedelegationsReq) (Query
 		},
 	)
 	if err != nil {
-		return QueryRedelegationsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryRedelegationsResp{}, errors.Wrap(ErrQueryRedelegations, err.Error())
 	}
 	return res.Convert().(QueryRedelegationsResp), nil
 }
@@ -382,7 +382,7 @@ func (sc stakingClient) QueryDelegatorValidators(delegatorAddr string, page, siz
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryDelegatorValidatorsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryDelegatorValidatorsResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	offset, limit := types.ParsePage(page, size)
@@ -398,7 +398,7 @@ func (sc stakingClient) QueryDelegatorValidators(delegatorAddr string, page, siz
 		},
 	)
 	if err != nil {
-		return QueryDelegatorValidatorsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryDelegatorValidatorsResp{}, errors.Wrap(ErrQueryDelegatorValidators, err.Error())
 	}
 	return res.Convert(sc.Codec).(QueryDelegatorValidatorsResp), nil
 }
@@ -407,7 +407,7 @@ func (sc stakingClient) QueryDelegatorValidator(delegatorAddr string, validatorA
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryValidatorResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryValidatorResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).DelegatorValidator(
@@ -418,7 +418,7 @@ func (sc stakingClient) QueryDelegatorValidator(delegatorAddr string, validatorA
 		},
 	)
 	if err != nil {
-		return QueryValidatorResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryValidatorResp{}, errors.Wrap(ErrQueryDelegatorValidator, err.Error())
 	}
 	return res.Validator.Convert(sc.Codec).(QueryValidatorResp), nil
 }
@@ -428,7 +428,7 @@ func (sc stakingClient) QueryHistoricalInfo(height int64) (QueryHistoricalInfoRe
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryHistoricalInfoResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryHistoricalInfoResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).HistoricalInfo(
@@ -438,7 +438,7 @@ func (sc stakingClient) QueryHistoricalInfo(height int64) (QueryHistoricalInfoRe
 		},
 	)
 	if err != nil {
-		return QueryHistoricalInfoResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryHistoricalInfoResp{}, errors.Wrap(ErrQueryHistoricalInfo, err.Error())
 	}
 	return res.Convert(sc.Codec).(QueryHistoricalInfoResp), nil
 }
@@ -447,7 +447,7 @@ func (sc stakingClient) QueryPool() (QueryPoolResp, error) {
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryPoolResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryPoolResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).Pool(
@@ -455,7 +455,7 @@ func (sc stakingClient) QueryPool() (QueryPoolResp, error) {
 		&QueryPoolRequest{},
 	)
 	if err != nil {
-		return QueryPoolResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryPoolResp{}, errors.Wrap(ErrQueryPool, err.Error())
 	}
 
 	return QueryPoolResp{
@@ -468,7 +468,7 @@ func (sc stakingClient) QueryParams() (QueryParamsResp, error) {
 	conn, err := sc.GenConn()
 
 	if err != nil {
-		return QueryParamsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryParamsResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).Params(
@@ -476,7 +476,7 @@ func (sc stakingClient) QueryParams() (QueryParamsResp, error) {
 		&QueryParamsRequest{},
 	)
 	if err != nil {
-		return QueryParamsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryParamsResp{}, errors.Wrap(ErrQueryParams, err.Error())
 	}
 	return res.Convert().(QueryParamsResp), nil
 }

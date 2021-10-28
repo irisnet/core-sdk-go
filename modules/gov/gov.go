@@ -36,33 +36,33 @@ func (gc govClient) RegisterInterfaceTypes(registry codetypes.InterfaceRegistry)
 func (gc govClient) SubmitProposal(request SubmitProposalRequest, baseTx types.BaseTx) (uint64, ctypes.ResultTx, error) {
 	proposer, err := gc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return 0, ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return 0, ctypes.ResultTx{}, errors.Wrap(ErrQueryAddress, err.Error())
 	}
 
 	deposit, err := gc.ToMinCoin(request.InitialDeposit...)
 	if err != nil {
-		return 0, ctypes.ResultTx{}, errors.Wrapf(ErrTodo, err.Error())
+		return 0, ctypes.ResultTx{}, errors.Wrapf(ErrToMinCoin, err.Error())
 	}
 
 	content := ContentFromProposalType(request.Title, request.Description, request.Type)
 	msg, err := NewMsgSubmitProposal(content, deposit, proposer)
 	if err != nil {
-		return 0, ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return 0, ctypes.ResultTx{}, errors.Wrap(ErrNewMsgSubmitProposal, err.Error())
 	}
 
 	result, err := gc.BuildAndSend([]types.Msg{msg}, baseTx)
 	if err != nil {
-		return 0, ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return 0, ctypes.ResultTx{}, errors.Wrap(ErrBuildAndSend, err.Error())
 	}
 
 	proposalIdStr, err := types.StringifyEvents(result.TxResult.Events).GetValue(types.EventTypeSubmitProposal, AttributeKeyProposalID)
 	if err != nil {
-		return 0, result, errors.Wrap(ErrTodo, err.Error())
+		return 0, result, errors.Wrap(ErrEvensGetValue, err.Error())
 	}
 
 	proposalId, err := strconv.Atoi(proposalIdStr)
 	if err != nil {
-		return 0, result, errors.Wrap(ErrTodo, err.Error())
+		return 0, result, errors.Wrap(ErrStrconvAtoi, err.Error())
 	}
 	return uint64(proposalId), result, err
 }
@@ -70,12 +70,12 @@ func (gc govClient) SubmitProposal(request SubmitProposalRequest, baseTx types.B
 func (gc govClient) Deposit(request DepositRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	depositor, err := gc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrQueryAddress, err.Error())
 	}
 
 	amount, err := gc.ToMinCoin(request.Amount...)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrToMinCoin, err.Error())
 	}
 
 	msg := &MsgDeposit{
@@ -90,7 +90,7 @@ func (gc govClient) Deposit(request DepositRequest, baseTx types.BaseTx) (ctypes
 func (gc govClient) Vote(request VoteRequest, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	voter, err := gc.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
+		return ctypes.ResultTx{}, errors.Wrap(ErrQueryAddress, err.Error())
 	}
 
 	option := VoteOption_value[request.Option]
@@ -106,7 +106,7 @@ func (gc govClient) QueryProposal(proposalId uint64) (QueryProposalResp, error) 
 	conn, err := gc.GenConn()
 
 	if err != nil {
-		return QueryProposalResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryProposalResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).Proposal(
@@ -115,7 +115,7 @@ func (gc govClient) QueryProposal(proposalId uint64) (QueryProposalResp, error) 
 			ProposalId: proposalId,
 		})
 	if err != nil {
-		return QueryProposalResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryProposalResp{}, errors.Wrap(ErrQueryProposal, err.Error())
 	}
 	return res.Proposal.Convert().(QueryProposalResp), nil
 }
@@ -126,7 +126,7 @@ func (gc govClient) QueryProposals(proposalStatus string) ([]QueryProposalResp, 
 	conn, err := gc.GenConn()
 
 	if err != nil {
-		return nil, errors.Wrap(ErrTodo, err.Error())
+		return nil, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).Proposals(
@@ -140,7 +140,7 @@ func (gc govClient) QueryProposals(proposalStatus string) ([]QueryProposalResp, 
 			},
 		})
 	if err != nil {
-		return nil, errors.Wrap(ErrTodo, err.Error())
+		return nil, errors.Wrap(ErrQueryProposal, err.Error())
 	}
 	return Proposals(res.Proposals).Convert().([]QueryProposalResp), nil
 }
@@ -150,7 +150,7 @@ func (gc govClient) QueryVote(proposalId uint64, voter string) (QueryVoteResp, e
 	conn, err := gc.GenConn()
 
 	if err != nil {
-		return QueryVoteResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryVoteResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).Vote(
@@ -160,7 +160,7 @@ func (gc govClient) QueryVote(proposalId uint64, voter string) (QueryVoteResp, e
 			Voter:      voter,
 		})
 	if err != nil {
-		return QueryVoteResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryVoteResp{}, errors.Wrap(ErrQueryVote, err.Error())
 	}
 	return res.Vote.Convert().(QueryVoteResp), nil
 }
@@ -169,7 +169,7 @@ func (gc govClient) QueryVotes(proposalId uint64) ([]QueryVoteResp, error) {
 	conn, err := gc.GenConn()
 
 	if err != nil {
-		return nil, errors.Wrap(ErrTodo, err.Error())
+		return nil, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).Votes(
@@ -183,7 +183,7 @@ func (gc govClient) QueryVotes(proposalId uint64) ([]QueryVoteResp, error) {
 			},
 		})
 	if err != nil {
-		return nil, errors.Wrap(ErrTodo, err.Error())
+		return nil, errors.Wrap(ErrQueryVotes, err.Error())
 	}
 	return Votes(res.Votes).Convert().([]QueryVoteResp), nil
 }
@@ -193,7 +193,7 @@ func (gc govClient) QueryParams(paramsType string) (QueryParamsResp, error) {
 	conn, err := gc.GenConn()
 
 	if err != nil {
-		return QueryParamsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryParamsResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).Params(
@@ -203,7 +203,7 @@ func (gc govClient) QueryParams(paramsType string) (QueryParamsResp, error) {
 		},
 	)
 	if err != nil {
-		return QueryParamsResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryParamsResp{}, errors.Wrap(ErrQueryParams, err.Error())
 	}
 	return res.Convert().(QueryParamsResp), nil
 }
@@ -212,7 +212,7 @@ func (gc govClient) QueryDeposit(proposalId uint64, depositor string) (QueryDepo
 	conn, err := gc.GenConn()
 
 	if err != nil {
-		return QueryDepositResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryDepositResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).Deposit(
@@ -223,7 +223,7 @@ func (gc govClient) QueryDeposit(proposalId uint64, depositor string) (QueryDepo
 		},
 	)
 	if err != nil {
-		return QueryDepositResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryDepositResp{}, errors.Wrap(ErrQueryDeposit, err.Error())
 	}
 	return res.Deposit.Convert().(QueryDepositResp), nil
 }
@@ -232,7 +232,7 @@ func (gc govClient) QueryDeposits(proposalId uint64) ([]QueryDepositResp, error)
 	conn, err := gc.GenConn()
 
 	if err != nil {
-		return nil, errors.Wrap(ErrTodo, err.Error())
+		return nil, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).Deposits(
@@ -247,7 +247,7 @@ func (gc govClient) QueryDeposits(proposalId uint64) ([]QueryDepositResp, error)
 		},
 	)
 	if err != nil {
-		return nil, errors.Wrap(ErrTodo, err.Error())
+		return nil, errors.Wrap(ErrQueryDeposit, err.Error())
 	}
 	return Deposits(res.Deposits).Convert().([]QueryDepositResp), nil
 }
@@ -256,7 +256,7 @@ func (gc govClient) QueryTallyResult(proposalId uint64) (QueryTallyResultResp, e
 	conn, err := gc.GenConn()
 
 	if err != nil {
-		return QueryTallyResultResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryTallyResultResp{}, errors.Wrap(ErrGenConn, err.Error())
 	}
 
 	res, err := NewQueryClient(conn).TallyResult(
@@ -266,7 +266,7 @@ func (gc govClient) QueryTallyResult(proposalId uint64) (QueryTallyResultResp, e
 		},
 	)
 	if err != nil {
-		return QueryTallyResultResp{}, errors.Wrap(ErrTodo, err.Error())
+		return QueryTallyResultResp{}, errors.Wrap(ErrQueryTallyResult, err.Error())
 	}
 	return res.Tally.Convert().(QueryTallyResultResp), nil
 }
