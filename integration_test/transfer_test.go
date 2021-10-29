@@ -18,6 +18,6 @@ func (s IntegrationTestSuite) TestTransfer() {
 	Request := transfer.TransferRequest{}
 
 	result, err := s.Transfer.Transfer(Request, baseTx)
-	require.NoError(s.T(), err)
-	require.NotEmpty(s.T(), result.Hash)
+	require.Error(s.T(), err)
+	require.Empty(s.T(), result.Hash)
 }
