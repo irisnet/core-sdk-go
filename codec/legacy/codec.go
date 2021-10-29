@@ -1,10 +1,10 @@
 package legacy
 
 import (
-	"github.com/tendermint/tendermint/crypto"
-
 	"github.com/irisnet/core-sdk-go/codec"
 	cryptocodec "github.com/irisnet/core-sdk-go/crypto/codec"
+	cyptotypes "github.com/irisnet/core-sdk-go/crypto/types"
+	"github.com/tendermint/tendermint/crypto"
 )
 
 // Cdc defines a global generic sealed Amino codec to be used throughout sdk. It
@@ -27,7 +27,7 @@ func PrivKeyFromBytes(privKeyBytes []byte) (privKey crypto.PrivKey, err error) {
 }
 
 // PubKeyFromBytes unmarshals public key bytes and returns a PubKey
-func PubKeyFromBytes(pubKeyBytes []byte) (pubKey crypto.PubKey, err error) {
+func PubKeyFromBytes(pubKeyBytes []byte) (pubKey cyptotypes.PubKey, err error) {
 	err = Cdc.Unmarshal(pubKeyBytes, &pubKey)
 	return
 }

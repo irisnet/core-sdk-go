@@ -19,12 +19,12 @@ func (m *PrivKey) PubKey() tmcrypto.PubKey {
 
 // String implements SDK proto.Message interface.
 func (m *PrivKey) String() string {
-	return m.Secret.String(name)
+	return m.Secret.String(KeyType)
 }
 
-// Type returns key type name. Implements SDK PrivKey interface.
+// Type returns key type KeyType. Implements SDK PrivKey interface.
 func (m *PrivKey) Type() string {
-	return name
+	return KeyType
 }
 
 // Sign hashes and signs the message usign ECDSA. Implements sdk.PrivKey interface.
