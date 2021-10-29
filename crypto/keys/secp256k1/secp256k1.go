@@ -22,7 +22,7 @@ var _ codec.AminoMarshaler = &PrivKey{}
 
 const (
 	PrivKeySize = 32
-	keyType     = "secp256k1"
+	KeyType     = "secp256k1"
 	PrivKeyName = "tendermint/PrivKeySecp256k1"
 	PubKeyName  = "tendermint/PubKeySecp256k1"
 )
@@ -47,7 +47,7 @@ func (privKey *PrivKey) Equals(other tmcrypto.PrivKey) bool {
 }
 
 func (privKey *PrivKey) Type() string {
-	return keyType
+	return KeyType
 }
 
 // MarshalAmino overrides Amino binary marshalling.
@@ -167,7 +167,7 @@ func (pubKey *PubKey) String() string {
 }
 
 func (pubKey *PubKey) Type() string {
-	return keyType
+	return KeyType
 }
 
 func (pubKey *PubKey) Equals(other tmcrypto.PubKey) bool {

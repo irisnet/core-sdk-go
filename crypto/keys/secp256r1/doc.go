@@ -15,7 +15,7 @@ const (
 	fieldSize  = 32
 	pubKeySize = fieldSize + 1
 
-	name = "secp256r1"
+	KeyType = "secp256r1"
 )
 
 var secp256r1 elliptic.Curve

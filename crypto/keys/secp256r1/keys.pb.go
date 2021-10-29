@@ -27,7 +27,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type PubKey struct {
 	// Point on secp256r1 curve in a compressed representation as specified in section
 	// 4.3.6 of ANSI X9.62: https://webstore.ansi.org/standards/ascx9/ansix9621998
-	Key *ecdsaPK `protobuf:"bytes,1,opt,name=key,proto3,customtype=ecdsaPK" json:"key,omitempty"`
+	Key *ecdsaPK `protobuf:"bytes,1,opt,KeyType=key,proto3,customtype=ecdsaPK" json:"key,omitempty"`
 }
 
 func (m *PubKey) Reset()      { *m = PubKey{} }
@@ -69,7 +69,7 @@ func (*PubKey) XXX_MessageName() string {
 // PrivKey defines a secp256r1 ECDSA private key.
 type PrivKey struct {
 	// secret number serialized using big-endian encoding
-	Secret *ecdsaSK `protobuf:"bytes,1,opt,name=secret,proto3,customtype=ecdsaSK" json:"secret,omitempty"`
+	Secret *ecdsaSK `protobuf:"bytes,1,opt,KeyType=secret,proto3,customtype=ecdsaSK" json:"secret,omitempty"`
 }
 
 func (m *PrivKey) Reset()      { *m = PrivKey{} }

@@ -32,7 +32,7 @@ const (
 	// private key representations used by RFC 8032.
 	SeedSize = 32
 
-	keyType = "ed25519"
+	KeyType = "ed25519"
 )
 
 var _ cryptotypes.PrivKey = &PrivKey{}
@@ -88,7 +88,7 @@ func (privKey *PrivKey) Equals(other tmcrypto.PrivKey) bool {
 }
 
 func (privKey *PrivKey) Type() string {
-	return keyType
+	return KeyType
 }
 
 // MarshalAmino overrides Amino binary marshalling.
@@ -187,7 +187,7 @@ func (pubKey *PubKey) String() string {
 }
 
 func (pubKey *PubKey) Type() string {
-	return keyType
+	return KeyType
 }
 
 func (pubKey *PubKey) Equals(other tmcrypto.PubKey) bool {
@@ -240,3 +240,4 @@ func FromTmEd25519(pubKey tmcrypto.PubKey) (*PubKey, error) {
 
 	return &PubKey{Key: []byte(tmPk)}, nil
 }
+

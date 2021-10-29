@@ -47,7 +47,7 @@ func testCreateAndEdit(s IntegrationTestSuite) {
 		MaxRate:           maxRate,
 		MaxChangeRate:     maxChangeRate,
 		MinSelfDelegation: minSelfDelegation,
-		Pubkey:            "",
+		Pubkey:            addr,
 		Value:             value,
 	}
 	res, err := s.Staking.CreateValidator(req1, baseTx)

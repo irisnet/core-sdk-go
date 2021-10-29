@@ -2,12 +2,11 @@ package staking
 
 import (
 	"context"
-
+	"github.com/irisnet/core-sdk-go/codec/legacy"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
 	"github.com/irisnet/core-sdk-go/codec"
 	codectypes "github.com/irisnet/core-sdk-go/codec/types"
-	cryptotypes "github.com/irisnet/core-sdk-go/crypto/types"
 	"github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/core-sdk-go/types/errors"
 	"github.com/irisnet/core-sdk-go/types/query"
@@ -38,7 +37,6 @@ func (sc stakingClient) CreateValidator(request CreateValidatorRequest, baseTx t
 	if err != nil {
 		return ctypes.ResultTx{}, errors.Wrap(ErrQueryAddress, err.Error())
 	}
-	valAddr, err := types.ValAddressFromBech32(delegatorAddr.String())
 	if err != nil {
 		return ctypes.ResultTx{}, errors.Wrap(errors.ErrInvalidAddress, err.Error())
 	}
@@ -48,29 +46,16 @@ func (sc stakingClient) CreateValidator(request CreateValidatorRequest, baseTx t
 		return ctypes.ResultTx{}, errors.Wrap(ErrToMinCoin, err.Error())
 	}
 
-	// pk, err := types.GetPubKeyFromBech32(types.Bech32PubKeyTypeConsPub, request.Pubkey)
-	// if err != nil {
-	// 	return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
-	// }
-	// pkAny, err := codectypes.PackAny(pk)
-	// if err != nil {
-	// 	return ctypes.ResultTx{}, errors.Wrap(ErrTodo, err.Error())
-	// }
-
-	var pk cryptotypes.PubKey
-	if err := sc.Codec.UnmarshalInterfaceJSON([]byte(request.Pubkey), &pk); err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(errors.ErrInvalidPubKey, err.Error())
-	}
-
+	bz, _ := types.GetFromBech32(request.Pubkey, types.GetAddrPrefixCfg().GetBech32AccountAddrPrefix())
+	pk, _ := legacy.PubKeyFromBytes(bz)
 	pkAny, err := codectypes.NewAnyWithValue(pk)
 	if err != nil {
 		return ctypes.ResultTx{}, errors.Wrap(ErrNewAnyWithValue, err.Error())
 	}
-
 	msg := &MsgCreateValidator{
 		Description:      Description{Moniker: request.Moniker},
 		DelegatorAddress: delegatorAddr.String(),
-		ValidatorAddress: valAddr.String(),
+		ValidatorAddress: types.ValAddress(delegatorAddr).String(),
 		Pubkey:           pkAny,
 		Value:            values[0],
 		Commission: CommissionRates{

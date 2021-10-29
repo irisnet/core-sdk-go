@@ -27,7 +27,7 @@ const (
 	PubKeySize    = 33
 	SignatureSize = 64
 
-	keyType = "sm2"
+	KeyType = "sm2"
 )
 
 var _ cryptotypes.PrivKey = &PrivKey{}
@@ -35,7 +35,7 @@ var _ codec.AminoMarshaler = &PrivKey{}
 
 // --------------------------------------------------------
 func (privKey PrivKey) Type() string {
-	return keyType
+	return KeyType
 }
 
 // MarshalAmino overrides Amino binary marshalling.
@@ -179,7 +179,7 @@ func (pubKey PubKey) String() string {
 }
 
 func (pubKey *PubKey) Type() string {
-	return keyType
+	return KeyType
 }
 
 func (pubKey PubKey) Equals(other tmcrypto.PubKey) bool {
