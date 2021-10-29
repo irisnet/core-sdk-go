@@ -2,11 +2,12 @@ package staking
 
 import (
 	"context"
-	"github.com/irisnet/core-sdk-go/codec/legacy"
+
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
 	"github.com/irisnet/core-sdk-go/codec"
 	codectypes "github.com/irisnet/core-sdk-go/codec/types"
+	cryptotypes "github.com/irisnet/core-sdk-go/crypto/types"
 	"github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/core-sdk-go/types/errors"
 	"github.com/irisnet/core-sdk-go/types/query"
@@ -37,17 +38,18 @@ func (sc stakingClient) CreateValidator(request CreateValidatorRequest, baseTx t
 	if err != nil {
 		return ctypes.ResultTx{}, errors.Wrap(ErrQueryAddress, err.Error())
 	}
-	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(errors.ErrInvalidAddress, err.Error())
-	}
 
 	values, err := sc.ToMinCoin(request.Value)
 	if err != nil {
 		return ctypes.ResultTx{}, errors.Wrap(ErrToMinCoin, err.Error())
 	}
 
-	bz, _ := types.GetFromBech32(request.Pubkey, types.GetAddrPrefixCfg().GetBech32AccountAddrPrefix())
-	pk, _ := legacy.PubKeyFromBytes(bz)
+
+	var pk cryptotypes.PubKey
+	if err := sc.Codec.UnmarshalInterfaceJSON([]byte(request.Pubkey), &pk); err != nil {
+		return ctypes.ResultTx{}, errors.Wrap(errors.ErrInvalidPubKey, err.Error())
+	}
+
 	pkAny, err := codectypes.NewAnyWithValue(pk)
 	if err != nil {
 		return ctypes.ResultTx{}, errors.Wrap(ErrNewAnyWithValue, err.Error())
