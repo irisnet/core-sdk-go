@@ -2,11 +2,16 @@ package integration_test
 
 import (
 	"context"
+	"math/rand"
+	"time"
 
-	"github.com/stretchr/testify/require"
+	tmed25519 "github.com/tendermint/tendermint/crypto/ed25519"
+
+	"github.com/irisnet/core-sdk-go/crypto/codec"
 
 	"github.com/irisnet/core-sdk-go/modules/staking"
 	sdk "github.com/irisnet/core-sdk-go/types"
+	"github.com/stretchr/testify/require"
 )
 
 func (s IntegrationTestSuite) TestStaking() {
@@ -35,6 +40,34 @@ func testCreateAndEdit(s IntegrationTestSuite) {
 		Mode:     sdk.Commit,
 		Password: s.Account().Password,
 	}
+	rand.Seed(time.Now().UnixNano())
+
+	name, password := string(rune(rand.Intn(9999999999))), s.RandStringOfLength(8)
+	address, mnemonic, err := s.Key.Add(name, password)
+	require.NoError(s.T(), err)
+	require.NotEmpty(s.T(), address)
+	require.NotEmpty(s.T(), mnemonic)
+	queryAddress, err := s.QueryAddress(name, password)
+	require.NoError(s.T(), err)
+	require.NotEmpty(s.T(), queryAddress)
+
+	_, err = s.Bank.Send(address, sdk.NewDecCoins(sdk.NewDecCoin("iris", sdk.NewInt(100))), baseTx)
+	require.NoError(s.T(), err)
+
+	privkey := tmed25519.GenPrivKey()
+	public255 := privkey.PubKey()
+	sdkPK, err := codec.FromTmPubKeyInterface(public255)
+	require.NoError(s.T(), err)
+	bz, err := s.AppCodec().MarshalInterfaceJSON(sdkPK)
+	require.NoError(s.T(), err)
+
+	stakingBaseTx := sdk.BaseTx{
+		From:     name,
+		Gas:      200000,
+		Memo:     "test",
+		Mode:     sdk.Commit,
+		Password: password,
+	}
 
 	rate := sdk.MustNewDecFromStr("0.1")
 	maxRate := sdk.MustNewDecFromStr("0.1")
@@ -47,16 +80,16 @@ func testCreateAndEdit(s IntegrationTestSuite) {
 		MaxRate:           maxRate,
 		MaxChangeRate:     maxChangeRate,
 		MinSelfDelegation: minSelfDelegation,
-		Pubkey:            addr,
+		Pubkey:            string(bz),
 		Value:             value,
 	}
-	res, err := s.Staking.CreateValidator(req1, baseTx)
+	res, err := s.Staking.CreateValidator(req1, stakingBaseTx)
 	require.NoError(s.T(), err)
 	require.NotEmpty(s.T(), res.Hash)
 
 	// send editValidator tx
 	commissionRate := sdk.MustNewDecFromStr("0.1")
-	minSelfDelegation = sdk.OneInt()
+	minSelfDelegation = sdk.NewInt(2)
 	req2 := staking.EditValidatorRequest{
 		Moniker:           "haha",
 		Identity:          "identity",
@@ -66,7 +99,7 @@ func testCreateAndEdit(s IntegrationTestSuite) {
 		CommissionRate:    commissionRate,
 		MinSelfDelegation: minSelfDelegation,
 	}
-	res, err = s.Staking.EditValidator(req2, baseTx)
+	res, err = s.Staking.EditValidator(req2, stakingBaseTx)
 	require.NoError(s.T(), err)
 	require.NotEmpty(s.T(), res.Hash)
 }

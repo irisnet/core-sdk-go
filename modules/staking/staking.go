@@ -44,7 +44,6 @@ func (sc stakingClient) CreateValidator(request CreateValidatorRequest, baseTx t
 		return ctypes.ResultTx{}, errors.Wrap(ErrToMinCoin, err.Error())
 	}
 
-
 	var pk cryptotypes.PubKey
 	if err := sc.Codec.UnmarshalInterfaceJSON([]byte(request.Pubkey), &pk); err != nil {
 		return ctypes.ResultTx{}, errors.Wrap(errors.ErrInvalidPubKey, err.Error())
@@ -76,10 +75,6 @@ func (sc stakingClient) EditValidator(request EditValidatorRequest, baseTx types
 	if err != nil {
 		return ctypes.ResultTx{}, errors.Wrap(ErrQueryAddress, err.Error())
 	}
-	valAddr, err := types.ValAddressFromBech32(delegatorAddr.String())
-	if err != nil {
-		return ctypes.ResultTx{}, errors.Wrap(errors.ErrInvalidAddress, err.Error())
-	}
 
 	msg := &MsgEditValidator{
 		Description: Description{
@@ -89,8 +84,7 @@ func (sc stakingClient) EditValidator(request EditValidatorRequest, baseTx types
 			SecurityContact: request.SecurityContact,
 			Details:         request.Details,
 		},
-		ValidatorAddress:  valAddr.String(),
-		CommissionRate:    &request.CommissionRate,
+		ValidatorAddress:  types.ValAddress(delegatorAddr).String(),
 		MinSelfDelegation: &request.MinSelfDelegation,
 	}
 	return sc.BuildAndSend([]types.Msg{msg}, baseTx)

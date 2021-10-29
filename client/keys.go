@@ -168,7 +168,7 @@ func (k KeyManager) Find(name, password string) (tmcrypto.PubKey, types.AccAddre
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "name %s not exist", name)
 	}
-
+	//fmt.Println(info.PrivKeyArmor)
 	pubKey, err := legacy.PubKeyFromBytes(info.PubKey)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "name %s not exist", name)
