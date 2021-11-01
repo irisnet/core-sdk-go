@@ -2,7 +2,6 @@ package types
 
 import (
 	grpc1 "github.com/gogo/protobuf/grpc"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -77,6 +76,7 @@ type TmClient interface {
 }
 
 type BaseClient interface {
+	TxConfig() TxConfig
 	TokenManager
 	TxManager
 	Queries
