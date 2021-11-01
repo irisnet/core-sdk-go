@@ -20,6 +20,8 @@ func NewSigningAlgoFromString(str string) (SignatureAlgo, error) {
 	switch str {
 	case string(Secp256k1.Name()):
 		return Secp256k1, nil
+	case string(Sm2.Name()):
+		return Sm2, nil
 	default:
 		return nil, fmt.Errorf("provided algorithm `%s` is not supported", str)
 	}

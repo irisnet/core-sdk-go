@@ -2,8 +2,6 @@ package integration_test
 
 import (
 	"context"
-	"math/rand"
-	"time"
 
 	tmed25519 "github.com/tendermint/tendermint/crypto/ed25519"
 
@@ -40,9 +38,8 @@ func testCreateAndEdit(s IntegrationTestSuite) {
 		Mode:     sdk.Commit,
 		Password: s.Account().Password,
 	}
-	rand.Seed(time.Now().UnixNano())
 
-	name, password := string(rune(rand.Intn(9999999999))), s.RandStringOfLength(8)
+	name, password := s.RandStringOfLength(8), s.RandStringOfLength(8)
 	address, mnemonic, err := s.Key.Add(name, password)
 	require.NoError(s.T(), err)
 	require.NotEmpty(s.T(), address)
