@@ -127,7 +127,7 @@ func testStaking(s IntegrationTestSuite) {
 	require.Equal(s.T(), validatorAddr, validatorResp.OperatorAddress)
 
 	// send Delegate tx
-	amount, _ := sdk.ParseDecCoin("10uiris")
+	amount, _ := sdk.ParseDecCoin("10iris")
 	delegateReq := staking.DelegateRequest{
 		ValidatorAddr: validatorAddr,
 		Amount:        amount,
@@ -184,7 +184,7 @@ func testStaking(s IntegrationTestSuite) {
 
 	// ================================ about unbonding ==============================
 	// send Undelegate tx
-	amount, _ = sdk.ParseDecCoin("10uiris")
+	amount, _ = sdk.ParseDecCoin("10iris")
 	undelegateReq := staking.UndelegateRequest{
 		ValidatorAddr: validatorAddr,
 		Amount:        amount,
