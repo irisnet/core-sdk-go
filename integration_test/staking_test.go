@@ -51,7 +51,7 @@ func testCreateAndEdit(s IntegrationTestSuite) {
 	require.NoError(s.T(), err)
 	require.NotEmpty(s.T(), queryAddress)
 
-	_, err = s.Bank.Send(address, sdk.NewDecCoins(sdk.NewDecCoin("iris", sdk.NewInt(100))), baseTx)
+	_, err = s.Bank.Send(address, sdk.NewDecCoins(sdk.NewDecCoin("iris", sdk.NewInt(10))), baseTx)
 	require.NoError(s.T(), err)
 
 	privkey := tmed25519.GenPrivKey()
@@ -73,7 +73,7 @@ func testCreateAndEdit(s IntegrationTestSuite) {
 	maxRate := sdk.MustNewDecFromStr("0.1")
 	maxChangeRate := sdk.MustNewDecFromStr("0.01")
 	minSelfDelegation := sdk.OneInt()
-	value, _ := sdk.ParseDecCoin("1iris")
+	value, _ := sdk.ParseDecCoin("10uiris")
 	req1 := staking.CreateValidatorRequest{
 		Moniker:           "haha",
 		Rate:              rate,
@@ -116,7 +116,7 @@ func testStaking(s IntegrationTestSuite) {
 	}
 
 	// queries all validators that match the given status.
-	validatorsResp, err := s.Staking.QueryValidators("", 1, 10)
+	validatorsResp, err := s.Staking.QueryValidators("", 1, 100)
 	require.NoError(s.T(), err)
 	require.NotEmpty(s.T(), validatorsResp.Validators)
 
@@ -127,7 +127,7 @@ func testStaking(s IntegrationTestSuite) {
 	require.Equal(s.T(), validatorAddr, validatorResp.OperatorAddress)
 
 	// send Delegate tx
-	amount, _ := sdk.ParseDecCoin("10000iris")
+	amount, _ := sdk.ParseDecCoin("10uiris")
 	delegateReq := staking.DelegateRequest{
 		ValidatorAddr: validatorAddr,
 		Amount:        amount,
@@ -184,7 +184,7 @@ func testStaking(s IntegrationTestSuite) {
 
 	// ================================ about unbonding ==============================
 	// send Undelegate tx
-	amount, _ = sdk.ParseDecCoin("500iris")
+	amount, _ = sdk.ParseDecCoin("10uiris")
 	undelegateReq := staking.UndelegateRequest{
 		ValidatorAddr: validatorAddr,
 		Amount:        amount,
@@ -227,36 +227,36 @@ func testStaking(s IntegrationTestSuite) {
 
 	// ================================ about redelegate ==============================
 	// send redelegate tx
-	/*	amount, _ = sdk.ParseDecCoin("3000iris")
-		// you can use another node to create a validator, then assgin newValidatorAddr in ValidatorDstAddress to send this tx
-		newValidatorAddr := validatorAddr
-		redelegateReq := staking.BeginRedelegateRequest{
-			ValidatorSrcAddress: validatorAddr,
-			ValidatorDstAddress: newValidatorAddr,
-			Amount:              amount,
-		}
-		res, err = s.Staking.BeginRedelegate(redelegateReq, baseTx)
-		require.NoError(s.T(), err)
-		require.NotEmpty(s.T(), res.Hash)
-
-		// queries redelegations of given address.
-		redelegationsReq := staking.QueryRedelegationsReq{
-			DelegatorAddr:    "",
-			SrcValidatorAddr: "",
-			DstValidatorAddr: "",
-			Page:             0,
-			Size:             0,
-		}
-		redelegations, err := s.Staking.QueryRedelegations(redelegationsReq)
-		require.NoError(s.T(), err)
-		exists = false // init exists
-		for _, r := range redelegations.RedelegationResponses {
-			if r.Redelegation.ValidatorSrcAddress == validatorAddr && r.Redelegation.ValidatorDstAddress == newValidatorAddr {
-				exists = true
-			}
-			require.NotEmpty(s.T(), r.Entries)
-		}
-		require.True(s.T(), exists)*/
+	//amount, _ = sdk.ParseDecCoin("3000iris")
+	// you can use another node to create a validator, then assgin newValidatorAddr in ValidatorDstAddress to send this txDelegatorAddress: delegatorAddr.String(),
+	//newValidatorAddr := validatorAddr
+	//redelegateReq := staking.BeginRedelegateRequest{
+	//	ValidatorSrcAddress: validatorAddr,
+	//	ValidatorDstAddress: newValidatorAddr,
+	//	Amount:              amount,
+	//}
+	//res, err = s.Staking.BeginRedelegate(redelegateReq, baseTx)
+	//require.NoError(s.T(), err)
+	//require.NotEmpty(s.T(), res.Hash)
+	//
+	//// queries redelegations of given address.
+	//redelegationsReq := staking.QueryRedelegationsReq{
+	//	DelegatorAddr:    delegateAddr,
+	//	SrcValidatorAddr: validatorAddr,
+	//	DstValidatorAddr: newValidatorAddr,
+	//	Page:             1,
+	//	Size:             10,
+	//}
+	//redelegations, err := s.Staking.QueryRedelegations(redelegationsReq)
+	//require.NoError(s.T(), err)
+	//exists = false // init exists
+	//for _, r := range redelegations.RedelegationResponses {
+	//	if r.Redelegation.ValidatorSrcAddress == validatorAddr && r.Redelegation.ValidatorDstAddress == newValidatorAddr {
+	//		exists = true
+	//	}
+	//	require.NotEmpty(s.T(), r.Entries)
+	//}
+	//require.True(s.T(), exists)
 }
 
 func queryHistoricalInfo(s IntegrationTestSuite) {
@@ -270,10 +270,13 @@ func queryHistoricalInfo(s IntegrationTestSuite) {
 	require.NoError(s.T(), err)
 	require.NotEmpty(s.T(), res.Valset)
 
+	valAddr := s.curValAddr()
 	var flag bool
 	for _, validator := range res.Valset {
-		if validator.OperatorAddress == s.curValAddr() {
-			flag = true
+		for _, valAdd := range valAddr {
+			if validator.OperatorAddress == valAdd.OperatorAddress {
+				flag = true
+			}
 		}
 	}
 	require.True(s.T(), flag)
@@ -303,10 +306,10 @@ func queryParams(s IntegrationTestSuite) {
 	require.Equal(s.T(), MaxEntries, res.MaxEntries)
 }
 
-func (s IntegrationTestSuite) curValAddr() string {
+func (s IntegrationTestSuite) curValAddr() []staking.QueryValidatorResp {
 	// queries all validators that match the given status.
-	validatorsResp, err := s.Staking.QueryValidators("", 1, 10)
+	validatorsResp, err := s.Staking.QueryValidators("", 1, 200)
 	require.NoError(s.T(), err)
 	require.NotEmpty(s.T(), validatorsResp.Validators)
-	return validatorsResp.Validators[0].OperatorAddress
+	return validatorsResp.Validators
 }
