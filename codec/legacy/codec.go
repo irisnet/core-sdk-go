@@ -1,10 +1,11 @@
 package legacy
 
 import (
+	"github.com/tendermint/tendermint/crypto"
+
 	"github.com/irisnet/core-sdk-go/codec"
 	cryptocodec "github.com/irisnet/core-sdk-go/crypto/codec"
 	cyptotypes "github.com/irisnet/core-sdk-go/crypto/types"
-	"github.com/tendermint/tendermint/crypto"
 )
 
 // Cdc defines a global generic sealed Amino codec to be used throughout sdk. It

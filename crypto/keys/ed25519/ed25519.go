@@ -240,4 +240,3 @@ func FromTmEd25519(pubKey tmcrypto.PubKey) (*PubKey, error) {
 
 	return &PubKey{Key: []byte(tmPk)}, nil
 }
-
