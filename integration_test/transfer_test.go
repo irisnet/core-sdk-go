@@ -13,7 +13,7 @@ func (s IntegrationTestSuite) TestTransfer() {
 	baseTx := sdk.BaseTx{
 		From:     s.Account().Name,
 		Gas:      200000,
-		Memo:     "test",
+		Memo:     "uiris",
 		Mode:     sdk.Commit,
 		Password: s.Account().Password,
 	}
