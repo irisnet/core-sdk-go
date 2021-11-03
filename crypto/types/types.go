@@ -5,7 +5,6 @@ import (
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 )
 
-
 // PubKey defines a public key and extends proto.Message.
 type PubKey interface {
 	proto.Message

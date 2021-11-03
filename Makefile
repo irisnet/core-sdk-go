@@ -1,4 +1,5 @@
 PACKAGES=$(shell go list ./...)
+PACKAGES_Integration_Test=$(shell go list ./... | grep integration_test)
 PACKAGES_UNITTEST=$(shell go list ./... | grep -v integration_test)
 export GO111MODULE = on
 
@@ -12,8 +13,8 @@ test-unit:
 
 test-integration:
 	cd integration_test/scripts/ && sh build.sh && sh start.sh
-	sleep 5s
-	@go test -v $(PACKAGES)
+	sleep 5
+	@go test -v $(PACKAGES_Integration_Test)
 	cd integration_test/scripts/ && sh clean.sh
 
 proto-gen:

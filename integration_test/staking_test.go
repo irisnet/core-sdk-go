@@ -7,9 +7,10 @@ import (
 
 	"github.com/irisnet/core-sdk-go/crypto/codec"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/irisnet/core-sdk-go/modules/staking"
 	sdk "github.com/irisnet/core-sdk-go/types"
-	"github.com/stretchr/testify/require"
 )
 
 func (s IntegrationTestSuite) TestStaking() {

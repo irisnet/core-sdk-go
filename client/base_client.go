@@ -72,8 +72,8 @@ func NewBaseClient(cfg types.ClientConfig, encodingConfig types.EncodingConfig, 
 	}
 	return &base
 }
-func (base *baseClient) TxConfig()types.TxConfig{
-	return  base.encodingConfig.TxConfig
+func (base *baseClient) TxConfig() types.TxConfig {
+	return base.encodingConfig.TxConfig
 }
 
 func (base *baseClient) Logger() log.Logger {
