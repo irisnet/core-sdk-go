@@ -32,7 +32,7 @@ func queryAccount(s IntegrationTestSuite) {
 	s.NoError(err)
 	s.NotEmpty(account)
 	bz, _ := json.Marshal(account)
-	fmt.Println(string(bz))
+	require.NotEmpty(s.T(), bz)
 }
 
 func send(s IntegrationTestSuite) {
@@ -140,7 +140,7 @@ func simulate(s IntegrationTestSuite) {
 	result, err := s.Bank.Send(to, coins, baseTx)
 	s.NoError(err)
 	s.Greater(result.TxResult.GasWanted, int64(0))
-	fmt.Println(result)
+	require.NotEmpty(s.T(), result)
 }
 
 func sendWitchSpecAccountInfo(s IntegrationTestSuite) {

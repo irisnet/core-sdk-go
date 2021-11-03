@@ -12,7 +12,7 @@ test-unit:
 	@go test -v $(PACKAGES_UNITTEST)
 
 test-integration:
-	cd integration_test/scripts/ && sh build.sh && sh start.sh
+	cd integration_test/scripts/ && sh build.sh && sh relayer.sh
 	sleep 5
 	@go test -v $(PACKAGES_Integration_Test)
 	cd integration_test/scripts/ && sh clean.sh

@@ -1,10 +1,12 @@
 package integration_test
 
 import (
-	"github.com/stretchr/testify/require"
+	"context"
+	"time"
 
 	"github.com/irisnet/core-sdk-go/modules/ibc/transfer"
 	sdk "github.com/irisnet/core-sdk-go/types"
+	"github.com/stretchr/testify/require"
 )
 
 func (s IntegrationTestSuite) TestTransfer() {
@@ -15,9 +17,26 @@ func (s IntegrationTestSuite) TestTransfer() {
 		Mode:     sdk.Commit,
 		Password: s.Account().Password,
 	}
-	Request := transfer.TransferRequest{}
+	sender, err2 := s.QueryAddress(baseTx.From, baseTx.Password)
+	if err2 != nil {
+		return
+	}
+	status, err := s.Status(context.Background())
+	if err != nil {
+		return
+	}
+	height := status.SyncInfo.LatestBlockHeight
+	Request := transfer.TransferRequest{
+		SourcePort:       "transfer",
+		SourceChannel:    "channel-0",
+		Token:            sdk.NewCoin("uiris", sdk.NewInt(1024)),
+		Sender:           sender.String(),
+		Receiver:         "iaa10njupdhmnyma2s7ghcapgtnw9kzg9gkjdylyla",
+		TimeoutHeight:    transfer.Height{RevisionHeight: uint64(height + 128)},
+		TimeoutTimestamp: uint64(time.Now().Add(time.Minute * 8).UnixNano()),
+	}
 
 	result, err := s.Transfer.Transfer(Request, baseTx)
-	require.Error(s.T(), err)
-	require.Empty(s.T(), result.Hash)
+	require.NoError(s.T(), err)
+	require.NotEmpty(s.T(), result.Hash)
 }
