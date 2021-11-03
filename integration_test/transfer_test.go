@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/irisnet/core-sdk-go/modules/ibc/transfer"
 	sdk "github.com/irisnet/core-sdk-go/types"
-	"github.com/stretchr/testify/require"
 )
 
 func (s IntegrationTestSuite) TestTransfer() {
