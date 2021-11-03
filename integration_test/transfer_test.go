@@ -11,13 +11,13 @@ func (s IntegrationTestSuite) TestTransfer() {
 	baseTx := sdk.BaseTx{
 		From:     s.Account().Name,
 		Gas:      200000,
-		Memo:     "test",
+		Memo:     "uiris",
 		Mode:     sdk.Commit,
 		Password: s.Account().Password,
 	}
 	Request := transfer.TransferRequest{}
 
 	result, err := s.Transfer.Transfer(Request, baseTx)
-	require.Error(s.T(), err)
-	require.Empty(s.T(), result.Hash)
+	require.NoError(s.T(), err)
+	require.NotEmpty(s.T(), result.Hash)
 }
