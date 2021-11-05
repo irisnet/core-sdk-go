@@ -360,10 +360,14 @@ func (q QueryRedelegationsResponse) Convert() interface{} {
 	for _, v := range q.RedelegationResponses {
 		redelegationResps = append(redelegationResps, v.Convert().(RedelegationResp))
 	}
-
+	if q.Pagination != nil {
+		return QueryRedelegationsResp{
+			RedelegationResponses: redelegationResps,
+			Total:                 q.Pagination.Total,
+		}
+	}
 	return QueryRedelegationsResp{
 		RedelegationResponses: redelegationResps,
-		Total:                 q.Pagination.Total,
 	}
 }
 
