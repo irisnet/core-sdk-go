@@ -7,32 +7,33 @@ import (
 
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/irisnet/core-sdk-go/bank"
-	cache "github.com/irisnet/core-sdk-go/common/cache"
-	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
-	sdk "github.com/irisnet/core-sdk-go/types"
-	"github.com/irisnet/core-sdk-go/types/auth"
+	cache "github.com/irisnet/core-sdk-go/cache"
+	codec "github.com/irisnet/core-sdk-go/codec"
+	"github.com/irisnet/core-sdk-go/modules/auth"
+	"github.com/irisnet/core-sdk-go/modules/bank"
+	"github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/core-sdk-go/types/errors"
 )
 
 // Must be used with locker, otherwise there are thread safety issues
 type AccountQuery struct {
-	sdk.Queries
-	sdk.GRPCClient
+	types.Queries
+	types.GRPCClient
 	log.Logger
 	cache.Cache
-	cdc        commoncodec.Marshaler
-	Km         sdk.KeyManager
+	cdc        codec.Codec
+	Km         types.KeyManager
 	expiration time.Duration
 }
 
-func (a AccountQuery) QueryAndRefreshAccount(address string) (sdk.BaseAccount, sdk.Error) {
+func (a AccountQuery) QueryAndRefreshAccount(address string) (types.BaseAccount, error) {
 	account, err := a.Get(a.prefixKey(address))
 	if err != nil {
 		return a.refresh(address)
 	}
 
 	acc := account.(accountInfo)
-	baseAcc := sdk.BaseAccount{
+	baseAcc := types.BaseAccount{
 		Address:       address,
 		AccountNumber: acc.N,
 		Sequence:      acc.S + 1,
@@ -43,11 +44,10 @@ func (a AccountQuery) QueryAndRefreshAccount(address string) (sdk.BaseAccount, s
 	return baseAcc, nil
 }
 
-func (a AccountQuery) QueryAccount(address string) (sdk.BaseAccount, sdk.Error) {
+func (a AccountQuery) QueryAccount(address string) (types.BaseAccount, error) {
 	conn, err := a.GenConn()
-
 	if err != nil {
-		return sdk.BaseAccount{}, sdk.Wrap(err)
+		return types.BaseAccount{}, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	request := &auth.QueryAccountRequest{
@@ -56,15 +56,15 @@ func (a AccountQuery) QueryAccount(address string) (sdk.BaseAccount, sdk.Error) 
 
 	response, err := auth.NewQueryClient(conn).Account(context.Background(), request)
 	if err != nil {
-		return sdk.BaseAccount{}, sdk.Wrap(err)
+		return types.BaseAccount{}, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
-	var baseAccount auth.Account
+	var baseAccount auth.AccountI
 	if err := a.cdc.UnpackAny(response.Account, &baseAccount); err != nil {
-		return sdk.BaseAccount{}, sdk.Wrap(err)
+		return types.BaseAccount{}, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
-	account := baseAccount.(*auth.BaseAccount).ConvertAccount(a.cdc).(sdk.BaseAccount)
+	account := baseAccount.(*auth.BaseAccount).ConvertAccount(a.cdc).(types.BaseAccount)
 
 	breq := &bank.QueryAllBalancesRequest{
 		Address:    address,
@@ -72,17 +72,17 @@ func (a AccountQuery) QueryAccount(address string) (sdk.BaseAccount, sdk.Error) 
 	}
 	balances, err := bank.NewQueryClient(conn).AllBalances(context.Background(), breq)
 	if err != nil {
-		return sdk.BaseAccount{}, sdk.Wrap(err)
+		return types.BaseAccount{}, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	account.Coins = balances.Balances
 	return account, nil
 }
 
-func (a AccountQuery) QueryAddress(name, password string) (sdk.AccAddress, sdk.Error) {
+func (a AccountQuery) QueryAddress(name, password string) (types.AccAddress, error) {
 	addr, err := a.Get(a.prefixKey(name))
 	if err == nil {
-		address, err := sdk.AccAddressFromBech32(addr.(string))
+		address, err := types.AccAddressFromBech32(addr.(string))
 		if err != nil {
 			a.Debug("invalid address", "name", name)
 			_ = a.Remove(a.prefixKey(name))
@@ -94,7 +94,7 @@ func (a AccountQuery) QueryAddress(name, password string) (sdk.AccAddress, sdk.E
 	_, address, err := a.Km.Find(name, password)
 	if err != nil {
 		a.Debug("can't find account", "name", name)
-		return address, sdk.Wrap(err)
+		return address, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	if err := a.SetWithExpire(a.prefixKey(name), address.String(), a.expiration); err != nil {
@@ -108,18 +108,18 @@ func (a AccountQuery) removeCache(address string) bool {
 	return a.Remove(a.prefixKey(address))
 }
 
-func (a AccountQuery) refresh(address string) (sdk.BaseAccount, sdk.Error) {
+func (a AccountQuery) refresh(address string) (types.BaseAccount, error) {
 	account, err := a.QueryAccount(address)
 	if err != nil {
 		a.Error("update cache failed", "address", address, "errMsg", err.Error())
-		return sdk.BaseAccount{}, sdk.Wrap(err)
+		return types.BaseAccount{}, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	a.saveAccount(account)
 	return account, nil
 }
 
-func (a AccountQuery) saveAccount(account sdk.BaseAccount) {
+func (a AccountQuery) saveAccount(account types.BaseAccount) {
 	address := account.Address
 	info := accountInfo{
 		N: account.AccountNumber,

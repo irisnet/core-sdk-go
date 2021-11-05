@@ -7,8 +7,8 @@ import (
 	fmt "fmt"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
-	types "github.com/irisnet/core-sdk-go/common/codec/types"
-	types1 "github.com/irisnet/core-sdk-go/common/crypto/types"
+	types "github.com/irisnet/core-sdk-go/codec/types"
+	types1 "github.com/irisnet/core-sdk-go/crypto/types"
 	github_com_irisnet_core_sdk_go_types "github.com/irisnet/core-sdk-go/types"
 	types2 "github.com/irisnet/core-sdk-go/types"
 	signing "github.com/irisnet/core-sdk-go/types/tx/signing"
@@ -250,12 +250,13 @@ type TxBody struct {
 	// those messages define the number and order of elements in AuthInfo's
 	// signer_infos and Tx's signatures. Each required signer address is added to
 	// the list only the first time it occurs.
-	//
 	// By convention, the first required signer (usually from the first message)
 	// is referred to as the primary signer and pays the fee for the whole
 	// transaction.
 	Messages []*types.Any `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
-	// memo is any arbitrary memo to be added to the transaction
+	// memo is any arbitrary note/comment to be added to the transaction.
+	// WARNING: in clients, any publicly exposed text should not be called memo,
+	// but should be called `note` instead (see https://github.com/cosmos/cosmos-sdk/issues/9122).
 	Memo string `protobuf:"bytes,2,opt,name=memo,proto3" json:"memo,omitempty"`
 	// timeout is the block height after which this transaction will not
 	// be processed by the chain

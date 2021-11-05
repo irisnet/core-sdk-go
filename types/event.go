@@ -8,22 +8,6 @@ import (
 	"strings"
 )
 
-type WSClient interface {
-	SubscribeNewBlock(builder *EventQueryBuilder, handler EventNewBlockHandler) (Subscription, Error)
-	SubscribeTx(builder *EventQueryBuilder, handler EventTxHandler) (Subscription, Error)
-	SubscribeNewBlockHeader(handler EventNewBlockHeaderHandler) (Subscription, Error)
-	SubscribeValidatorSetUpdates(handler EventValidatorSetUpdatesHandler) (Subscription, Error)
-	Unsubscribe(subscription Subscription) Error
-}
-
-type TmClient interface {
-	ABCIClient
-	SignClient
-	WSClient
-	StatusClient
-	NetworkClient
-}
-
 type EventKey string
 type EventValue interface{}
 
@@ -122,12 +106,12 @@ type EventNewBlockHeaderHandler func(EventDataNewBlockHeader)
 //EventDataValidatorSetUpdates for SubscribeValidatorSetUpdates
 type Validator struct {
 	Bech32Address    string `json:"bech32_address"`
-	Bech32PubKey     string `json:"bech32_pubkey"`
 	Address          string `json:"address"`
 	PubKey           PubKey `json:"pub_key"`
 	VotingPower      int64  `json:"voting_power"`
 	ProposerPriority int64  `json:"proposer_priority"`
 }
+
 type EventDataValidatorSetUpdates struct {
 	ValidatorUpdates []Validator `json:"validator_updates"`
 }

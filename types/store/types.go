@@ -3,9 +3,9 @@ package store
 import (
 	"fmt"
 
-	"github.com/tendermint/tendermint/crypto"
+	tmcrypto "github.com/tendermint/tendermint/crypto"
 
-	"github.com/irisnet/core-sdk-go/common/crypto/hd"
+	"github.com/irisnet/core-sdk-go/crypto/hd"
 )
 
 var (
@@ -54,7 +54,7 @@ type Info interface {
 	// Name of the key
 	GetName() string
 	// Public key
-	GetPubKey() crypto.PubKey
+	GetPubKey() tmcrypto.PubKey
 	// Bip44 Path
 	GetPath() (*hd.BIP44Params, error)
 	// Algo
@@ -64,10 +64,10 @@ type Info interface {
 // localInfo is the public information about a locally stored key
 // Note: Algo must be last field in struct for backwards amino compatibility
 type localInfo struct {
-	Name         string        `json:"name"`
-	PubKey       crypto.PubKey `json:"pubkey"`
-	PrivKeyArmor string        `json:"privkey.armor"`
-	Algo         hd.PubKeyType `json:"algo"`
+	Name         string          `json:"name"`
+	PubKey       tmcrypto.PubKey `json:"pubkey"`
+	PrivKeyArmor string          `json:"privkey.armor"`
+	Algo         hd.PubKeyType   `json:"algo"`
 }
 
 // GetType implements Info interface
@@ -81,7 +81,7 @@ func (i localInfo) GetName() string {
 }
 
 // GetType implements Info interface
-func (i localInfo) GetPubKey() crypto.PubKey {
+func (i localInfo) GetPubKey() tmcrypto.PubKey {
 	return i.PubKey
 }
 
@@ -93,15 +93,4 @@ func (i localInfo) GetAlgo() hd.PubKeyType {
 // GetType implements Info interface
 func (i localInfo) GetPath() (*hd.BIP44Params, error) {
 	return nil, fmt.Errorf("BIP44 Paths are not available for this type")
-}
-
-// encoding info
-func marshalInfo(i Info) []byte {
-	return cdc.MustMarshalBinaryLengthPrefixed(i)
-}
-
-// decoding info
-func unmarshalInfo(bz []byte) (info Info, err error) {
-	err = cdc.UnmarshalBinaryLengthPrefixed(bz, &info)
-	return
 }

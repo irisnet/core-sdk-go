@@ -4,33 +4,33 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/irisnet/core-sdk-go/common/codec/types"
-
-	sdk "github.com/irisnet/core-sdk-go/types"
+	codectypes "github.com/irisnet/core-sdk-go/codec/types"
+	"github.com/irisnet/core-sdk-go/types"
 )
 
 // MaxGasWanted defines the max gas allowed.
 const MaxGasWanted = uint64((1 << 63) - 1)
 
-var _, _ types.UnpackInterfacesMessage = &Tx{}, &TxBody{}
-var _ sdk.Tx = &Tx{}
+var _ codectypes.UnpackInterfacesMessage = &TxBody{}
+var _ codectypes.UnpackInterfacesMessage = &Tx{}
+var _ types.Tx = &Tx{}
 
-// GetMsgs implements the GetMsgs method on sdk.Tx.
-func (t *Tx) GetMsgs() []sdk.Msg {
+// GetMsgs implements the GetMsgs method on types.Tx.
+func (t *Tx) GetMsgs() []types.Msg {
 	if t == nil || t.Body == nil {
 		return nil
 	}
 
 	anys := t.Body.Messages
-	res := make([]sdk.Msg, len(anys))
+	res := make([]types.Msg, len(anys))
 	for i, any := range anys {
-		msg := any.GetCachedValue().(sdk.Msg)
+		msg := any.GetCachedValue().(types.Msg)
 		res[i] = msg
 	}
 	return res
 }
 
-// ValidateBasic implements the ValidateBasic method on sdk.Tx.
+// ValidateBasic implements the ValidateBasic method on types.Tx.
 func (t *Tx) ValidateBasic() error {
 	if t == nil {
 		return fmt.Errorf("bad Tx")
@@ -79,8 +79,8 @@ func (t *Tx) ValidateBasic() error {
 }
 
 // GetSigners retrieves all the signers of a tx.
-func (t *Tx) GetSigners() []sdk.AccAddress {
-	var signers []sdk.AccAddress
+func (t *Tx) GetSigners() []types.AccAddress {
+	var signers []types.AccAddress
 	seen := map[string]bool{}
 
 	for _, msg := range t.GetMsgs() {
@@ -96,7 +96,7 @@ func (t *Tx) GetSigners() []sdk.AccAddress {
 }
 
 // UnpackInterfaces implements the UnpackInterfaceMessages.UnpackInterfaces method
-func (t *Tx) UnpackInterfaces(unpacker types.AnyUnpacker) error {
+func (t *Tx) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	if t.Body != nil {
 		return t.Body.UnpackInterfaces(unpacker)
 	}
@@ -104,9 +104,9 @@ func (t *Tx) UnpackInterfaces(unpacker types.AnyUnpacker) error {
 }
 
 // UnpackInterfaces implements the UnpackInterfaceMessages.UnpackInterfaces method
-func (m *TxBody) UnpackInterfaces(unpacker types.AnyUnpacker) error {
+func (m *TxBody) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	for _, any := range m.Messages {
-		var msg sdk.Msg
+		var msg types.Msg
 		if err := unpacker.UnpackAny(any, &msg); err != nil {
 			return err
 		}
@@ -114,8 +114,8 @@ func (m *TxBody) UnpackInterfaces(unpacker types.AnyUnpacker) error {
 	return nil
 }
 
-// RegisterInterfaces registers the sdk.Tx interface.
-func RegisterInterfaces(registry types.InterfaceRegistry) {
-	registry.RegisterInterface("cosmos.tx.v1beta1.Tx", (*sdk.Tx)(nil))
-	registry.RegisterImplementations((*sdk.Tx)(nil), &Tx{})
+// RegisterInterfaces registers the types.Tx interface.
+func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
+	registry.RegisterInterface("cosmos.tx.v1beta1.Tx", (*types.Tx)(nil))
+	registry.RegisterImplementations((*types.Tx)(nil), &Tx{})
 }

@@ -6,21 +6,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/irisnet/core-sdk-go/gov"
+	"github.com/irisnet/core-sdk-go/modules/gov"
 	"github.com/irisnet/core-sdk-go/types"
 )
 
 func (s IntegrationTestSuite) TestGov() {
 	cases := []SubTest{
-		{
-			"TestGov",
-			testGov,
-		},
-
-		{
-			"TestParams",
-			testParams,
-		},
+		{"TestGov", testGov},
+		{"TestParams", testParams},
 	}
 
 	for _, t := range cases {

@@ -9,7 +9,6 @@ import (
 	tmclient "github.com/tendermint/tendermint/rpc/client"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	cryptoAmino "github.com/irisnet/core-sdk-go/common/crypto/codec"
 	"github.com/irisnet/core-sdk-go/types/kv"
 )
 
@@ -23,10 +22,6 @@ type (
 	Pair          = kv.Pair
 
 	TmPubKey = crypto.PubKey
-)
-
-var (
-	PubKeyFromBytes = cryptoAmino.PubKeyFromBytes
 )
 
 func MustHexBytesFrom(hexStr string) HexBytes {

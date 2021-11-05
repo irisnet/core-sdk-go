@@ -5,8 +5,8 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 
-	"github.com/irisnet/core-sdk-go/common/codec"
-	"github.com/irisnet/core-sdk-go/common/crypto/types"
+	"github.com/irisnet/core-sdk-go/codec"
+	"github.com/irisnet/core-sdk-go/crypto/types"
 	"github.com/irisnet/core-sdk-go/types/tx/signing"
 )
 
@@ -124,7 +124,7 @@ func (g config) MarshalSignatureJSON(sigs []signing.SignatureV2) ([]byte, error)
 
 	toJSON := &signing.SignatureDescriptors{Signatures: descs}
 
-	return codec.ProtoMarshalJSON(toJSON)
+	return codec.ProtoMarshalJSON(toJSON, nil)
 }
 
 func (g config) UnmarshalSignatureJSON(bz []byte) ([]signing.SignatureV2, error) {

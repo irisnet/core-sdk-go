@@ -1,14 +1,14 @@
 package tx
 
 import (
-	"github.com/irisnet/core-sdk-go/common/codec"
-	"github.com/irisnet/core-sdk-go/common/codec/unknownproto"
-	sdk "github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/core-sdk-go/codec"
+	"github.com/irisnet/core-sdk-go/codec/unknownproto"
+	"github.com/irisnet/core-sdk-go/types"
 )
 
 // DefaultTxDecoder returns a default protobuf TxDecoder using the provided Marshaler.
-func DefaultTxDecoder(cdc *codec.ProtoCodec) sdk.TxDecoder {
-	return func(txBytes []byte) (sdk.Tx, error) {
+func DefaultTxDecoder(cdc *codec.ProtoCodec) types.TxDecoder {
+	return func(txBytes []byte) (types.Tx, error) {
 		var raw TxRaw
 
 		// reject all unknown proto fields in the root TxRaw
@@ -17,7 +17,7 @@ func DefaultTxDecoder(cdc *codec.ProtoCodec) sdk.TxDecoder {
 			return nil, err
 		}
 
-		err = cdc.UnmarshalBinaryBare(txBytes, &raw)
+		err = cdc.Unmarshal(txBytes, &raw)
 		if err != nil {
 			return nil, err
 		}
@@ -30,7 +30,7 @@ func DefaultTxDecoder(cdc *codec.ProtoCodec) sdk.TxDecoder {
 			return nil, err
 		}
 
-		err = cdc.UnmarshalBinaryBare(raw.BodyBytes, &body)
+		err = cdc.Unmarshal(raw.BodyBytes, &body)
 		if err != nil {
 			return nil, err
 		}
@@ -43,7 +43,7 @@ func DefaultTxDecoder(cdc *codec.ProtoCodec) sdk.TxDecoder {
 			return nil, err
 		}
 
-		err = cdc.UnmarshalBinaryBare(raw.AuthInfoBytes, &authInfo)
+		err = cdc.Unmarshal(raw.AuthInfoBytes, &authInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -64,8 +64,8 @@ func DefaultTxDecoder(cdc *codec.ProtoCodec) sdk.TxDecoder {
 }
 
 // DefaultJSONTxDecoder returns a default protobuf JSON TxDecoder using the provided Marshaler.
-func DefaultJSONTxDecoder(cdc *codec.ProtoCodec) sdk.TxDecoder {
-	return func(txBytes []byte) (sdk.Tx, error) {
+func DefaultJSONTxDecoder(cdc *codec.ProtoCodec) types.TxDecoder {
+	return func(txBytes []byte) (types.Tx, error) {
 		var theTx Tx
 		err := cdc.UnmarshalJSON(txBytes, &theTx)
 		if err != nil {

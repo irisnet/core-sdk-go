@@ -10,26 +10,23 @@ import (
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
-
-	"github.com/irisnet/core-sdk-go/common/uuid"
-	sdk "github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/core-sdk-go/types/errors"
+	"github.com/irisnet/core-sdk-go/uuid"
 )
 
 type rpcClient struct {
 	rpc.Client
 	log.Logger
-	cdc       *commoncodec.LegacyAmino
-	txDecoder sdk.TxDecoder
+	txDecoder types.TxDecoder
 }
 
 func NewRPCClient(
 	remote string,
-	cdc *commoncodec.LegacyAmino,
-	txDecoder sdk.TxDecoder,
+	txDecoder types.TxDecoder,
 	logger log.Logger,
 	timeout uint,
-) sdk.TmClient {
+) types.TmClient {
 	client, err := rpchttp.NewWithTimeout(remote, "/websocket", timeout)
 	if err != nil {
 		panic(err)
@@ -39,76 +36,75 @@ func NewRPCClient(
 	return rpcClient{
 		Client:    client,
 		Logger:    logger,
-		cdc:       cdc,
 		txDecoder: txDecoder,
 	}
 }
 
 // =============================================================================
 // SubscribeNewBlock implement WSClient interface
-func (r rpcClient) SubscribeNewBlock(builder *sdk.EventQueryBuilder, handler sdk.EventNewBlockHandler) (sdk.Subscription, sdk.Error) {
+func (r rpcClient) SubscribeNewBlock(builder *types.EventQueryBuilder, handler types.EventNewBlockHandler) (types.Subscription, error) {
 	if builder == nil {
-		builder = sdk.NewEventQueryBuilder()
+		builder = types.NewEventQueryBuilder()
 	}
-	builder.AddCondition(sdk.Cond(sdk.TypeKey).EQ(tmtypes.EventNewBlock))
+	builder.AddCondition(types.Cond(types.TypeKey).EQ(tmtypes.EventNewBlock))
 	query := builder.Build()
 
-	return r.SubscribeAny(query, func(data sdk.EventData) {
-		handler(data.(sdk.EventDataNewBlock))
+	return r.SubscribeAny(query, func(data types.EventData) {
+		handler(data.(types.EventDataNewBlock))
 	})
 }
 
 // SubscribeTx implement WSClient interface
-func (r rpcClient) SubscribeTx(builder *sdk.EventQueryBuilder, handler sdk.EventTxHandler) (sdk.Subscription, sdk.Error) {
+func (r rpcClient) SubscribeTx(builder *types.EventQueryBuilder, handler types.EventTxHandler) (types.Subscription, error) {
 	if builder == nil {
-		builder = sdk.NewEventQueryBuilder()
+		builder = types.NewEventQueryBuilder()
 	}
-	query := builder.AddCondition(sdk.Cond(sdk.TypeKey).EQ(sdk.TxValue)).Build()
-	return r.SubscribeAny(query, func(data sdk.EventData) {
-		handler(data.(sdk.EventDataTx))
+	query := builder.AddCondition(types.Cond(types.TypeKey).EQ(types.TxValue)).Build()
+	return r.SubscribeAny(query, func(data types.EventData) {
+		handler(data.(types.EventDataTx))
 	})
 }
 
-func (r rpcClient) SubscribeNewBlockHeader(handler sdk.EventNewBlockHeaderHandler) (sdk.Subscription, sdk.Error) {
+func (r rpcClient) SubscribeNewBlockHeader(handler types.EventNewBlockHeaderHandler) (types.Subscription, error) {
 	query := tmtypes.QueryForEvent(tmtypes.EventNewBlockHeader).String()
-	return r.SubscribeAny(query, func(data sdk.EventData) {
-		handler(data.(sdk.EventDataNewBlockHeader))
+	return r.SubscribeAny(query, func(data types.EventData) {
+		handler(data.(types.EventDataNewBlockHeader))
 	})
 }
 
-func (r rpcClient) SubscribeValidatorSetUpdates(handler sdk.EventValidatorSetUpdatesHandler) (sdk.Subscription, sdk.Error) {
+func (r rpcClient) SubscribeValidatorSetUpdates(handler types.EventValidatorSetUpdatesHandler) (types.Subscription, error) {
 	query := tmtypes.QueryForEvent(tmtypes.EventValidatorSetUpdates).String()
-	return r.SubscribeAny(query, func(data sdk.EventData) {
-		handler(data.(sdk.EventDataValidatorSetUpdates))
+	return r.SubscribeAny(query, func(data types.EventData) {
+		handler(data.(types.EventDataValidatorSetUpdates))
 	})
 }
 
-func (r rpcClient) Resubscribe(subscription sdk.Subscription, handler sdk.EventHandler) (err sdk.Error) {
+func (r rpcClient) Resubscribe(subscription types.Subscription, handler types.EventHandler) (err error) {
 	_, err = r.SubscribeAny(subscription.Query, handler)
 	return
 }
 
-func (r rpcClient) Unsubscribe(subscription sdk.Subscription) sdk.Error {
+func (r rpcClient) Unsubscribe(subscription types.Subscription) error {
 	r.Info("end to subscribe event", "query", subscription.Query, "subscriber", subscription.ID)
 	err := r.Client.Unsubscribe(subscription.Ctx, subscription.ID, subscription.Query)
 	if err != nil {
 		r.Error("unsubscribe failed", "query", subscription.Query, "subscriber", subscription.ID, "errMsg", err.Error())
-		return sdk.Wrap(err)
+		return errors.Wrap(errors.ErrTodo, err.Error())
 	}
 	return nil
 }
 
-func (r rpcClient) SubscribeAny(query string, handler sdk.EventHandler) (subscription sdk.Subscription, err sdk.Error) {
+func (r rpcClient) SubscribeAny(query string, handler types.EventHandler) (subscription types.Subscription, err error) {
 	ctx := context.Background()
 	subscriber := getSubscriber()
-	ch, e := r.Subscribe(ctx, subscriber, query, 0)
-	if e != nil {
-		return subscription, sdk.Wrap(e)
+	ch, err := r.Subscribe(ctx, subscriber, query, 0)
+	if err != nil {
+		return subscription, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	r.Info("subscribe event", "query", query, "subscriber", subscription.ID)
 
-	subscription = sdk.Subscription{
+	subscription = types.Subscription{
 		Ctx:   ctx,
 		Query: query,
 		ID:    subscriber,
@@ -117,7 +113,7 @@ func (r rpcClient) SubscribeAny(query string, handler sdk.EventHandler) (subscri
 		for {
 			data := <-ch
 			go func() {
-				defer sdk.CatchPanic(func(errMsg string) {
+				defer errors.CatchPanic(func(errMsg string) {
 					r.Error("unsubscribe failed", "query", subscription.Query, "subscriber", subscription.ID, "errMsg", err.Error())
 				})
 
@@ -143,22 +139,23 @@ func (r rpcClient) SubscribeAny(query string, handler sdk.EventHandler) (subscri
 	return
 }
 
-func (r rpcClient) parseTx(data sdk.EventData) sdk.EventDataTx {
+func (r rpcClient) parseTx(data types.EventData) types.EventDataTx {
 	dataTx := data.(tmtypes.EventDataTx)
 	tx, err := r.txDecoder(dataTx.Tx)
 	if err != nil {
-		return sdk.EventDataTx{}
+		return types.EventDataTx{}
 	}
 
-	hash := sdk.HexBytes(tmhash.Sum(dataTx.Tx)).String()
-	result := sdk.TxResult{
+	hash := types.HexBytes(tmhash.Sum(dataTx.Tx)).String()
+	result := types.TxResult{
 		Code:      dataTx.Result.Code,
 		Log:       dataTx.Result.Log,
 		GasWanted: dataTx.Result.GasWanted,
 		GasUsed:   dataTx.Result.GasUsed,
-		Events:    sdk.StringifyEvents(dataTx.Result.Events),
+		Events:    types.StringifyEvents(dataTx.Result.Events),
 	}
-	return sdk.EventDataTx{
+
+	return types.EventDataTx{
 		Hash:   hash,
 		Height: dataTx.Height,
 		Index:  dataTx.Index,
@@ -167,43 +164,43 @@ func (r rpcClient) parseTx(data sdk.EventData) sdk.EventDataTx {
 	}
 }
 
-func (r rpcClient) parseNewBlock(data sdk.EventData) sdk.EventDataNewBlock {
+func (r rpcClient) parseNewBlock(data types.EventData) types.EventDataNewBlock {
 	block := data.(tmtypes.EventDataNewBlock)
-	return sdk.EventDataNewBlock{
-		Block: sdk.ParseBlock(r.cdc, block.Block),
-		ResultBeginBlock: sdk.ResultBeginBlock{
-			Events: sdk.StringifyEvents(block.ResultBeginBlock.Events),
+	return types.EventDataNewBlock{
+		Block: types.ParseBlock(r.txDecoder, block.Block),
+		ResultBeginBlock: types.ResultBeginBlock{
+			Events: types.StringifyEvents(block.ResultBeginBlock.Events),
 		},
-		ResultEndBlock: sdk.ResultEndBlock{
-			Events:           sdk.StringifyEvents(block.ResultEndBlock.Events),
-			ValidatorUpdates: sdk.ParseValidatorUpdate(block.ResultEndBlock.ValidatorUpdates),
+		ResultEndBlock: types.ResultEndBlock{
+			Events:           types.StringifyEvents(block.ResultEndBlock.Events),
+			ValidatorUpdates: types.ParseValidatorUpdate(block.ResultEndBlock.ValidatorUpdates),
 		},
 	}
 }
 
-func (r rpcClient) parseNewBlockHeader(data sdk.EventData) sdk.EventDataNewBlockHeader {
+func (r rpcClient) parseNewBlockHeader(data types.EventData) types.EventDataNewBlockHeader {
 	blockHeader := data.(tmtypes.EventDataNewBlockHeader)
-	return sdk.EventDataNewBlockHeader{
+	return types.EventDataNewBlockHeader{
 		Header: blockHeader.Header,
-		ResultBeginBlock: sdk.ResultBeginBlock{
-			Events: sdk.StringifyEvents(blockHeader.ResultBeginBlock.Events),
+		ResultBeginBlock: types.ResultBeginBlock{
+			Events: types.StringifyEvents(blockHeader.ResultBeginBlock.Events),
 		},
-		ResultEndBlock: sdk.ResultEndBlock{
-			Events:           sdk.StringifyEvents(blockHeader.ResultEndBlock.Events),
-			ValidatorUpdates: sdk.ParseValidatorUpdate(blockHeader.ResultEndBlock.ValidatorUpdates),
+		ResultEndBlock: types.ResultEndBlock{
+			Events:           types.StringifyEvents(blockHeader.ResultEndBlock.Events),
+			ValidatorUpdates: types.ParseValidatorUpdate(blockHeader.ResultEndBlock.ValidatorUpdates),
 		},
 	}
 }
 
-func (r rpcClient) parseValidatorSetUpdates(data sdk.EventData) sdk.EventDataValidatorSetUpdates {
+func (r rpcClient) parseValidatorSetUpdates(data types.EventData) types.EventDataValidatorSetUpdates {
 	validatorSet := data.(tmtypes.EventDataValidatorSetUpdates)
-	return sdk.EventDataValidatorSetUpdates{
-		ValidatorUpdates: sdk.ParseValidators(r.cdc, validatorSet.ValidatorUpdates),
+	return types.EventDataValidatorSetUpdates{
+		ValidatorUpdates: types.ParseValidators(validatorSet.ValidatorUpdates),
 	}
 }
 
 func getSubscriber() string {
-	subscriber := "irishub-sdk-go"
+	subscriber := "core-sdk-go"
 	id, err := uuid.NewV1()
 	if err == nil {
 		subscriber = fmt.Sprintf("%s-%s", subscriber, id.String())

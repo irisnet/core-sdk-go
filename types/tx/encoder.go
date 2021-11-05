@@ -5,7 +5,7 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 
-	"github.com/irisnet/core-sdk-go/common/codec"
+	"github.com/irisnet/core-sdk-go/codec"
 	sdk "github.com/irisnet/core-sdk-go/types"
 )
 
@@ -32,15 +32,14 @@ func DefaultJSONTxEncoder() sdk.TxEncoder {
 	return func(tx sdk.Tx) ([]byte, error) {
 		txWrapper, ok := tx.(*wrapper)
 		if ok {
-			return codec.ProtoMarshalJSON(txWrapper.tx)
+			return codec.ProtoMarshalJSON(txWrapper.tx, nil)
 		}
 
 		protoTx, ok := tx.(*Tx)
 		if ok {
-			return codec.ProtoMarshalJSON(protoTx)
+			return codec.ProtoMarshalJSON(protoTx, nil)
 		}
 
 		return nil, fmt.Errorf("expected %T, got %T", &wrapper{}, tx)
-
 	}
 }

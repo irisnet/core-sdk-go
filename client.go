@@ -3,29 +3,29 @@ package sdk
 import (
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/irisnet/core-sdk-go/bank"
 	"github.com/irisnet/core-sdk-go/client"
 	keys "github.com/irisnet/core-sdk-go/client"
-	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
-	cryptotypes "github.com/irisnet/core-sdk-go/common/codec/types"
-	commoncryptocodec "github.com/irisnet/core-sdk-go/common/crypto/codec"
-	"github.com/irisnet/core-sdk-go/gov"
-	"github.com/irisnet/core-sdk-go/ibc/transfer"
-	"github.com/irisnet/core-sdk-go/staking"
+	"github.com/irisnet/core-sdk-go/codec"
+	cryptotypes "github.com/irisnet/core-sdk-go/codec/types"
+	cryptocodec "github.com/irisnet/core-sdk-go/crypto/codec"
+	"github.com/irisnet/core-sdk-go/modules/bank"
+	"github.com/irisnet/core-sdk-go/modules/gov"
+	"github.com/irisnet/core-sdk-go/modules/ibc/transfer"
+	"github.com/irisnet/core-sdk-go/modules/staking"
 	"github.com/irisnet/core-sdk-go/types"
 	txtypes "github.com/irisnet/core-sdk-go/types/tx"
 )
 
 type Client struct {
+	types.BaseClient
 	logger         log.Logger
 	moduleManager  map[string]types.Module
 	encodingConfig types.EncodingConfig
-	types.BaseClient
-	Bank     bank.Client
-	Key      keys.Client
-	Staking  staking.Client
-	Gov      gov.Client
-	Transfer transfer.Client
+	Bank           bank.Client
+	Key            keys.Client
+	Staking        staking.Client
+	Gov            gov.Client
+	Transfer       transfer.Client
 }
 
 func NewClient(cfg types.ClientConfig) Client {
@@ -33,11 +33,11 @@ func NewClient(cfg types.ClientConfig) Client {
 
 	// create a instance of baseClient
 	baseClient := client.NewBaseClient(cfg, encodingConfig, nil)
-	bankClient := bank.NewClient(baseClient, encodingConfig.Marshaler)
+	bankClient := bank.NewClient(baseClient, encodingConfig.Codec)
 	keysClient := keys.NewKeysClient(cfg, baseClient)
-	transferClient := transfer.NewClient(baseClient, encodingConfig.Marshaler)
-	stakingClient := staking.NewClient(baseClient, encodingConfig.Marshaler)
-	govClient := gov.NewClient(baseClient, encodingConfig.Marshaler)
+	transferClient := transfer.NewClient(baseClient, encodingConfig.Codec)
+	stakingClient := staking.NewClient(baseClient, encodingConfig.Codec)
+	govClient := gov.NewClient(baseClient, encodingConfig.Codec)
 
 	client := Client{
 		logger:         baseClient.Logger(),
@@ -63,12 +63,12 @@ func (client *Client) SetLogger(logger log.Logger) {
 	client.BaseClient.SetLogger(logger)
 }
 
-func (client *Client) Codec() *commoncodec.LegacyAmino {
+func (client *Client) Codec() *codec.LegacyAmino {
 	return client.encodingConfig.Amino
 }
 
-func (client *Client) AppCodec() commoncodec.Marshaler {
-	return client.encodingConfig.Marshaler
+func (client *Client) AppCodec() codec.Codec {
+	return client.encodingConfig.Codec
 }
 
 func (client *Client) EncodingConfig() types.EncodingConfig {
@@ -90,14 +90,14 @@ func (client *Client) Module(name string) types.Module {
 }
 
 func makeEncodingConfig() types.EncodingConfig {
-	amino := commoncodec.NewLegacyAmino()
+	amino := codec.NewLegacyAmino()
 	interfaceRegistry := cryptotypes.NewInterfaceRegistry()
-	marshaler := commoncodec.NewProtoCodec(interfaceRegistry)
-	txCfg := txtypes.NewTxConfig(marshaler, txtypes.DefaultSignModes)
+	codec := codec.NewProtoCodec(interfaceRegistry)
+	txCfg := txtypes.NewTxConfig(codec, txtypes.DefaultSignModes)
 
 	encodingConfig := types.EncodingConfig{
 		InterfaceRegistry: interfaceRegistry,
-		Marshaler:         marshaler,
+		Codec:             codec,
 		TxConfig:          txCfg,
 		Amino:             amino,
 	}
@@ -107,15 +107,15 @@ func makeEncodingConfig() types.EncodingConfig {
 }
 
 // RegisterLegacyAminoCodec registers the sdk message type.
-func RegisterLegacyAminoCodec(cdc *commoncodec.LegacyAmino) {
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterInterface((*types.Msg)(nil), nil)
 	cdc.RegisterInterface((*types.Tx)(nil), nil)
-	commoncryptocodec.RegisterCrypto(cdc)
+	cryptocodec.RegisterCrypto(cdc)
 }
 
 // RegisterInterfaces registers the sdk message type.
 func RegisterInterfaces(registry cryptotypes.InterfaceRegistry) {
 	registry.RegisterInterface("cosmos.v1beta1.Msg", (*types.Msg)(nil))
 	txtypes.RegisterInterfaces(registry)
-	commoncryptocodec.RegisterInterfaces(registry)
+	cryptocodec.RegisterInterfaces(registry)
 }

@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	sdk "github.com/irisnet/core-sdk-go"
-	"github.com/irisnet/core-sdk-go/common/crypto"
-	"github.com/irisnet/core-sdk-go/common/log"
+	"github.com/irisnet/core-sdk-go/crypto"
+	"github.com/irisnet/core-sdk-go/log"
 	"github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/core-sdk-go/types/store"
 )
@@ -22,7 +22,7 @@ const (
 	grpcAddr = "localhost:9090"
 	chainID  = "test"
 	charset  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	addr     = "iaa1w9lvhwlvkwqvg08q84n2k4nn896u9pqx93velx"
+	addr     = "iaa1x6nrhlx2he9kw73x8qcwgsl9tznh6z52msdkwx"
 )
 
 type IntegrationTestSuite struct {
@@ -61,7 +61,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 		types.KeyDAOOption(store.NewMemory(nil)),
 		types.TimeoutOption(10),
 		types.TokenManagerOption(TokenManager{}),
-		types.KeyManagerOption(crypto.NewKeyManager()),
+		types.KeyManagerOption(crypto.NewKeyring()),
 		types.Bech32AddressPrefixOption(bech32AddressPrefix),
 		types.BIP44PathOption(""),
 	}
@@ -151,11 +151,9 @@ func (TokenManager TokenManager) QueryToken(denom string) (types.Token, error) {
 	return types.Token{}, nil
 }
 
-func (TokenManager TokenManager) SaveTokens(tokens ...types.Token) {
-	return
-}
+func (TokenManager TokenManager) SaveTokens(tokens ...types.Token) {}
 
-func (TokenManager TokenManager) ToMinCoin(coins ...types.DecCoin) (types.Coins, types.Error) {
+func (TokenManager TokenManager) ToMinCoin(coins ...types.DecCoin) (types.Coins, error) {
 	for i := range coins {
 		if coins[i].Denom == "iris" {
 			coins[i].Denom = "uiris"
@@ -166,7 +164,7 @@ func (TokenManager TokenManager) ToMinCoin(coins ...types.DecCoin) (types.Coins,
 	return ucoins, nil
 }
 
-func (TokenManager TokenManager) ToMainCoin(coins ...types.Coin) (types.DecCoins, types.Error) {
+func (TokenManager TokenManager) ToMainCoin(coins ...types.Coin) (types.DecCoins, error) {
 	decCoins := make(types.DecCoins, len(coins), 0)
 	for _, coin := range coins {
 		if coin.Denom == "uiris" {

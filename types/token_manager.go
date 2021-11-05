@@ -6,11 +6,9 @@ func (TokenManager DefaultTokenManager) QueryToken(denom string) (Token, error) 
 	return Token{}, nil
 }
 
-func (TokenManager DefaultTokenManager) SaveTokens(tokens ...Token) {
-	return
-}
+func (TokenManager DefaultTokenManager) SaveTokens(tokens ...Token) {}
 
-func (TokenManager DefaultTokenManager) ToMinCoin(coins ...DecCoin) (Coins, Error) {
+func (TokenManager DefaultTokenManager) ToMinCoin(coins ...DecCoin) (Coins, error) {
 	for i := range coins {
 		if coins[i].Denom == "iris" {
 			coins[i].Denom = "uiris"
@@ -21,7 +19,7 @@ func (TokenManager DefaultTokenManager) ToMinCoin(coins ...DecCoin) (Coins, Erro
 	return ucoins, nil
 }
 
-func (TokenManager DefaultTokenManager) ToMainCoin(coins ...Coin) (DecCoins, Error) {
+func (TokenManager DefaultTokenManager) ToMainCoin(coins ...Coin) (DecCoins, error) {
 	decCoins := make(DecCoins, len(coins), 0)
 	for _, coin := range coins {
 		if coin.Denom == "uiris" {

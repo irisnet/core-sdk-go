@@ -1,29 +1,26 @@
-// Package modules is to warpped the API provided by each module of IRITA
-//
 package client
 
 import (
 	"context"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/avast/retry-go"
+	grpc1 "github.com/gogo/protobuf/grpc"
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/log"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
-	"google.golang.org/grpc"
-
-	"github.com/irisnet/core-sdk-go/common"
-	commoncache "github.com/irisnet/core-sdk-go/common/cache"
-	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
-	sdklog "github.com/irisnet/core-sdk-go/common/log"
-	sdktypes "github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/core-sdk-go/cache"
+	"github.com/irisnet/core-sdk-go/codec"
+	sdklog "github.com/irisnet/core-sdk-go/log"
+	"github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/core-sdk-go/types/errors"
 	"github.com/irisnet/core-sdk-go/types/tx"
 )
 
@@ -36,18 +33,17 @@ const (
 )
 
 type baseClient struct {
-	sdktypes.TmClient
-	sdktypes.TokenManager
-	sdktypes.KeyManager
-	cfg            *sdktypes.ClientConfig
-	encodingConfig sdktypes.EncodingConfig
+	types.TmClient
+	types.TokenManager
+	types.KeyManager
+	cfg            *types.ClientConfig
+	encodingConfig types.EncodingConfig
 	l              *locker
 	AccountQuery
 }
 
 // NewBaseClient return the baseClient for every sub modules
-func NewBaseClient(cfg sdktypes.ClientConfig, encodingConfig sdktypes.EncodingConfig, logger log.Logger) sdktypes.BaseClient {
-	// create logger
+func NewBaseClient(cfg types.ClientConfig, encodingConfig types.EncodingConfig, logger log.Logger) types.BaseClient {
 	if logger == nil {
 		logger = sdklog.NewLogger(sdklog.Config{
 			Format: sdklog.FormatText,
@@ -56,28 +52,28 @@ func NewBaseClient(cfg sdktypes.ClientConfig, encodingConfig sdktypes.EncodingCo
 	}
 
 	base := baseClient{
-		TmClient:       NewRPCClient(cfg.NodeURI, encodingConfig.Amino, encodingConfig.TxConfig.TxDecoder(), logger, cfg.Timeout),
+		TmClient:       NewRPCClient(cfg.NodeURI, encodingConfig.TxConfig.TxDecoder(), logger, cfg.Timeout),
 		cfg:            &cfg,
 		encodingConfig: encodingConfig,
 		l:              NewLocker(concurrency).setLogger(logger),
 		TokenManager:   cfg.TokenManager,
 	}
-	base.KeyManager = KeyManager{
-		KeyDAO: cfg.KeyDAO,
-		Algo:   cfg.Algo,
-	}
+	base.KeyManager = NewKeyManager(cfg.KeyDAO, cfg.Algo)
 
-	c := commoncache.NewCache(cacheCapacity, cfg.Cached)
+	c := cache.NewCache(cacheCapacity, cfg.Cached)
 	base.AccountQuery = AccountQuery{
 		Queries:    base,
 		GRPCClient: NewGRPCClient(cfg.GRPCAddr),
 		Logger:     logger,
 		Cache:      c,
-		cdc:        encodingConfig.Marshaler,
+		cdc:        encodingConfig.Codec,
 		Km:         base.KeyManager,
 		expiration: cacheExpirePeriod,
 	}
 	return &base
+}
+func (base *baseClient) TxConfig() types.TxConfig {
+	return base.encodingConfig.TxConfig
 }
 
 func (base *baseClient) Logger() log.Logger {
@@ -89,59 +85,59 @@ func (base *baseClient) SetLogger(logger log.Logger) {
 }
 
 // Codec returns codec.
-func (base *baseClient) Marshaler() commoncodec.Marshaler {
-	return base.encodingConfig.Marshaler
+func (base *baseClient) Marshaler() codec.Codec {
+	return base.encodingConfig.Codec
 }
 
-func (base *baseClient) GenConn() (*grpc.ClientConn, error) {
+func (base *baseClient) GenConn() (grpc1.ClientConn, error) {
 	return base.AccountQuery.GenConn()
 }
 
-func (base *baseClient) BuildTxHash(msg []sdktypes.Msg, baseTx sdktypes.BaseTx) (string, sdktypes.Error) {
+func (base *baseClient) BuildTxHash(msg []types.Msg, baseTx types.BaseTx) (string, error) {
 	txByte, _, err := base.buildTx(msg, baseTx)
 	if err != nil {
-		return "", sdktypes.Wrap(err)
+		return "", errors.Wrap(errors.ErrTodo, err.Error())
 	}
 	return strings.ToUpper(hex.EncodeToString(tmhash.Sum(txByte))), nil
 }
 
-func (base *baseClient) BuildAndSign(msg []sdktypes.Msg, baseTx sdktypes.BaseTx) ([]byte, sdktypes.Error) {
+func (base *baseClient) BuildAndSign(msg []types.Msg, baseTx types.BaseTx) ([]byte, error) {
 	builder, err := base.prepare(baseTx)
 	if err != nil {
-		return nil, sdktypes.Wrap(err)
+		return nil, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	txByte, err := builder.BuildAndSign(baseTx.From, msg, true)
 	if err != nil {
-		return nil, sdktypes.Wrap(err)
+		return nil, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	base.Logger().Debug("sign transaction success")
 	return txByte, nil
 }
 
-func (base *baseClient) BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx) (sdktypes.ResultTx, sdktypes.Error) {
+func (base *baseClient) BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []types.Msg, baseTx types.BaseTx) (ctypes.ResultTx, error) {
 	txByte, ctx, err := base.buildTxWithAccount(addr, accountNumber, sequence, msg, baseTx)
 	if err != nil {
-		return sdktypes.ResultTx{}, err
+		return ctypes.ResultTx{}, err
 	}
 
 	valid, err := base.ValidateTxSize(len(txByte), msg)
 	if err != nil {
-		return sdktypes.ResultTx{}, err
+		return ctypes.ResultTx{}, err
 	}
 	if !valid {
 		base.Logger().Debug("tx is too large")
 		// filter out transactions that have been sent
 		// reset the maximum number of msg in each transaction
 		//batch = batch / 2
-		return sdktypes.ResultTx{}, sdktypes.GetError(sdktypes.RootCodespace, uint32(sdktypes.TxTooLarge))
+		return ctypes.ResultTx{}, errors.ErrTxTooLarge
 	}
 	return base.broadcastTx(txByte, ctx.Mode())
 }
 
-func (base *baseClient) BuildAndSend(msg []sdktypes.Msg, baseTx sdktypes.BaseTx) (sdktypes.ResultTx, sdktypes.Error) {
-	var res sdktypes.ResultTx
+func (base *baseClient) BuildAndSend(msg []types.Msg, baseTx types.BaseTx) (ctypes.ResultTx, error) {
+	var res ctypes.ResultTx
 	var address string
 
 	// lock the account
@@ -162,43 +158,43 @@ func (base *baseClient) BuildAndSend(msg []sdktypes.Msg, baseTx sdktypes.BaseTx)
 	}
 
 	retryIfFunc := func(err error) bool {
-		e, ok := err.(sdktypes.Error)
-		if ok && sdktypes.Code(e.Code()) == sdktypes.WrongSequence {
-			return true
-		}
-		return false
+		return errors.Code(err) == errors.ErrWrongSequence.Code()
 	}
 
 	onRetryFunc := func(n uint, err error) {
 		_ = base.removeCache(address)
-		base.Logger().Error("wrong sequence, will retry",
-			"address", address, "attempts", n, "err", err.Error())
+		base.Logger().Error(
+			"wrong sequence, will retry",
+			"address", address,
+			"attempts", n,
+			"err", err.Error(),
+		)
 	}
 
-	err := retry.Do(retryableFunc,
+	if err := retry.Do(
+		retryableFunc,
 		retry.Attempts(tryThreshold),
 		retry.RetryIf(retryIfFunc),
 		retry.OnRetry(onRetryFunc),
-	)
-
-	if err != nil {
-		return res, sdktypes.Wrap(err)
+	); err != nil {
+		return res, errors.Wrap(errors.ErrTodo, err.Error())
 	}
+
 	return res, nil
 }
 
-func (base *baseClient) SendBatch(msgs sdktypes.Msgs, baseTx sdktypes.BaseTx) (rs []sdktypes.ResultTx, err sdktypes.Error) {
+func (base *baseClient) SendBatch(msgs types.Msgs, baseTx types.BaseTx) (rs []ctypes.ResultTx, err error) {
 	if msgs == nil || len(msgs) == 0 {
-		return rs, sdktypes.Wrapf("must have at least one message in list")
+		return rs, errors.Wrapf(errors.ErrTodo, "must have at least one message in list")
 	}
 
-	defer sdktypes.CatchPanic(func(errMsg string) {
+	defer errors.CatchPanic(func(errMsg string) {
 		base.Logger().Error("broadcast msg failed", "errMsg", errMsg)
 	})
 	// validate msg
 	for _, m := range msgs {
 		if err := m.ValidateBasic(); err != nil {
-			return rs, sdktypes.Wrap(err)
+			return rs, errors.Wrap(errors.ErrTodo, err.Error())
 		}
 	}
 	base.Logger().Debug("validate msg success")
@@ -211,8 +207,8 @@ func (base *baseClient) SendBatch(msgs sdktypes.Msgs, baseTx sdktypes.BaseTx) (r
 	var batch = maxBatch
 
 	retryableFunc := func() error {
-		for i, ms := range common.SubArray(batch, msgs) {
-			mss := ms.(sdktypes.Msgs)
+		for i, ms := range types.SubArray(batch, msgs) {
+			mss := ms.(types.Msgs)
 			txByte, ctx, err := base.buildTx(mss, baseTx)
 			if err != nil {
 				return err
@@ -228,7 +224,7 @@ func (base *baseClient) SendBatch(msgs sdktypes.Msgs, baseTx sdktypes.BaseTx) (r
 				msgs = msgs[i*batch:]
 				// reset the maximum number of msg in each transaction
 				batch = batch / 2
-				return sdktypes.GetError(sdktypes.RootCodespace, uint32(sdktypes.TxTooLarge))
+				return errors.ErrTxTooLarge
 			}
 			res, err := base.broadcastTx(txByte, ctx.Mode())
 			if err != nil {
@@ -241,17 +237,17 @@ func (base *baseClient) SendBatch(msgs sdktypes.Msgs, baseTx sdktypes.BaseTx) (r
 	}
 
 	retryIf := func(err error) bool {
-		e, ok := err.(sdktypes.Error)
-		if ok && (sdktypes.Code(e.Code()) == sdktypes.InvalidSequence || sdktypes.Code(e.Code()) == sdktypes.TxTooLarge) {
-			return true
-		}
-		return false
+		return errors.Code(err) == errors.ErrInvalidSequence.Code() || errors.Code(err) == errors.ErrTxTooLarge.Code()
 	}
 
 	onRetry := func(n uint, err error) {
 		_ = base.removeCache(address)
-		base.Logger().Error("wrong sequence, will retry",
-			"address", address, "attempts", n, "err", err.Error())
+		base.Logger().Error(
+			"wrong sequence, will retry",
+			"address", address,
+			"attempts", n,
+			"err", err.Error(),
+		)
 	}
 
 	_ = retry.Do(retryableFunc,
@@ -262,13 +258,13 @@ func (base *baseClient) SendBatch(msgs sdktypes.Msgs, baseTx sdktypes.BaseTx) (r
 	return rs, nil
 }
 
-func (base baseClient) QueryWithResponse(path string, data interface{}, result sdktypes.Response) error {
+func (base baseClient) QueryWithResponse(path string, data interface{}, result types.Response) error {
 	res, err := base.Query(path, data)
 	if err != nil {
 		return err
 	}
 
-	if err := base.encodingConfig.Marshaler.UnmarshalJSON(res, result.(proto.Message)); err != nil {
+	if err := base.encodingConfig.Codec.UnmarshalJSON(res, result.(proto.Message)); err != nil {
 		return err
 	}
 
@@ -279,7 +275,7 @@ func (base baseClient) Query(path string, data interface{}) ([]byte, error) {
 	var bz []byte
 	var err error
 	if data != nil {
-		bz, err = base.encodingConfig.Marshaler.MarshalJSON(data.(proto.Message))
+		bz, err = base.encodingConfig.Codec.MarshalJSON(data.(proto.Message))
 		if err != nil {
 			return nil, err
 		}
@@ -296,13 +292,13 @@ func (base baseClient) Query(path string, data interface{}) ([]byte, error) {
 
 	resp := result.Response
 	if !resp.IsOK() {
-		return nil, errors.New(resp.Log)
+		return nil, fmt.Errorf(resp.Log)
 	}
 
 	return resp.Value, nil
 }
 
-func (base baseClient) QueryStore(key sdktypes.HexBytes, storeName string, height int64, prove bool) (res abci.ResponseQuery, err error) {
+func (base baseClient) QueryStore(key types.HexBytes, storeName string, height int64, prove bool) (res abci.ResponseQuery, err error) {
 	path := fmt.Sprintf("/store/%s/%s", storeName, "key")
 	opts := rpcclient.ABCIQueryOptions{
 		Prove:  prove,
@@ -316,13 +312,13 @@ func (base baseClient) QueryStore(key sdktypes.HexBytes, storeName string, heigh
 
 	resp := result.Response
 	if !resp.IsOK() {
-		return res, errors.New(resp.Log)
+		return res, fmt.Errorf(resp.Log)
 	}
 	return resp, nil
 }
 
-func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*sdktypes.Factory, error) {
-	factory := sdktypes.NewFactory().
+func (base *baseClient) prepare(baseTx types.BaseTx) (*types.Factory, error) {
+	factory := types.NewFactory().
 		WithChainID(base.cfg.ChainID).
 		WithKeyManager(base.AccountQuery.Km).
 		WithMode(base.cfg.Mode).
@@ -379,9 +375,8 @@ func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*sdktypes.Factory, erro
 	return factory, nil
 }
 
-// TODO
-func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence uint64, baseTx sdktypes.BaseTx) (*sdktypes.Factory, error) {
-	factory := sdktypes.NewFactory().
+func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence uint64, baseTx types.BaseTx) (*types.Factory, error) {
+	factory := types.NewFactory().
 		WithChainID(base.cfg.ChainID).
 		WithKeyManager(base.AccountQuery.Km).
 		WithMode(base.cfg.Mode).
@@ -423,7 +418,7 @@ func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence 
 	return factory, nil
 }
 
-func (base *baseClient) ValidateTxSize(txSize int, msgs []sdktypes.Msg) (bool, sdktypes.Error) {
+func (base *baseClient) ValidateTxSize(txSize int, msgs []types.Msg) (bool, error) {
 	if uint64(txSize) > base.cfg.TxSizeLimit {
 		return false, nil
 	}

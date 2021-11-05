@@ -1,13 +1,16 @@
 package client
 
 import (
-	"github.com/irisnet/core-sdk-go/types"
-	"github.com/prometheus/common/log"
+	grpc1 "github.com/gogo/protobuf/grpc"
+
+	"github.com/prometheus/common/promlog"
 	"google.golang.org/grpc"
+
+	"github.com/irisnet/core-sdk-go/types"
 )
 
 type grpcClient struct {
-	clientConn *grpc.ClientConn
+	clientConn grpc1.ClientConn
 }
 
 func NewGRPCClient(url string) types.GRPCClient {
@@ -16,12 +19,13 @@ func NewGRPCClient(url string) types.GRPCClient {
 	}
 	clientConn, err := grpc.Dial(url, dialOpts...)
 	if err != nil {
-		log.Error(err.Error())
+		_ = promlog.New(&promlog.Config{}).Log(err.Error())
 		panic(err)
 	}
-	return &grpcClient{clientConn: clientConn}
+	conn := grpc1.ClientConn(clientConn)
+	return grpcClient{clientConn: conn}
 }
 
-func (g grpcClient) GenConn() (*grpc.ClientConn, error) {
+func (g grpcClient) GenConn() (grpc1.ClientConn, error) {
 	return g.clientConn, nil
 }

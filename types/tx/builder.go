@@ -7,7 +7,7 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 
-	codectypes "github.com/irisnet/core-sdk-go/common/codec/types"
+	codectypes "github.com/irisnet/core-sdk-go/codec/types"
 	"github.com/irisnet/core-sdk-go/types"
 	sdk "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/core-sdk-go/types/tx/signing"
@@ -345,7 +345,7 @@ func (w *wrapper) SetNonCriticalExtensionOptions(extOpts ...*codectypes.Any) {
 func PubKeyToAny(key crypto.PubKey) (*codectypes.Any, error) {
 	protoMsg, ok := key.(proto.Message)
 	if !ok {
-		return nil, sdk.Wrap(fmt.Errorf("err invalid key, can't proto encode %T", protoMsg))
+		return nil, fmt.Errorf("err invalid key, can't proto encode %T", protoMsg)
 	}
 	return codectypes.NewAnyWithValue(protoMsg)
 }

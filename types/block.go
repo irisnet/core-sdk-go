@@ -7,8 +7,6 @@ import (
 	"github.com/tendermint/tendermint/crypto/encoding"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmtypes "github.com/tendermint/tendermint/types"
-
-	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
 )
 
 type Block struct {
@@ -19,23 +17,7 @@ type Block struct {
 }
 
 type Data struct {
-	Txs []StdTx `json:"txs"`
-}
-
-func ParseBlock(cdc *commoncodec.LegacyAmino, block *tmtypes.Block) Block {
-	var txs []StdTx
-	for _, tx := range block.Txs {
-		var stdTx StdTx
-		if err := cdc.UnmarshalBinaryBare(tx, &stdTx); err == nil {
-			txs = append(txs, stdTx)
-		}
-	}
-	return Block{
-		Header:     block.Header,
-		Data:       Data{Txs: txs},
-		Evidence:   block.Evidence,
-		LastCommit: block.LastCommit,
-	}
+	Txs []Tx `json:"txs"`
 }
 
 type BlockResult struct {
@@ -82,6 +64,21 @@ func ParseValidatorUpdate(updates []abci.ValidatorUpdate) []ValidatorUpdate {
 	return vUpdates
 }
 
+func ParseBlock(txDecoder TxDecoder, block *tmtypes.Block) Block {
+	var txs []Tx
+	for _, tmTx := range block.Txs {
+		tx, _ := txDecoder(tmTx)
+		txs = append(txs, tx)
+	}
+
+	return Block{
+		Header:     block.Header,
+		Data:       Data{Txs: txs},
+		Evidence:   block.Evidence,
+		LastCommit: block.LastCommit,
+	}
+}
+
 func ParseBlockResult(res *ctypes.ResultBlockResults) BlockResult {
 	var txResults = make([]TxResult, len(res.TxsResults))
 	for i, r := range res.TxsResults {
@@ -108,19 +105,18 @@ func ParseBlockResult(res *ctypes.ResultBlockResults) BlockResult {
 	}
 }
 
-func ParseValidators(cdc *commoncodec.LegacyAmino, vs []*tmtypes.Validator) []Validator {
+func ParseValidators(vs []*tmtypes.Validator) []Validator {
 	var validators = make([]Validator, len(vs))
 	for i, v := range vs {
 		bech32Addr, _ := ConsAddressFromHex(v.Address.String())
-		bech32PubKey, _ := Bech32ifyPubKey(Bech32PubKeyTypeConsPub, v.PubKey)
 
-		var pubKey PubKey
-		if bz, err := cdc.MarshalJSON(v.PubKey); err == nil {
-			_ = cdc.UnmarshalJSON(bz, &pubKey)
+		pubKey := PubKey{
+			Type:  v.PubKey.Type(),
+			Value: base64.StdEncoding.EncodeToString(v.PubKey.Bytes()),
 		}
+
 		validators[i] = Validator{
 			Bech32Address:    bech32Addr.String(),
-			Bech32PubKey:     bech32PubKey,
 			Address:          v.Address.String(),
 			PubKey:           pubKey,
 			VotingPower:      v.VotingPower,

@@ -3,84 +3,64 @@ package client
 import (
 	"context"
 	"encoding/hex"
-	"errors"
 	"strings"
-	"time"
 
 	"github.com/gogo/protobuf/jsonpb"
+
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
-	sdk "github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/core-sdk-go/types/errors"
 )
 
 // QueryTx returns the tx info
-func (base baseClient) QueryTx(hash string) (sdk.ResultQueryTx, error) {
+func (base baseClient) QueryTx(hash string) (ctypes.ResultTx, error) {
 	tx, err := hex.DecodeString(hash)
 	if err != nil {
-		return sdk.ResultQueryTx{}, err
+		return ctypes.ResultTx{}, err
 	}
 
 	res, err := base.Tx(context.Background(), tx, true)
 	if err != nil {
-		return sdk.ResultQueryTx{}, err
+		return ctypes.ResultTx{}, err
 	}
 
-	resBlocks, err := base.getResultBlocks([]*ctypes.ResultTx{res})
-	if err != nil {
-		return sdk.ResultQueryTx{}, err
-	}
-	return base.parseTxResult(res, resBlocks[res.Height])
+	return *res, nil
 }
 
-func (base baseClient) QueryTxs(builder *sdk.EventQueryBuilder, page, size *int) (sdk.ResultSearchTxs, error) {
+func (base baseClient) QueryTxs(builder *types.EventQueryBuilder, page, size *int) (ctypes.ResultTxSearch, error) {
 	query := builder.Build()
 	if len(query) == 0 {
-		return sdk.ResultSearchTxs{}, errors.New("must declare at least one tag to search")
+		return ctypes.ResultTxSearch{}, errors.Wrap(errors.ErrTodo, "must declare at least one tag to search")
 	}
 
 	res, err := base.TxSearch(context.Background(), query, true, page, size, "asc")
 	if err != nil {
-		return sdk.ResultSearchTxs{}, err
+		return ctypes.ResultTxSearch{}, err
 	}
 
-	resBlocks, err := base.getResultBlocks(res.Txs)
-	if err != nil {
-		return sdk.ResultSearchTxs{}, err
-	}
-
-	var txs []sdk.ResultQueryTx
-	for i, tx := range res.Txs {
-		txInfo, err := base.parseTxResult(tx, resBlocks[res.Txs[i].Height])
-		if err != nil {
-			return sdk.ResultSearchTxs{}, err
-		}
-		txs = append(txs, txInfo)
-	}
-
-	return sdk.ResultSearchTxs{
-		Total: res.TotalCount,
-		Txs:   txs,
+	return ctypes.ResultTxSearch{
+		Txs:        res.Txs,
+		TotalCount: res.TotalCount,
 	}, nil
 }
-
-func (base baseClient) QueryBlock(height int64) (sdk.BlockDetail, error) {
+func (base baseClient) QueryBlock(height int64) (types.BlockDetail, error) {
 	block, err := base.Block(context.Background(), &height)
 	if err != nil {
-		return sdk.BlockDetail{}, err
+		return types.BlockDetail{}, err
 	}
 
 	blockResult, err := base.BlockResults(context.Background(), &height)
 	if err != nil {
-		return sdk.BlockDetail{}, err
+		return types.BlockDetail{}, err
 	}
 
-	return sdk.BlockDetail{
+	return types.BlockDetail{
 		BlockID:     block.BlockID,
-		Block:       sdk.ParseBlock(base.encodingConfig.Amino, block.Block),
-		BlockResult: sdk.ParseBlockResult(blockResult),
+		Block:       types.ParseBlock(base.encodingConfig.TxConfig.TxDecoder(), block.Block),
+		BlockResult: types.ParseBlockResult(blockResult),
 	}, nil
 }
-
 func (base baseClient) EstimateTxGas(txBytes []byte) (uint64, error) {
 	res, err := base.ABCIQuery(context.Background(), "/app/simulate", txBytes)
 	if err != nil {
@@ -96,147 +76,103 @@ func (base baseClient) EstimateTxGas(txBytes []byte) (uint64, error) {
 	return adjusted, nil
 }
 
-func (base *baseClient) buildTx(msgs []sdk.Msg, baseTx sdk.BaseTx) ([]byte, *sdk.Factory, sdk.Error) {
+func (base *baseClient) buildTx(msgs []types.Msg, baseTx types.BaseTx) ([]byte, *types.Factory, error) {
 	builder, err := base.prepare(baseTx)
 	if err != nil {
-		return nil, builder, sdk.Wrap(err)
+		return nil, builder, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	txByte, err := builder.BuildAndSign(baseTx.From, msgs, false)
 	if err != nil {
-		return nil, builder, sdk.Wrap(err)
+		return nil, builder, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	base.Logger().Debug("sign transaction success")
 	return txByte, builder, nil
 }
 
-func (base *baseClient) buildTxWithAccount(addr string, accountNumber, sequence uint64, msgs []sdk.Msg, baseTx sdk.BaseTx) ([]byte, *sdk.Factory, sdk.Error) {
+func (base *baseClient) buildTxWithAccount(addr string, accountNumber, sequence uint64, msgs []types.Msg, baseTx types.BaseTx) ([]byte, *types.Factory, error) {
 	builder, err := base.prepareWithAccount(addr, accountNumber, sequence, baseTx)
 	if err != nil {
-		return nil, builder, sdk.Wrap(err)
+		return nil, builder, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	txByte, err := builder.BuildAndSign(baseTx.From, msgs, false)
 	if err != nil {
-		return nil, builder, sdk.Wrap(err)
+		return nil, builder, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	base.Logger().Debug("sign transaction success")
 	return txByte, builder, nil
 }
 
-func (base baseClient) broadcastTx(txBytes []byte, mode sdk.BroadcastMode) (res sdk.ResultTx, err sdk.Error) {
+func (base baseClient) broadcastTx(txBytes []byte, mode types.BroadcastMode) (res ctypes.ResultTx, err error) {
 	switch mode {
-	case sdk.Commit:
+	case types.Commit:
 		res, err = base.broadcastTxCommit(txBytes)
-	case sdk.Async:
+	case types.Async:
 		res, err = base.broadcastTxAsync(txBytes)
-	case sdk.Sync:
+	case types.Sync:
 		res, err = base.broadcastTxSync(txBytes)
 	default:
-		err = sdk.Wrapf("commit mode(%s) not supported", mode)
+		err = errors.Wrapf(errors.ErrTodo, "commit mode(%s) not supported", mode)
 	}
 	return
 }
 
-// broadcastTxCommit broadcasts transaction bytes to a Tendermint node
-// and waits for a commit.
-func (base baseClient) broadcastTxCommit(tx []byte) (sdk.ResultTx, sdk.Error) {
+// broadcastTxCommit broadcasts transaction bytes to a Tendermint node and waits for a commit.
+func (base baseClient) broadcastTxCommit(tx []byte) (ctypes.ResultTx, error) {
 	res, err := base.BroadcastTxCommit(context.Background(), tx)
 	if err != nil {
-		return sdk.ResultTx{}, sdk.Wrap(err)
+		return ctypes.ResultTx{}, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	if !res.CheckTx.IsOK() {
-		return sdk.ResultTx{}, sdk.GetError(res.CheckTx.Codespace, res.CheckTx.Code, res.CheckTx.Log)
+		return ctypes.ResultTx{}, errors.New(res.CheckTx.Codespace, res.CheckTx.Code, res.CheckTx.Log)
 	}
 
 	if !res.DeliverTx.IsOK() {
-		return sdk.ResultTx{}, sdk.GetError(res.DeliverTx.Codespace, res.DeliverTx.Code, res.DeliverTx.Log)
+		return ctypes.ResultTx{}, errors.New(res.DeliverTx.Codespace, res.DeliverTx.Code, res.DeliverTx.Log)
 	}
 
-	return sdk.ResultTx{
-		GasWanted: res.DeliverTx.GasWanted,
-		GasUsed:   res.DeliverTx.GasUsed,
-		Events:    sdk.StringifyEvents(res.DeliverTx.Events),
-		Hash:      res.Hash.String(),
-		Height:    res.Height,
+	return ctypes.ResultTx{
+		Hash:     res.Hash,
+		Height:   res.Height,
+		TxResult: res.DeliverTx,
 	}, nil
 }
 
-// BroadcastTxSync broadcasts transaction bytes to a Tendermint node
-// synchronously.
-func (base baseClient) broadcastTxSync(tx []byte) (sdk.ResultTx, sdk.Error) {
+// BroadcastTxSync broadcasts transaction bytes to a Tendermint node synchronously.
+func (base baseClient) broadcastTxSync(tx []byte) (ctypes.ResultTx, error) {
 	res, err := base.BroadcastTxSync(context.Background(), tx)
 	if err != nil {
-		return sdk.ResultTx{}, sdk.Wrap(err)
+		return ctypes.ResultTx{}, errors.Wrap(errors.ErrTodo, err.Error())
 	}
 
 	if res.Code != 0 {
-		return sdk.ResultTx{}, sdk.GetError(sdk.RootCodespace, res.Code, res.Log)
+		return ctypes.ResultTx{}, errors.New(res.Codespace, res.Code, res.Log)
 	}
 
-	return sdk.ResultTx{Hash: res.Hash.String()}, nil
+	return ctypes.ResultTx{Hash: res.Hash}, nil
 }
 
-// BroadcastTxAsync broadcasts transaction bytes to a Tendermint node
-// asynchronously.
-func (base baseClient) broadcastTxAsync(tx []byte) (sdk.ResultTx, sdk.Error) {
+// BroadcastTxAsync broadcasts transaction bytes to a Tendermint node asynchronously.
+func (base baseClient) broadcastTxAsync(tx []byte) (ctypes.ResultTx, error) {
 	res, err := base.BroadcastTxAsync(context.Background(), tx)
 	if err != nil {
-		return sdk.ResultTx{}, sdk.Wrap(err)
+		return ctypes.ResultTx{}, errors.Wrap(errors.ErrTodo, err.Error())
 	}
-
-	return sdk.ResultTx{Hash: res.Hash.String()}, nil
-}
-
-func (base baseClient) getResultBlocks(resTxs []*ctypes.ResultTx) (map[int64]*ctypes.ResultBlock, error) {
-	resBlocks := make(map[int64]*ctypes.ResultBlock)
-	for _, resTx := range resTxs {
-		if _, ok := resBlocks[resTx.Height]; !ok {
-			resBlock, err := base.Block(context.Background(), &resTx.Height)
-			if err != nil {
-				return nil, err
-			}
-
-			resBlocks[resTx.Height] = resBlock
-		}
-	}
-	return resBlocks, nil
-}
-
-func (base baseClient) parseTxResult(res *ctypes.ResultTx, resBlock *ctypes.ResultBlock) (sdk.ResultQueryTx, error) {
-	var tx sdk.Tx
-	var err error
-
-	if tx, err = base.encodingConfig.TxConfig.TxDecoder()(res.Tx); err != nil {
-		return sdk.ResultQueryTx{}, err
-	}
-
-	return sdk.ResultQueryTx{
-		Hash:   res.Hash.String(),
-		Height: res.Height,
-		Tx:     tx,
-		Result: sdk.TxResult{
-			Code:      res.TxResult.Code,
-			Log:       res.TxResult.Log,
-			GasWanted: res.TxResult.GasWanted,
-			GasUsed:   res.TxResult.GasUsed,
-			Events:    sdk.StringifyEvents(res.TxResult.Events),
-		},
-		Timestamp: resBlock.Block.Time.Format(time.RFC3339),
-	}, nil
+	return ctypes.ResultTx{Hash: res.Hash}, nil
 }
 
 func adjustGasEstimate(estimate uint64, adjustment float64) uint64 {
 	return uint64(adjustment * float64(estimate))
 }
 
-func parseQueryResponse(bz []byte) (sdk.SimulationResponse, error) {
-	var simRes sdk.SimulationResponse
+func parseQueryResponse(bz []byte) (types.SimulationResponse, error) {
+	var simRes types.SimulationResponse
 	if err := jsonpb.Unmarshal(strings.NewReader(string(bz)), &simRes); err != nil {
-		return sdk.SimulationResponse{}, err
+		return types.SimulationResponse{}, err
 	}
 	return simRes, nil
 }

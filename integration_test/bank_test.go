@@ -9,32 +9,17 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/irisnet/core-sdk-go/bank"
+	"github.com/irisnet/core-sdk-go/modules/bank"
 	"github.com/irisnet/core-sdk-go/types"
 )
 
 func (s IntegrationTestSuite) TestBank() {
 	cases := []SubTest{
-		{
-			"TestQueryAccount",
-			queryAccount,
-		},
-		{
-			"TestSend",
-			send,
-		},
-		{
-			"TestMultiSend",
-			multiSend,
-		},
-		{
-			"TestSimulate",
-			simulate,
-		},
-		{
-			"TestSendWitchSpecAccountInfo",
-			sendWitchSpecAccountInfo,
-		},
+		{"TestQueryAccount", queryAccount},
+		{"TestSend", send},
+		{"TestMultiSend", multiSend},
+		{"TestSimulate", simulate},
+		{"TestSendWitchSpecAccountInfo", sendWitchSpecAccountInfo},
 	}
 
 	for _, t := range cases {
@@ -47,7 +32,7 @@ func queryAccount(s IntegrationTestSuite) {
 	s.NoError(err)
 	s.NotEmpty(account)
 	bz, _ := json.Marshal(account)
-	fmt.Println(string(bz))
+	require.NotEmpty(s.T(), bz)
 }
 
 func send(s IntegrationTestSuite) {
@@ -75,9 +60,9 @@ func send(s IntegrationTestSuite) {
 	s.NotEmpty(res.Hash)
 	time.Sleep(1 * time.Second)
 
-	resp, err := s.Manager().QueryTx(res.Hash)
+	resp, err := s.Manager().QueryTx(res.Hash.String())
 	s.NoError(err)
-	s.Equal(resp.Result.Code, uint32(0))
+	s.Equal(resp.TxResult.Code, uint32(0))
 	s.Equal(resp.Height, res.Height)
 
 	<-ch
@@ -154,13 +139,14 @@ func simulate(s IntegrationTestSuite) {
 
 	result, err := s.Bank.Send(to, coins, baseTx)
 	s.NoError(err)
-	s.Greater(result.GasWanted, int64(0))
-	fmt.Println(result)
+	s.Greater(result.TxResult.GasWanted, int64(0))
+	require.NotEmpty(s.T(), result)
 }
 
 func sendWitchSpecAccountInfo(s IntegrationTestSuite) {
 	for i := 0; i < 10; i++ {
 		coins, err := types.ParseDecCoins("10iris")
+		require.NoError(s.T(), err)
 		baseTx := types.BaseTx{
 			From:     s.Account().Name,
 			Gas:      200000,
