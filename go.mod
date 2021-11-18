@@ -3,15 +3,18 @@ module github.com/irisnet/core-sdk-go
 go 1.16
 
 require (
+	github.com/99designs/keyring v1.1.6
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/bluele/gcache v0.0.2
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/cosmos/go-bip39 v1.0.0
+	github.com/dvsekhvalnov/jose2go v0.0.0-20201001154944-b09cfaf05951
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.2
 	github.com/magiconair/properties v1.8.5
-	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
+	github.com/mitchellh/go-homedir v1.1.0
+	github.com/mtibben/percent v0.2.1
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/common v0.23.0
