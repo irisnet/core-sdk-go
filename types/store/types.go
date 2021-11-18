@@ -8,6 +8,10 @@ import (
 	"github.com/irisnet/core-sdk-go/crypto/hd"
 )
 
+const (
+	infoSuffix = "info"
+)
+
 var (
 	_ Info = &localInfo{}
 )
@@ -93,4 +97,8 @@ func (i localInfo) GetAlgo() hd.PubKeyType {
 // GetType implements Info interface
 func (i localInfo) GetPath() (*hd.BIP44Params, error) {
 	return nil, fmt.Errorf("BIP44 Paths are not available for this type")
+}
+
+func infoKey(name string) []byte {
+	return []byte(fmt.Sprintf("%s.%s", name, infoSuffix))
 }
