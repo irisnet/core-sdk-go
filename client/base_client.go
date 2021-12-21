@@ -110,7 +110,7 @@ func (base *baseClient) BuildAndSign(msg []sdktypes.Msg, baseTx sdktypes.BaseTx)
 		return nil, sdktypes.Wrap(err)
 	}
 
-	txByte, err := builder.BuildAndSign(baseTx.From, msg, true)
+	txByte, err := builder.BuildAndSign(baseTx.From, msg, false)
 	if err != nil {
 		return nil, sdktypes.Wrap(err)
 	}
