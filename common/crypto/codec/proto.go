@@ -1,6 +1,7 @@
 package codec
 
 import (
+	"github.com/irisnet/core-sdk-go/common/crypto/keys/sm2"
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 
 	codectypes "github.com/irisnet/core-sdk-go/common/codec/types"
@@ -18,10 +19,12 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	registry.RegisterInterface("tendermint.crypto.Pubkey", (*tmcrypto.PubKey)(nil))
 	registry.RegisterImplementations((*tmcrypto.PubKey)(nil), &ed25519.PubKey{})
 	registry.RegisterImplementations((*tmcrypto.PubKey)(nil), &secp256k1.PubKey{})
+	registry.RegisterImplementations((*tmcrypto.PubKey)(nil), &sm2.PubKey{})
 	registry.RegisterImplementations((*tmcrypto.PubKey)(nil), &multisig.LegacyAminoPubKey{})
 
 	registry.RegisterInterface("cosmos.crypto.Pubkey", (*cryptotypes.PubKey)(nil))
 	registry.RegisterImplementations((*cryptotypes.PubKey)(nil), &ed25519.PubKey{})
 	registry.RegisterImplementations((*cryptotypes.PubKey)(nil), &secp256k1.PubKey{})
+	registry.RegisterImplementations((*cryptotypes.PubKey)(nil), &sm2.PubKey{})
 	registry.RegisterImplementations((*cryptotypes.PubKey)(nil), &multisig.LegacyAminoPubKey{})
 }

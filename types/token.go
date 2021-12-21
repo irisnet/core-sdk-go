@@ -11,6 +11,11 @@ type Token struct {
 	Owner         string `json:"owner"`
 }
 
+// Size todo ??
+func (c Token) Size() uint64 {
+	return 0
+}
+
 // GetCoinType returns CnType
 func (t Token) GetCoinType() CoinType {
 	return CoinType{

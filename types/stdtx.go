@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
+	"github.com/irisnet/core-sdk-go/common/codec"
 )
 
 const (
@@ -18,9 +18,40 @@ const (
 	Commit BroadcastMode = "commit"
 )
 
-type BroadcastMode string
+type (
+	UnwrappedTx struct {
+		Body     UnwrappedTxBody
+		AuthInfo UnwrappedAuthInfo
+	}
 
-type Msgs []Msg
+	UnwrappedTxBody struct {
+		Msgs []Msg
+		// memo is any arbitrary memo to be added to the transaction
+		Memo string
+		// timeout is the block height after which this transaction will not
+		// be processed by the chain
+		TimeoutHeight uint64
+	}
+
+	UnwrappedAuthInfo struct {
+		Signatures []UnwrappedSignature
+		Fee        *StdFee
+	}
+
+	UnwrappedSignature struct {
+		PubKey   UnwrappedPubKey
+		Sig      []byte
+		Sequence uint64
+	}
+
+	UnwrappedPubKey struct {
+		Type  string
+		Value string
+	}
+
+	BroadcastMode string
+	Msgs          []Msg
+)
 
 func (m Msgs) Len() int {
 	return len(m)
@@ -38,15 +69,16 @@ type StdFee struct {
 	Gas    uint64 `json:"gas"`
 }
 
-func NewStdFee(gas uint64, amount ...Coin) StdFee {
-	return StdFee{
-		Amount: amount,
-		Gas:    gas,
-	}
-}
-
 // Fee bytes for signing later
 func (fee StdFee) Bytes() []byte {
+	//if len(fee.Amount) == 0 {
+	//	fee.Amount = Coins{}
+	//}
+	//bz, err := NewCodec().MarshalJSON(fee)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//return bz
 	//TODO
 	return nil
 }
@@ -70,7 +102,7 @@ type StdSignMsg struct {
 }
 
 // get message bytes
-func (msg StdSignMsg) Bytes(cdc commoncodec.Marshaler) []byte {
+func (msg StdSignMsg) Bytes(cdc codec.Marshaler) []byte {
 	var msgsBytes []json.RawMessage
 	for _, msg := range msg.Msgs {
 		msgsBytes = append(msgsBytes, json.RawMessage(msg.GetSignBytes()))
@@ -206,6 +238,7 @@ type BaseTx struct {
 type ResultTx struct {
 	GasWanted int64        `json:"gas_wanted"`
 	GasUsed   int64        `json:"gas_used"`
+	Data      []byte       `json:"data"`
 	Events    StringEvents `json:"events"`
 	Hash      string       `json:"hash"`
 	Height    int64        `json:"height"`
@@ -213,11 +246,11 @@ type ResultTx struct {
 
 // ResultQueryTx is used to prepare info to display
 type ResultQueryTx struct {
-	Hash      string   `json:"hash"`
-	Height    int64    `json:"height"`
-	Tx        Tx       `json:"tx"`
-	Result    TxResult `json:"result"`
-	Timestamp string   `json:"timestamp"`
+	Hash      string      `json:"hash"`
+	Height    int64       `json:"height"`
+	Tx        UnwrappedTx `json:"tx"`
+	Result    TxResult    `json:"result"`
+	Timestamp string      `json:"timestamp"`
 }
 
 // ResultSearchTxs defines a structure for querying txs pageable
