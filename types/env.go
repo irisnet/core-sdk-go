@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	PrefixCfg = &AddrPrefixCfg{
+	prefixCfg = &AddrPrefixCfg{
 		AccountAddr:   prefixChain + prefixAccount + prefixAddress,
 		ValidatorAddr: prefixChain + prefixValidator + prefixAddress,
 		ConsensusAddr: prefixChain + prefixConsensus + prefixAddress,
@@ -40,9 +40,13 @@ type AddrPrefixCfg struct {
 	ConsensusPub  string
 }
 
+func setAddrPrefix(prefix *AddrPrefixCfg) {
+	prefixCfg = prefix
+}
+
 // GetAddrPrefixCfg returns the config instance for the corresponding Network type
 func GetAddrPrefixCfg() *AddrPrefixCfg {
-	return PrefixCfg
+	return prefixCfg
 }
 
 // GetBech32AccountAddrPrefix returns the Bech32 prefix for account address

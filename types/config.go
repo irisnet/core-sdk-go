@@ -71,7 +71,7 @@ type ClientConfig struct {
 	TxSizeLimit uint64
 
 	// bech32 Address Prefix
-	Bech32AddressPrefix AddrPrefixCfg
+	Bech32AddressPrefix *AddrPrefixCfg
 
 	// BIP44 path
 	BIP44Path string
@@ -292,16 +292,11 @@ func KeyManagerOption(keyManager crypto.KeyManager) Option {
 	}
 }
 
-func Bech32AddressPrefixOption(bech32AddressPrefix AddrPrefixCfg) Option {
+func Bech32AddressPrefixOption(prefix *AddrPrefixCfg) Option {
 	return func(cfg *ClientConfig) error {
-
-		if bech32AddressPrefix.AccountAddr == "" || bech32AddressPrefix.ValidatorAddr == "" || bech32AddressPrefix.ConsensusAddr == "" {
-			bech32AddressPrefix = *PrefixCfg
+		if prefix != nil {
+			setAddrPrefix(prefix)
 		}
-		if bech32AddressPrefix.AccountPub == "" || bech32AddressPrefix.ValidatorPub == "" || bech32AddressPrefix.ConsensusPub == "" {
-			bech32AddressPrefix = *PrefixCfg
-		}
-		cfg.Bech32AddressPrefix = bech32AddressPrefix
 		return nil
 	}
 }
