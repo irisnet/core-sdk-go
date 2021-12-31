@@ -74,9 +74,6 @@ type ClientConfig struct {
 
 	TxSizeLimit uint64
 
-	// bech32 Address Prefix
-	Bech32AddressPrefix *AddrPrefixCfg
-
 	// BIP44 path
 	BIP44Path string
 
@@ -85,6 +82,9 @@ type ClientConfig struct {
 
 	// WSAddr for ws or wss protocol
 	WSAddr string
+
+	// bech32 Address Prefix
+	bech32Prefix *AddrPrefixCfg
 }
 
 func NewClientConfig(rpcAddr, grpcAddr, chainID string, options ...Option) (ClientConfig, error) {
@@ -154,7 +154,7 @@ func (cfg *ClientConfig) checkAndSetDefault() error {
 		return err
 	}
 
-	if err := Bech32AddressPrefixOption(cfg.Bech32AddressPrefix)(cfg); err != nil {
+	if err := Bech32AddressPrefixOption(cfg.bech32Prefix)(cfg); err != nil {
 		return err
 	}
 
