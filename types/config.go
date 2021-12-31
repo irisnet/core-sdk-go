@@ -75,6 +75,9 @@ type ClientConfig struct {
 
 	// BIP44 path
 	BIP44Path string
+
+	// Header for rpc or http
+	Header map[string][]string
 }
 
 func NewClientConfig(uri, grpcAddr, chainID string, options ...Option) (ClientConfig, error) {
@@ -306,6 +309,13 @@ func BIP44PathOption(bIP44Path string) Option {
 			bIP44Path = FullPath
 		}
 		cfg.BIP44Path = bIP44Path
+		return nil
+	}
+}
+
+func HeaderOption(header map[string][]string) Option {
+	return func(cfg *ClientConfig) error {
+		cfg.Header = header
 		return nil
 	}
 }

@@ -56,7 +56,13 @@ func NewBaseClient(cfg sdktypes.ClientConfig, encodingConfig sdktypes.EncodingCo
 	}
 
 	base := baseClient{
-		TmClient:       NewRPCClient(cfg.NodeURI, encodingConfig.Amino, encodingConfig.TxConfig.TxDecoder(), logger, cfg.Timeout, nil),
+		TmClient: NewRPCClient(
+			cfg.NodeURI,
+			encodingConfig.Amino,
+			encodingConfig.TxConfig.TxDecoder(),
+			logger,
+			cfg.Timeout, cfg.Header,
+		),
 		cfg:            &cfg,
 		encodingConfig: encodingConfig,
 		l:              NewLocker(concurrency).setLogger(logger),
