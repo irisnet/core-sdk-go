@@ -25,8 +25,8 @@ const (
 )
 
 type ClientConfig struct {
-	// irishub node rpc address
-	NodeURI string
+	// RPCAddr node rpc address
+	RPCAddr string
 
 	// irishub grpc address
 	GRPCAddr string
@@ -78,11 +78,14 @@ type ClientConfig struct {
 
 	// Header for rpc or http
 	Header map[string][]string
+
+	// WSAddr for ws or wss protocol
+	WSAddr string
 }
 
-func NewClientConfig(uri, grpcAddr, chainID string, options ...Option) (ClientConfig, error) {
+func NewClientConfig(rpcAddr, grpcAddr, chainID string, options ...Option) (ClientConfig, error) {
 	cfg := ClientConfig{
-		NodeURI:  uri,
+		RPCAddr:  rpcAddr,
 		ChainID:  chainID,
 		GRPCAddr: grpcAddr,
 	}
@@ -99,7 +102,7 @@ func NewClientConfig(uri, grpcAddr, chainID string, options ...Option) (ClientCo
 }
 
 func (cfg *ClientConfig) checkAndSetDefault() error {
-	if len(cfg.NodeURI) == 0 {
+	if len(cfg.RPCAddr) == 0 {
 		return fmt.Errorf("nodeURI is required")
 	}
 
@@ -316,6 +319,13 @@ func BIP44PathOption(bIP44Path string) Option {
 func HeaderOption(header map[string][]string) Option {
 	return func(cfg *ClientConfig) error {
 		cfg.Header = header
+		return nil
+	}
+}
+
+func WSAddrOption(wsAddr string) Option {
+	return func(cfg *ClientConfig) error {
+		cfg.WSAddr = wsAddr
 		return nil
 	}
 }

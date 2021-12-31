@@ -3,8 +3,6 @@ package client
 import (
 	"context"
 	"fmt"
-	"net/http"
-
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/log"
 	rpc "github.com/tendermint/tendermint/rpc/client"
@@ -14,6 +12,7 @@ import (
 
 	"github.com/irisnet/core-sdk-go/common/uuid"
 	sdk "github.com/irisnet/core-sdk-go/types"
+	sdktypes "github.com/irisnet/core-sdk-go/types"
 	sdkrpc "github.com/irisnet/core-sdk-go/types/rpc"
 )
 
@@ -24,20 +23,23 @@ type rpcClient struct {
 	txDecoder sdk.TxDecoder
 }
 
-func NewRPCClient(
-	remote string,
+func NewRPCClient(cfg sdktypes.ClientConfig,
 	cdc *commoncodec.LegacyAmino,
 	txDecoder sdk.TxDecoder,
 	logger log.Logger,
-	timeout uint,
-	header http.Header,
 ) sdk.TmClient {
-	client, err := sdkrpc.NewJSONRpcClient(remote, "/websocket", timeout, header)
+	client, err := sdkrpc.NewJSONRpcClient(
+		cfg.RPCAddr,
+		cfg.WSAddr,
+		"/websocket",
+		cfg.Timeout,
+		cfg.Header,
+	)
 	if err != nil {
 		panic(err)
 	}
 
-	if err = client.Start(); err != nil {
+	if err := client.Start(); err != nil {
 		panic(err)
 	}
 	return rpcClient{
@@ -48,7 +50,6 @@ func NewRPCClient(
 	}
 }
 
-// =============================================================================
 // SubscribeNewBlock implement WSClient interface
 func (r rpcClient) SubscribeNewBlock(builder *sdk.EventQueryBuilder, handler sdk.EventNewBlockHandler) (sdk.Subscription, sdk.Error) {
 	if builder == nil {

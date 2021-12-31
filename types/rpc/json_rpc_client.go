@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strconv"
 	"time"
@@ -33,16 +34,30 @@ type JSONRpcClient struct {
 	*WSEvents
 }
 
-func NewJSONRpcClient(remote string, endpoint string, timeout uint, header http.Header) (JSONRpcClient, error) {
-	wsEvents, err := newWSEvents(remote, endpoint, header)
+func NewJSONRpcClient(rpcAddr, wsAddr string, endpoint string, timeout uint, header http.Header) (JSONRpcClient, error) {
+	if wsAddr == "" {
+		wsAddr = rpcAddr
+	}
+	wsEvents, err := newWSEvents(wsAddr, endpoint, header)
 	if err != nil {
 		return JSONRpcClient{}, err
 	}
-	client := http.DefaultClient
-	client.Timeout = time.Duration(timeout) * time.Second
+
+	httpClient, err := DefaultHTTPClient(rpcAddr)
+	if err != nil {
+		return JSONRpcClient{}, err
+	}
+
+	parsedURL, err := newParsedURL(rpcAddr)
+	if err != nil {
+		return JSONRpcClient{}, fmt.Errorf("invalid rpcAddr %s: %s", rpcAddr, err)
+	}
+	parsedURL.SetDefaultSchemeHTTP()
+
+	httpClient.Timeout = time.Duration(timeout) * time.Second
 	return JSONRpcClient{
-		remote:   remote,
-		client:   client,
+		remote:   parsedURL.GetTrimmedURL(),
+		client:   httpClient,
 		header:   header,
 		WSEvents: wsEvents,
 	}, nil
@@ -375,4 +390,48 @@ func (c JSONRpcClient) broadcastTX(ctx context.Context, route string, tx tmtypes
 		return nil, err
 	}
 	return result, nil
+}
+
+//-------------------------------------------------------------
+
+func makeHTTPDialer(remoteAddr string) (func(string, string) (net.Conn, error), error) {
+	u, err := newParsedURL(remoteAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	protocol := u.Scheme
+
+	// accept http(s) as an alias for tcp
+	switch protocol {
+	case protoHTTP, protoHTTPS:
+		protocol = protoTCP
+	}
+
+	dialFn := func(proto, addr string) (net.Conn, error) {
+		return net.Dial(protocol, u.GetHostWithPath())
+	}
+
+	return dialFn, nil
+}
+
+// DefaultHTTPClient is used to create an http client with some default parameters.
+// We overwrite the http.Client.Dial so we can do http over tcp or unix.
+// remoteAddr should be fully featured (eg. with tcp:// or unix://).
+// An error will be returned in case of invalid remoteAddr.
+func DefaultHTTPClient(remoteAddr string) (*http.Client, error) {
+	dialFn, err := makeHTTPDialer(remoteAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			// Set to true to prevent GZIP-bomb DoS attacks
+			DisableCompression: true,
+			Dial:               dialFn,
+		},
+	}
+
+	return client, nil
 }

@@ -774,6 +774,34 @@ func newParsedURL(remoteAddr string) (*parsedURL, error) {
 
 	return &parsedURL{*u}, nil
 }
+// Change protocol to HTTP for unknown protocols and TCP protocol - useful for RPC connections
+func (u *parsedURL) SetDefaultSchemeHTTP() {
+	// protocol to use for http operations, to support both http and https
+	switch u.Scheme {
+	case protoHTTP, protoHTTPS, protoWS, protoWSS:
+		// known protocols not changed
+	default:
+		// default to http for unknown protocols (ex. tcp)
+		u.Scheme = protoHTTP
+	}
+}
+
+// Get full address without the protocol - useful for Dialer connections
+func (u parsedURL) GetHostWithPath() string {
+	// Remove protocol, userinfo and # fragment, assume opaque is empty
+	return u.Host + u.EscapedPath()
+}
+
+// Get a trimmed address with protocol - useful as address in RPC connections
+func (u parsedURL) GetTrimmedURL() string {
+	return u.Scheme + "://" + u.GetTrimmedHostWithPath()
+}
+
+// Get a trimmed address - useful for WS connections
+func (u parsedURL) GetTrimmedHostWithPath() string {
+	// replace / with . for http requests (kvstore domain)
+	return strings.ReplaceAll(u.GetHostWithPath(), "/", ".")
+}
 
 func validateResponseID(id interface{}) error {
 	if id == nil {
@@ -784,25 +812,4 @@ func validateResponseID(id interface{}) error {
 		return fmt.Errorf("expected JSONRPCIntID, but got: %T", id)
 	}
 	return nil
-}
-
-func makeHTTPDialer(remoteAddr string) (func(string, string) (net.Conn, error), error) {
-	u, err := newParsedURL(remoteAddr)
-	if err != nil {
-		return nil, err
-	}
-
-	protocol := u.Scheme
-
-	// accept http(s) as an alias for tcp
-	switch protocol {
-	case protoHTTP, protoHTTPS:
-		protocol = protoTCP
-	}
-
-	dialFn := func(proto, addr string) (net.Conn, error) {
-		return net.Dial(proto, addr)
-	}
-
-	return dialFn, nil
 }
