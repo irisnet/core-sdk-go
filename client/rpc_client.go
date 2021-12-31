@@ -3,17 +3,18 @@ package client
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/log"
 	rpc "github.com/tendermint/tendermint/rpc/client"
-	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
 
 	"github.com/irisnet/core-sdk-go/common/uuid"
 	sdk "github.com/irisnet/core-sdk-go/types"
+	sdkrpc "github.com/irisnet/core-sdk-go/types/rpc"
 )
 
 type rpcClient struct {
@@ -29,13 +30,16 @@ func NewRPCClient(
 	txDecoder sdk.TxDecoder,
 	logger log.Logger,
 	timeout uint,
+	header http.Header,
 ) sdk.TmClient {
-	client, err := rpchttp.NewWithTimeout(remote, "/websocket", timeout)
+	client, err := sdkrpc.NewJSONRpcClient(remote, "/websocket", header)
 	if err != nil {
 		panic(err)
 	}
 
-	_ = client.Start()
+	if err = client.Start(); err != nil {
+		panic(err)
+	}
 	return rpcClient{
 		Client:    client,
 		Logger:    logger,
