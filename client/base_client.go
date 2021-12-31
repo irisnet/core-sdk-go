@@ -10,9 +10,8 @@ import (
 	"strings"
 	"time"
 
-	grpc1 "github.com/gogo/protobuf/grpc"
-
 	"github.com/avast/retry-go"
+	grpc1 "github.com/gogo/protobuf/grpc"
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"

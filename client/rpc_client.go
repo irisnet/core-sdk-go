@@ -9,7 +9,6 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
-
 	"github.com/irisnet/core-sdk-go/common/uuid"
 	sdk "github.com/irisnet/core-sdk-go/types"
 	sdktypes "github.com/irisnet/core-sdk-go/types"
