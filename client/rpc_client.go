@@ -32,7 +32,7 @@ func NewRPCClient(
 	timeout uint,
 	header http.Header,
 ) sdk.TmClient {
-	client, err := sdkrpc.NewJSONRpcClient(remote, "/websocket", header)
+	client, err := sdkrpc.NewJSONRpcClient(remote, "/websocket", timeout, header)
 	if err != nil {
 		panic(err)
 	}

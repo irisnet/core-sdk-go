@@ -7,9 +7,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	grpc1 "github.com/gogo/protobuf/grpc"
 	"strings"
 	"time"
+
+	grpc1 "github.com/gogo/protobuf/grpc"
 
 	"github.com/avast/retry-go"
 	"github.com/gogo/protobuf/proto"
@@ -55,7 +56,7 @@ func NewBaseClient(cfg sdktypes.ClientConfig, encodingConfig sdktypes.EncodingCo
 	}
 
 	base := baseClient{
-		TmClient:       NewRPCClient(cfg.NodeURI, encodingConfig.Amino, encodingConfig.TxConfig.TxDecoder(), logger, cfg.Timeout),
+		TmClient:       NewRPCClient(cfg.NodeURI, encodingConfig.Amino, encodingConfig.TxConfig.TxDecoder(), logger, cfg.Timeout, nil),
 		cfg:            &cfg,
 		encodingConfig: encodingConfig,
 		l:              NewLocker(concurrency).setLogger(logger),

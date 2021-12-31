@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -26,18 +27,22 @@ var errNotRunning = errors.New("client is not running. Use .Start() method to st
 var _ service.Service = (*JSONRpcClient)(nil)
 
 type JSONRpcClient struct {
-	address string
-	header  http.Header
+	remote string
+	client *http.Client
+	header http.Header
 	*WSEvents
 }
 
-func NewJSONRpcClient(remote string, endpoint string, header http.Header) (JSONRpcClient, error) {
+func NewJSONRpcClient(remote string, endpoint string, timeout uint, header http.Header) (JSONRpcClient, error) {
 	wsEvents, err := newWSEvents(remote, endpoint, header)
 	if err != nil {
 		return JSONRpcClient{}, err
 	}
+	client := http.DefaultClient
+	client.Timeout = time.Duration(timeout) * time.Second
 	return JSONRpcClient{
-		address:  remote,
+		remote:   remote,
+		client:   client,
 		header:   header,
 		WSEvents: wsEvents,
 	}, nil
@@ -172,7 +177,15 @@ func (c JSONRpcClient) Block(ctx context.Context, height *int64) (*ctypes.Result
 }
 
 func (c JSONRpcClient) BlockByHash(ctx context.Context, hash []byte) (*ctypes.ResultBlock, error) {
-	panic("implement me")
+	result := new(ctypes.ResultBlock)
+	params := map[string]interface{}{
+		"hash": hash,
+	}
+	_, err := c.Call(ctx, "block_by_hash", params, result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (c JSONRpcClient) BlockResults(ctx context.Context, height *int64) (*ctypes.ResultBlockResults, error) {
@@ -189,11 +202,35 @@ func (c JSONRpcClient) BlockResults(ctx context.Context, height *int64) (*ctypes
 }
 
 func (c JSONRpcClient) Commit(ctx context.Context, height *int64) (*ctypes.ResultCommit, error) {
-	panic("implement me")
+	result := new(ctypes.ResultCommit)
+	params := make(map[string]interface{})
+	if height != nil {
+		params["height"] = height
+	}
+	_, err := c.Call(ctx, "commit", params, result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (c JSONRpcClient) Validators(ctx context.Context, height *int64, page, perPage *int) (*ctypes.ResultValidators, error) {
-	panic("implement me")
+	result := new(ctypes.ResultValidators)
+	params := make(map[string]interface{})
+	if page != nil {
+		params["page"] = page
+	}
+	if perPage != nil {
+		params["per_page"] = perPage
+	}
+	if height != nil {
+		params["height"] = height
+	}
+	_, err := c.Call(ctx, "validators", params, result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (c JSONRpcClient) Tx(ctx context.Context, hash []byte, prove bool) (*ctypes.ResultTx, error) {
@@ -288,7 +325,7 @@ func (c *JSONRpcClient) mapToRequest(method string, params map[string]interface{
 	return json.Marshal(paramsMap)
 }
 func (c *JSONRpcClient) Do(req *http.Request) (*http.Response, error) {
-	return http.DefaultClient.Do(req)
+	return c.client.Do(req)
 }
 
 func (c *JSONRpcClient) Call(ctx context.Context, method string, params map[string]interface{}, result interface{}) (interface{}, error) {
@@ -297,7 +334,7 @@ func (c *JSONRpcClient) Call(ctx context.Context, method string, params map[stri
 		return nil, fmt.Errorf("request failed: %s", err.Error())
 	}
 
-	req, err := http.NewRequest(http.MethodPost, c.address, bytes.NewReader(requestBytes))
+	req, err := http.NewRequest(http.MethodPost, c.remote, bytes.NewReader(requestBytes))
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %s", err.Error())
 	}
