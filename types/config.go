@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"google.golang.org/grpc"
 	"os"
 
 	"github.com/irisnet/core-sdk-go/common/crypto"
@@ -30,6 +31,9 @@ type ClientConfig struct {
 
 	// irishub grpc address
 	GRPCAddr string
+
+	// grpc dial options
+	GRPCOptions []grpc.DialOption
 
 	// irishub chain-id
 	ChainID string
@@ -321,6 +325,13 @@ func HeaderOption(header map[string][]string) Option {
 func WSAddrOption(wsAddr string) Option {
 	return func(cfg *ClientConfig) error {
 		cfg.WSAddr = wsAddr
+		return nil
+	}
+}
+
+func GRPCOptions(gRPCOptions []grpc.DialOption) Option {
+	return func(cfg *ClientConfig) error {
+		cfg.GRPCOptions = gRPCOptions
 		return nil
 	}
 }
