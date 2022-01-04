@@ -246,7 +246,7 @@ type WSClient struct { // nolint: maligned
 	Address  string // IP:PORT or /path/to/socket
 	Endpoint string // /websocket/url/endpoint
 	Header   http.Header
-	Dialer   func(string, string) (net.Conn, error)
+	Dialer   func(context.Context, string, string) (net.Conn, error)
 
 	// Single user facing channel to read RPCResponses from, closed only when the
 	// client is being stopped.
@@ -473,8 +473,8 @@ func (c *WSClient) nextRequestID() types.JSONRPCIntID {
 
 func (c *WSClient) dial(header http.Header) error {
 	dialer := &websocket.Dialer{
-		NetDial: c.Dialer,
-		Proxy:   http.ProxyFromEnvironment,
+		NetDialContext: c.Dialer,
+		Proxy:          http.ProxyFromEnvironment,
 	}
 	conn, _, err := dialer.Dial(c.protocol+"://"+c.Address+c.Endpoint, header) // nolint:bodyclose
 	if err != nil {
@@ -774,6 +774,7 @@ func newParsedURL(remoteAddr string) (*parsedURL, error) {
 
 	return &parsedURL{*u}, nil
 }
+
 // Change protocol to HTTP for unknown protocols and TCP protocol - useful for RPC connections
 func (u *parsedURL) SetDefaultSchemeHTTP() {
 	// protocol to use for http operations, to support both http and https
