@@ -64,19 +64,24 @@ func NewJSONRpcClient(rpcAddr, wsAddr string, endpoint string, timeout uint, hea
 }
 
 func (c JSONRpcClient) Quit() <-chan struct{} {
-	panic("implement me")
+	return c.WSEvents.Quit()
 }
 
 func (c JSONRpcClient) String() string {
-	panic("implement me")
+	return ""
 }
 
 func (c JSONRpcClient) SetLogger(logger log.Logger) {
-	panic("implement me")
+	c.WSEvents.SetLogger(logger)
 }
 
 func (c JSONRpcClient) ABCIInfo(ctx context.Context) (*ctypes.ResultABCIInfo, error) {
-	panic("implement me")
+	result := new(ctypes.ResultABCIInfo)
+	_, err := c.Call(ctx, "abci_info", map[string]interface{}{}, result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (c JSONRpcClient) ABCIQuery(ctx context.Context, path string, data tmbytes.HexBytes) (*ctypes.ResultABCIQuery, error) {
