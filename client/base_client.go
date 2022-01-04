@@ -7,11 +7,11 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	grpc1 "github.com/gogo/protobuf/grpc"
 	"strings"
 	"time"
 
 	"github.com/avast/retry-go"
+	grpc1 "github.com/gogo/protobuf/grpc"
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
@@ -55,7 +55,12 @@ func NewBaseClient(cfg sdktypes.ClientConfig, encodingConfig sdktypes.EncodingCo
 	}
 
 	base := baseClient{
-		TmClient:       NewRPCClient(cfg.NodeURI, encodingConfig.Amino, encodingConfig.TxConfig.TxDecoder(), logger, cfg.Timeout),
+		TmClient: NewRPCClient(
+			cfg,
+			encodingConfig.Amino,
+			encodingConfig.TxConfig.TxDecoder(),
+			logger,
+		),
 		cfg:            &cfg,
 		encodingConfig: encodingConfig,
 		l:              NewLocker(concurrency).setLogger(logger),
@@ -69,7 +74,7 @@ func NewBaseClient(cfg sdktypes.ClientConfig, encodingConfig sdktypes.EncodingCo
 	c := commoncache.NewCache(cacheCapacity, cfg.Cached)
 	base.AccountQuery = AccountQuery{
 		Queries:    base,
-		GRPCClient: NewGRPCClient(cfg.GRPCAddr),
+		GRPCClient: NewGRPCClient(cfg.GRPCAddr, cfg.GRPCOptions...),
 		Logger:     logger,
 		Cache:      c,
 		cdc:        encodingConfig.Marshaler,

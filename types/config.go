@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"google.golang.org/grpc"
 	"os"
 
 	"github.com/irisnet/core-sdk-go/common/crypto"
@@ -25,11 +26,14 @@ const (
 )
 
 type ClientConfig struct {
-	// irishub node rpc address
-	NodeURI string
+	// RPCAddr node rpc address
+	RPCAddr string
 
 	// irishub grpc address
 	GRPCAddr string
+
+	// grpc dial options
+	GRPCOptions []grpc.DialOption
 
 	// irishub chain-id
 	ChainID string
@@ -70,16 +74,22 @@ type ClientConfig struct {
 
 	TxSizeLimit uint64
 
-	// bech32 Address Prefix
-	Bech32AddressPrefix AddrPrefixCfg
-
 	// BIP44 path
 	BIP44Path string
+
+	// Header for rpc or http
+	Header map[string][]string
+
+	// WSAddr for ws or wss protocol
+	WSAddr string
+
+	// bech32 Address Prefix
+	bech32Prefix *AddrPrefixCfg
 }
 
-func NewClientConfig(uri, grpcAddr, chainID string, options ...Option) (ClientConfig, error) {
+func NewClientConfig(rpcAddr, grpcAddr, chainID string, options ...Option) (ClientConfig, error) {
 	cfg := ClientConfig{
-		NodeURI:  uri,
+		RPCAddr:  rpcAddr,
 		ChainID:  chainID,
 		GRPCAddr: grpcAddr,
 	}
@@ -96,7 +106,7 @@ func NewClientConfig(uri, grpcAddr, chainID string, options ...Option) (ClientCo
 }
 
 func (cfg *ClientConfig) checkAndSetDefault() error {
-	if len(cfg.NodeURI) == 0 {
+	if len(cfg.RPCAddr) == 0 {
 		return fmt.Errorf("nodeURI is required")
 	}
 
@@ -144,7 +154,7 @@ func (cfg *ClientConfig) checkAndSetDefault() error {
 		return err
 	}
 
-	if err := Bech32AddressPrefixOption(cfg.Bech32AddressPrefix)(cfg); err != nil {
+	if err := Bech32AddressPrefixOption(cfg.bech32Prefix)(cfg); err != nil {
 		return err
 	}
 
@@ -286,16 +296,11 @@ func KeyManagerOption(keyManager crypto.KeyManager) Option {
 	}
 }
 
-func Bech32AddressPrefixOption(bech32AddressPrefix AddrPrefixCfg) Option {
+func Bech32AddressPrefixOption(prefix *AddrPrefixCfg) Option {
 	return func(cfg *ClientConfig) error {
-
-		if bech32AddressPrefix.AccountAddr == "" || bech32AddressPrefix.ValidatorAddr == "" || bech32AddressPrefix.ConsensusAddr == "" {
-			bech32AddressPrefix = *PrefixCfg
+		if prefix != nil {
+			setAddrPrefix(prefix)
 		}
-		if bech32AddressPrefix.AccountPub == "" || bech32AddressPrefix.ValidatorPub == "" || bech32AddressPrefix.ConsensusPub == "" {
-			bech32AddressPrefix = *PrefixCfg
-		}
-		cfg.Bech32AddressPrefix = bech32AddressPrefix
 		return nil
 	}
 }
@@ -306,6 +311,27 @@ func BIP44PathOption(bIP44Path string) Option {
 			bIP44Path = FullPath
 		}
 		cfg.BIP44Path = bIP44Path
+		return nil
+	}
+}
+
+func HeaderOption(header map[string][]string) Option {
+	return func(cfg *ClientConfig) error {
+		cfg.Header = header
+		return nil
+	}
+}
+
+func WSAddrOption(wsAddr string) Option {
+	return func(cfg *ClientConfig) error {
+		cfg.WSAddr = wsAddr
+		return nil
+	}
+}
+
+func GRPCOptions(gRPCOptions []grpc.DialOption) Option {
+	return func(cfg *ClientConfig) error {
+		cfg.GRPCOptions = gRPCOptions
 		return nil
 	}
 }

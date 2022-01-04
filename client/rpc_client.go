@@ -3,17 +3,16 @@ package client
 import (
 	"context"
 	"fmt"
-
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/log"
 	rpc "github.com/tendermint/tendermint/rpc/client"
-	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
-
 	"github.com/irisnet/core-sdk-go/common/uuid"
 	sdk "github.com/irisnet/core-sdk-go/types"
+	sdktypes "github.com/irisnet/core-sdk-go/types"
+	sdkrpc "github.com/irisnet/core-sdk-go/types/rpc"
 )
 
 type rpcClient struct {
@@ -23,19 +22,25 @@ type rpcClient struct {
 	txDecoder sdk.TxDecoder
 }
 
-func NewRPCClient(
-	remote string,
+func NewRPCClient(cfg sdktypes.ClientConfig,
 	cdc *commoncodec.LegacyAmino,
 	txDecoder sdk.TxDecoder,
 	logger log.Logger,
-	timeout uint,
 ) sdk.TmClient {
-	client, err := rpchttp.NewWithTimeout(remote, "/websocket", timeout)
+	client, err := sdkrpc.NewJSONRpcClient(
+		cfg.RPCAddr,
+		cfg.WSAddr,
+		"/websocket",
+		cfg.Timeout,
+		cfg.Header,
+	)
 	if err != nil {
 		panic(err)
 	}
 
-	_ = client.Start()
+	if err := client.Start(); err != nil {
+		panic(err)
+	}
 	return rpcClient{
 		Client:    client,
 		Logger:    logger,
@@ -44,7 +49,6 @@ func NewRPCClient(
 	}
 }
 
-// =============================================================================
 // SubscribeNewBlock implement WSClient interface
 func (r rpcClient) SubscribeNewBlock(builder *sdk.EventQueryBuilder, handler sdk.EventNewBlockHandler) (sdk.Subscription, sdk.Error) {
 	if builder == nil {

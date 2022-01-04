@@ -11,18 +11,17 @@ type grpcClient struct {
 	clientConn grpc1.ClientConn
 }
 
-func NewGRPCClient(url string) types.GRPCClient {
-	dialOpts := []grpc.DialOption{
-		grpc.WithInsecure(),
+func NewGRPCClient(url string, options ...grpc.DialOption) types.GRPCClient {
+	if options == nil {
+		options = []grpc.DialOption{grpc.WithInsecure()}
 	}
-	clientConn, err := grpc.Dial(url, dialOpts...)
+
+	clientConn, err := grpc.Dial(url, options...)
 	if err != nil {
 		log.Error(err.Error())
 		panic(err)
 	}
-	conn := grpc1.ClientConn(clientConn)
-
-	return &grpcClient{clientConn: conn}
+	return &grpcClient{clientConn: grpc1.ClientConn(clientConn)}
 }
 
 func (g grpcClient) GenConn() (grpc1.ClientConn, error) {
