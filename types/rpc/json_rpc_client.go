@@ -399,7 +399,7 @@ func (c JSONRpcClient) broadcastTX(ctx context.Context, route string, tx tmtypes
 
 //-------------------------------------------------------------
 
-func makeHTTPDialer(remoteAddr string) (func(string, string) (net.Conn, error), error) {
+func makeHTTPDialer(remoteAddr string) (func(context.Context, string, string) (net.Conn, error), error) {
 	u, err := newParsedURL(remoteAddr)
 	if err != nil {
 		return nil, err
@@ -413,7 +413,7 @@ func makeHTTPDialer(remoteAddr string) (func(string, string) (net.Conn, error), 
 		protocol = protoTCP
 	}
 
-	dialFn := func(proto, addr string) (net.Conn, error) {
+	dialFn := func(ctx context.Context, proto, addr string) (net.Conn, error) {
 		return net.Dial(protocol, u.GetHostWithPath())
 	}
 
@@ -429,14 +429,11 @@ func DefaultHTTPClient(remoteAddr string) (*http.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	client := &http.Client{
+	return &http.Client{
 		Transport: &http.Transport{
 			// Set to true to prevent GZIP-bomb DoS attacks
 			DisableCompression: true,
-			Dial:               dialFn,
+			DialContext:        dialFn,
 		},
-	}
-
-	return client, nil
+	}, nil
 }
