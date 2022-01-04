@@ -798,6 +798,11 @@ func (u parsedURL) GetTrimmedURL() string {
 	return u.Scheme + "://" + u.GetTrimmedHostWithPath()
 }
 
+// Get a address with protocol - useful as address in RPC connections
+func (u parsedURL) GetURL() string {
+	return u.Scheme + "://" + u.GetHostWithPath()
+}
+
 // Get a trimmed address - useful for WS connections
 func (u parsedURL) GetTrimmedHostWithPath() string {
 	// replace / with . for http requests (kvstore domain)

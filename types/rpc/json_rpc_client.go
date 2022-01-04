@@ -56,7 +56,7 @@ func NewJSONRpcClient(rpcAddr, wsAddr string, endpoint string, timeout uint, hea
 
 	httpClient.Timeout = time.Duration(timeout) * time.Second
 	return JSONRpcClient{
-		remote:   parsedURL.GetTrimmedURL(),
+		remote:   parsedURL.GetURL(),
 		client:   httpClient,
 		header:   header,
 		WSEvents: wsEvents,
@@ -414,7 +414,7 @@ func makeHTTPDialer(remoteAddr string) (func(context.Context, string, string) (n
 	}
 
 	dialFn := func(ctx context.Context, proto, addr string) (net.Conn, error) {
-		return net.Dial(protocol, u.GetHostWithPath())
+		return net.Dial(proto, addr)
 	}
 
 	return dialFn, nil
