@@ -53,7 +53,7 @@ type ClientConfig struct {
 	// Transaction broadcast Mode
 	Mode BroadcastMode
 
-	// Transaction broadcast timeout(seconds)
+	// Timeout for accessing the blockchain (such as query transactions, broadcast transactions, etc.)
 	Timeout uint
 
 	// log level(trace|debug|info|warn|error|fatal|panic)
