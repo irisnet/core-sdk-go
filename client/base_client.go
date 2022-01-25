@@ -124,6 +124,16 @@ func (base *baseClient) BuildAndSign(msg []sdktypes.Msg, baseTx sdktypes.BaseTx)
 	return txByte, nil
 }
 
+func (base *baseClient) BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx)  ([]byte, sdktypes.Error) {
+	txByte, _, err := base.buildTxWithAccount(addr, accountNumber, sequence, msg, baseTx)
+	if err != nil {
+		return nil, sdktypes.Wrap(err)
+	}
+
+	base.Logger().Debug("sign transaction success")
+	return txByte, nil
+}
+
 func (base *baseClient) BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx) (sdktypes.ResultTx, sdktypes.Error) {
 	txByte, ctx, err := base.buildTxWithAccount(addr, accountNumber, sequence, msg, baseTx)
 	if err != nil {
