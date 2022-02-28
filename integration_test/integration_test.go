@@ -62,7 +62,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 		types.TimeoutOption(10),
 		types.TokenManagerOption(TokenManager{}),
 		types.KeyManagerOption(crypto.NewKeyManager()),
-		types.Bech32AddressPrefixOption(bech32AddressPrefix),
+		types.Bech32AddressPrefixOption(&bech32AddressPrefix),
 		types.BIP44PathOption(""),
 	}
 	cfg, err := types.NewClientConfig(nodeURI, grpcAddr, chainID, options...)
