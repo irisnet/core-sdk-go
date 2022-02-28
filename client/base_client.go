@@ -434,6 +434,7 @@ func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence 
 	if len(baseTx.Memo) > 0 {
 		factory.WithMemo(baseTx.Memo)
 	}
+
 	return factory, nil
 }
 

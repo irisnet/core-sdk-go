@@ -1,218 +1,150 @@
-package bank
+package feegrant
 
 import (
 	"errors"
-	"fmt"
+	"github.com/gogo/protobuf/proto"
+	"github.com/irisnet/core-sdk-go/common/codec/legacy"
+	"github.com/irisnet/core-sdk-go/common/codec/types"
 
 	sdk "github.com/irisnet/core-sdk-go/types"
 )
 
 const (
-	maxMsgLen  = 5
-	ModuleName = "bank"
+	ModuleName = "fee grant"
 
-	TypeMsgSend      = "send"
-	TypeMsgMultiSend = "multisend"
+	TypeMsgGrantAllowance  = "grant allowance"
+	TypeMsgRevokeAllowance = "revoke allowance"
 )
 
-var _ sdk.Msg = &MsgGrantAllowance{}
+var _, _ sdk.Msg = &MsgGrantAllowance{}, &MsgRevokeAllowance{}
 
-// NewMsgSend - construct a msg to send coins from one account to another.
+// NewMsgGrantAllowance creates a new MsgGrantAllowance.
 //nolint:interfacer
-func NewMsgGrantAllowance(fromAddr, toAddr sdk.AccAddress, amount sdk.Coins) *MsgGrantAllowance {
+func NewMsgGrantAllowance(feeAllowance FeeAllowanceI, granter, grantee sdk.AccAddress) (*MsgGrantAllowance, error) {
+	msg, ok := feeAllowance.(proto.Message)
+	if !ok {
+		return nil, errors.New("cannot proto marshal")
+	}
+	any, err := types.NewAnyWithValue(msg)
+	if err != nil {
+		return nil, err
+	}
+
 	return &MsgGrantAllowance{
-		FromAddress: fromAddr.String(),
-		ToAddress:   toAddr.String(),
-		Amount:      amount,
-	}
+		Granter:   granter.String(),
+		Grantee:   grantee.String(),
+		Allowance: any,
+	}, nil
 }
 
-// Route Implements Msg.
-func (msg MsgGrantAllowance) Route() string { return ModuleName }
-
-// Type Implements Msg.
-func (msg MsgGrantAllowance) Type() string { return TypeMsgSend }
-
+// ValidateBasic implements the sdk.Msg interface.
 func (msg MsgGrantAllowance) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(msg.FromAddress)
-	if err != nil {
-		return errors.New("invalid sender address")
+	if msg.Granter == "" {
+		return errors.New("missing granter address")
+	}
+	if msg.Grantee == "" {
+		return errors.New("missing grantee address")
+	}
+	if msg.Grantee == msg.Granter {
+		return errors.New("cannot self-grant fee authorization")
 	}
 
-	_, err = sdk.AccAddressFromBech32(msg.ToAddress)
-	if err != nil {
-		return errors.New("invalid recipient address")
-	}
-
-	if !msg.Amount.IsValid() {
-		return errors.New("invalid coins")
-	}
-
-	if !msg.Amount.IsAllPositive() {
-		return errors.New("invalid coins")
-	}
-
-	return nil
-}
-
-// GetSignBytes Implements Msg.
-func (msg MsgGrantAllowance) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
-}
-
-// GetSigners Implements Msg.
-func (msg MsgGrantAllowance) GetSigners() []sdk.AccAddress {
-	from, err := sdk.AccAddressFromBech32(msg.FromAddress)
-	if err != nil {
-		panic(err)
-	}
-	return []sdk.AccAddress{from}
-}
-
-var _ sdk.Msg = &MsgRevokeAllowance{}
-
-// NewMsgMultiSend - construct arbitrary multi-in, multi-out send msg.
-func NewMsgRevokeAllowance(in []Input, out []Output) *MsgRevokeAllowance {
-	return &MsgRevokeAllowance{Inputs: in, Outputs: out}
-}
-
-func (msg MsgRevokeAllowance) Route() string { return ModuleName }
-
-// Type Implements Msg
-func (msg MsgRevokeAllowance) Type() string { return TypeMsgMultiSend }
-
-// Implements Msg.
-func (msg MsgRevokeAllowance) ValidateBasic() error {
-	// this just makes sure all the inputs and outputs are properly formatted,
-	// not that they actually have the money inside
-	if len(msg.Inputs) == 0 {
-		return errors.New("invalid input coins")
-	}
-	if len(msg.Outputs) == 0 {
-		return errors.New("invalid output coins")
-	}
-	// make sure all inputs and outputs are individually valid
-	var totalIn, totalOut sdk.Coins
-	for _, in := range msg.Inputs {
-		if err := in.ValidateBasic(); err != nil {
-			return err
-		}
-		totalIn = totalIn.Add(in.Coins...)
-	}
-	for _, out := range msg.Outputs {
-		if err := out.ValidateBasic(); err != nil {
-			return err
-		}
-		totalOut = totalOut.Add(out.Coins...)
-	}
-	// make sure inputs and outputs match
-	if !totalIn.IsEqual(totalOut) {
-		return errors.New("inputs and outputs don't match")
-	}
-	return nil
-}
-
-// GetSignBytes Implements Msg.
-func (msg MsgRevokeAllowance) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
-}
-
-// GetSigners Implements Msg.
-func (msg MsgRevokeAllowance) GetSigners() []sdk.AccAddress {
-	addrs := make([]sdk.AccAddress, len(msg.Inputs))
-	for i, in := range msg.Inputs {
-		addr, _ := sdk.AccAddressFromBech32(in.Address)
-		addrs[i] = addr
-	}
-
-	return addrs
-}
-
-// ValidateBasic - validate transaction input
-func (in Input) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(in.Address)
+	allowance, err := msg.GetFeeAllowanceI()
 	if err != nil {
 		return err
 	}
 
-	if in.Coins.Empty() {
-		return errors.New("empty input coins")
-	}
-
-	if !in.Coins.IsValid() {
-		return fmt.Errorf("invalid input coins [%s]", in.Coins)
-	}
-
-	if !in.Coins.IsAllPositive() {
-		return fmt.Errorf("invalid input coins [%s]", in.Coins)
-	}
-
-	return nil
+	return allowance.ValidateBasic()
 }
 
-// NewInput - create a transaction input, used with MsgMultiSend
-//nolint:interfacer
-func NewInput(addr sdk.AccAddress, coins sdk.Coins) Input {
-	return Input{
-		Address: addr.String(),
-		Coins:   coins,
-	}
-}
-
-// ValidateBasic - validate transaction output
-func (out Output) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(out.Address)
+// GetSigners gets the granter account associated with an allowance
+func (msg MsgGrantAllowance) GetSigners() []sdk.AccAddress {
+	granter, err := sdk.AccAddressFromBech32(msg.Granter)
 	if err != nil {
-		return fmt.Errorf("invalid output address (%s)", err)
+		panic(err)
 	}
-
-	if out.Coins.Empty() {
-		return errors.New("empty input coins")
-	}
-
-	if !out.Coins.IsValid() {
-		return fmt.Errorf("invalid input coins [%s]", out.Coins)
-	}
-
-	if !out.Coins.IsAllPositive() {
-		return fmt.Errorf("invalid input coins [%s]", out.Coins)
-	}
-	return nil
+	return []sdk.AccAddress{granter}
 }
 
-// NewOutput - create a transaction output, used with MsgMultiSend
+// Type implements the LegacyMsg.Type method.
+func (msg MsgGrantAllowance) Type() string {
+	return MsgTypeURL(&msg)
+}
+
+// Route implements the LegacyMsg.Route method.
+func (msg MsgGrantAllowance) Route() string {
+	return MsgTypeURL(&msg)
+}
+
+// GetSignBytes implements the LegacyMsg.GetSignBytes method.
+func (msg MsgGrantAllowance) GetSignBytes() []byte {
+	return sdk.MustSortJSON(legacy.Cdc.MustMarshalJSON(&msg))
+}
+
+// GetFeeAllowanceI returns unpacked FeeAllowance
+func (msg MsgGrantAllowance) GetFeeAllowanceI() (FeeAllowanceI, error) {
+	allowance, ok := msg.Allowance.GetCachedValue().(FeeAllowanceI)
+	if !ok {
+		return nil, errors.New("failed to get allowance")
+	}
+
+	return allowance, nil
+}
+
+// UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
+func (msg MsgGrantAllowance) UnpackInterfaces(unpacker types.AnyUnpacker) error {
+	var allowance FeeAllowanceI
+	return unpacker.UnpackAny(msg.Allowance, &allowance)
+}
+
+// NewMsgRevokeAllowance returns a message to revoke a fee allowance for a given
+// granter and grantee
 //nolint:interfacer
-func NewOutput(addr sdk.AccAddress, coins sdk.Coins) Output {
-	return Output{
-		Address: addr.String(),
-		Coins:   coins,
-	}
+func NewMsgRevokeAllowance(granter sdk.AccAddress, grantee sdk.AccAddress) MsgRevokeAllowance {
+	return MsgRevokeAllowance{Granter: granter.String(), Grantee: grantee.String()}
 }
 
-// ValidateInputsOutputs validates that each respective input and output is
-// valid and that the sum of inputs is equal to the sum of outputs.
-func ValidateInputsOutputs(inputs []Input, outputs []Output) error {
-	var totalIn, totalOut sdk.Coins
-	for _, in := range inputs {
-		if err := in.ValidateBasic(); err != nil {
-			return err
-		}
-
-		totalIn = totalIn.Add(in.Coins...)
+// ValidateBasic implements the sdk.Msg interface.
+func (msg MsgRevokeAllowance) ValidateBasic() error {
+	if msg.Granter == "" {
+		return errors.New("missing granter address")
 	}
-
-	for _, out := range outputs {
-		if err := out.ValidateBasic(); err != nil {
-			return err
-		}
-
-		totalOut = totalOut.Add(out.Coins...)
+	if msg.Grantee == "" {
+		return errors.New("missing grantee address")
 	}
-
-	// make sure inputs and outputs match
-	if !totalIn.IsEqual(totalOut) {
-		return errors.New("sum inputs != sum outputs")
+	if msg.Grantee == msg.Granter {
+		return errors.New("addresses must be different")
 	}
 
 	return nil
+}
+
+// GetSigners gets the granter address associated with an Allowance
+// to revoke.
+func (msg MsgRevokeAllowance) GetSigners() []sdk.AccAddress {
+	granter, err := sdk.AccAddressFromBech32(msg.Granter)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{granter}
+}
+
+// Type implements the LegacyMsg.Type method.
+func (msg MsgRevokeAllowance) Type() string {
+	return MsgTypeURL(&msg)
+}
+
+// Route implements the LegacyMsg.Route method.
+func (msg MsgRevokeAllowance) Route() string {
+	return MsgTypeURL(&msg)
+}
+
+// GetSignBytes implements the LegacyMsg.GetSignBytes method.
+func (msg MsgRevokeAllowance) GetSignBytes() []byte {
+	return sdk.MustSortJSON(legacy.Cdc.MustMarshalJSON(&msg))
+}
+
+// MsgTypeURL returns the TypeURL of a `sdk.Msg`.
+func MsgTypeURL(msg sdk.Msg) string {
+	return "/" + proto.MessageName(msg)
 }

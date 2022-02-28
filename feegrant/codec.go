@@ -1,11 +1,10 @@
-package bank
+package feegrant
 
 import (
 	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
 	"github.com/irisnet/core-sdk-go/common/codec/types"
 	commoncryptocodec "github.com/irisnet/core-sdk-go/common/crypto/codec"
 	sdk "github.com/irisnet/core-sdk-go/types"
-	"github.com/irisnet/core-sdk-go/types/auth"
 )
 
 var (
@@ -18,16 +17,11 @@ func init() {
 	amino.Seal()
 }
 
-// No duplicate registration
+// RegisterInterfaces No duplicate registration
 func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
 		&MsgGrantAllowance{},
 		&MsgRevokeAllowance{},
-	)
-
-	registry.RegisterImplementations(
-		(*auth.Account)(nil),
-		&auth.BaseAccount{},
 	)
 }
