@@ -3,7 +3,7 @@ package cosmos.base.snapshots.v1beta1;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/irisnet/core-sdk-go/types/snapshots";
+option go_package = "github.com/irisnet/core-sdk-go/store/types/snapshots";
 
 // Snapshot contains Tendermint state sync snapshot info.
 message Snapshot {

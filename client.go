@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"github.com/irisnet/core-sdk-go/feegrant"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/irisnet/core-sdk-go/bank"
@@ -26,6 +27,7 @@ type Client struct {
 	Staking  staking.Client
 	Gov      gov.Client
 	Transfer transfer.Client
+	FeeGrant feegrant.Client
 }
 
 func NewClient(cfg types.ClientConfig) Client {
@@ -38,6 +40,7 @@ func NewClient(cfg types.ClientConfig) Client {
 	transferClient := transfer.NewClient(baseClient, encodingConfig.Marshaler)
 	stakingClient := staking.NewClient(baseClient, encodingConfig.Marshaler)
 	govClient := gov.NewClient(baseClient, encodingConfig.Marshaler)
+	feeGrantClient := feegrant.NewClient(baseClient, encodingConfig.Marshaler)
 
 	client := Client{
 		logger:         baseClient.Logger(),
@@ -49,12 +52,14 @@ func NewClient(cfg types.ClientConfig) Client {
 		Staking:        stakingClient,
 		Gov:            govClient,
 		Transfer:       transferClient,
+		FeeGrant:       feeGrantClient,
 	}
 	client.RegisterModule(
 		bankClient,
 		stakingClient,
 		govClient,
 		transferClient,
+		feeGrantClient,
 	)
 	return client
 }
