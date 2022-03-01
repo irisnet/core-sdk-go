@@ -74,4 +74,8 @@ message Grant {
 
   // allowance can be any of basic and filtered fee allowance.
   google.protobuf.Any allowance = 3 [(cosmos_proto.accepts_interface) = "FeeAllowanceI"];
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 74ce287251e55d2c03b163761e9f8d557950ac41

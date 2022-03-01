@@ -16,6 +16,8 @@ type (
 		SetSignatures(signatures ...signingtypes.SignatureV2) error
 		SetMemo(memo string)
 		SetFeeAmount(amount Coins)
+		SetFeePayer(feePayer AccAddress)
+		SetFeeGranter(feeGranter AccAddress)
 		SetGasLimit(limit uint64)
 		SetTimeoutHeight(height uint64)
 	}

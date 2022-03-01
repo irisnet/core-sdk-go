@@ -21,6 +21,8 @@ type (
 		gasAdjustment      float64
 		simulateAndExecute bool
 		fees               Coins
+		feeGranter         AccAddress
+		feePayer           AccAddress
 		gasPrices          DecCoins
 		mode               BroadcastMode
 		signMode           signing.SignMode
@@ -97,6 +99,18 @@ func (f *Factory) WithGasAdjustment(gasAdjustment float64) *Factory {
 // WithFee returns a pointer of the context with an updated Fee.
 func (f *Factory) WithFee(fee Coins) *Factory {
 	f.fees = fee
+	return f
+}
+
+// WithFeeGranter returns a pointer of the context with an updated FeeGranter.
+func (f *Factory) WithFeeGranter(feeGranter AccAddress) *Factory {
+	f.feeGranter = feeGranter
+	return f
+}
+
+// WithFeePayer returns a pointer of the context with an updated FeePayer.
+func (f *Factory) WithFeePayer(feePayer AccAddress) *Factory {
+	f.feePayer = feePayer
 	return f
 }
 
@@ -225,6 +239,8 @@ func (f *Factory) BuildUnsignedTx(msgs []Msg) (TxBuilder, error) {
 	tx.SetMemo(f.memo)
 	tx.SetFeeAmount(fees)
 	tx.SetGasLimit(f.gas)
+	tx.SetFeeGranter(f.feeGranter)
+	tx.SetFeePayer(f.feePayer)
 	//f.txBuilder.SetTimeoutHeight(f.TimeoutHeight())
 
 	return tx, nil

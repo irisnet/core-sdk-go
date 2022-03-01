@@ -2,8 +2,9 @@ package types
 
 import (
 	"fmt"
-	"google.golang.org/grpc"
 	"os"
+
+	"google.golang.org/grpc"
 
 	"github.com/irisnet/core-sdk-go/common/crypto"
 	"github.com/irisnet/core-sdk-go/types/store"
@@ -85,6 +86,9 @@ type ClientConfig struct {
 
 	// bech32 Address Prefix
 	bech32Prefix *AddrPrefixCfg
+
+	FeeGranter AccAddress
+	FeePayer   AccAddress
 }
 
 func NewClientConfig(rpcAddr, grpcAddr, chainID string, options ...Option) (ClientConfig, error) {
@@ -332,6 +336,28 @@ func WSAddrOption(wsAddr string) Option {
 func GRPCOptions(gRPCOptions []grpc.DialOption) Option {
 	return func(cfg *ClientConfig) error {
 		cfg.GRPCOptions = gRPCOptions
+		return nil
+	}
+}
+
+func FeeGranterOptions(feeGranter string) Option {
+	return func(cfg *ClientConfig) error {
+		granter, err := AccAddressFromBech32(feeGranter)
+		if err != nil {
+			panic(err)
+		}
+		cfg.FeeGranter = granter
+		return nil
+	}
+}
+
+func FeePayerOptions(feePayer string) Option {
+	return func(cfg *ClientConfig) error {
+		feePayer, err := AccAddressFromBech32(feePayer)
+		if err != nil {
+			panic(err)
+		}
+		cfg.FeePayer = feePayer
 		return nil
 	}
 }

@@ -201,6 +201,35 @@ func (w *wrapper) SetFeeAmount(coins sdk.Coins) {
 	w.authInfoBz = nil
 }
 
+// func (w *wrapper) SetTip(tip *tx.Tip) {
+// 	w.tx.AuthInfo.Tip = tip
+
+// 	// set authInfoBz to nil because the cached authInfoBz no longer matches tx.AuthInfo
+// 	w.authInfoBz = nil
+// }
+
+func (w *wrapper) SetFeePayer(feePayer sdk.AccAddress) {
+	if w.tx.AuthInfo.Fee == nil {
+		w.tx.AuthInfo.Fee = &Fee{}
+	}
+
+	w.tx.AuthInfo.Fee.Payer = feePayer.String()
+
+	// set authInfoBz to nil because the cached authInfoBz no longer matches tx.AuthInfo
+	w.authInfoBz = nil
+}
+
+func (w *wrapper) SetFeeGranter(feeGranter sdk.AccAddress) {
+	if w.tx.AuthInfo.Fee == nil {
+		w.tx.AuthInfo.Fee = &Fee{}
+	}
+
+	w.tx.AuthInfo.Fee.Granter = feeGranter.String()
+
+	// set authInfoBz to nil because the cached authInfoBz no longer matches tx.AuthInfo
+	w.authInfoBz = nil
+}
+
 func (w *wrapper) SetSignatures(signatures ...signing.SignatureV2) error {
 	n := len(signatures)
 	signerInfos := make([]*SignerInfo, n)
