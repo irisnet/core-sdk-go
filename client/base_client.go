@@ -124,7 +124,7 @@ func (base *baseClient) BuildAndSign(msg []sdktypes.Msg, baseTx sdktypes.BaseTx)
 	return txByte, nil
 }
 
-func (base *baseClient) BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx)  ([]byte, sdktypes.Error) {
+func (base *baseClient) BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx) ([]byte, sdktypes.Error) {
 	txByte, _, err := base.buildTxWithAccount(addr, accountNumber, sequence, msg, baseTx)
 	if err != nil {
 		return nil, sdktypes.Wrap(err)
@@ -345,7 +345,9 @@ func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*sdktypes.Factory, erro
 		WithGasAdjustment(base.cfg.GasAdjustment).
 		WithSignModeHandler(tx.MakeSignModeHandler(tx.DefaultSignModes)).
 		WithTxConfig(base.encodingConfig.TxConfig).
-		WithQueryFunc(base.QueryWithData)
+		WithQueryFunc(base.QueryWithData).
+		WithFeeGranter(base.cfg.FeeGranter).
+		WithFeePayer(base.cfg.FeePayer)
 
 	addr, err := base.QueryAddress(baseTx.From, baseTx.Password)
 	if err != nil {
@@ -389,6 +391,14 @@ func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*sdktypes.Factory, erro
 
 	if len(baseTx.Memo) > 0 {
 		factory.WithMemo(baseTx.Memo)
+	}
+
+	if !baseTx.FeeGranter.Empty() {
+		factory.WithFeeGranter(baseTx.FeeGranter)
+	}
+
+	if !baseTx.FeePayer.Empty() {
+		factory.WithFeePayer(baseTx.FeePayer)
 	}
 	return factory, nil
 }
@@ -434,6 +444,7 @@ func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence 
 	if len(baseTx.Memo) > 0 {
 		factory.WithMemo(baseTx.Memo)
 	}
+
 	return factory, nil
 }
 

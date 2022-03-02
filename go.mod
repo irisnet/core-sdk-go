@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/99designs/keyring v1.1.6
+	github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/bluele/gcache v0.0.2
 	github.com/btcsuite/btcd v0.21.0-beta
@@ -18,6 +19,7 @@ require (
 	github.com/mtibben/percent v0.2.1
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.8.0
 	github.com/prometheus/common v0.23.0
 	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
 	github.com/regen-network/cosmos-proto v0.3.1
@@ -31,7 +33,7 @@ require (
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	google.golang.org/genproto v0.0.0-20210114201628-6edceaf6022f
 	google.golang.org/grpc v1.37.0
-	google.golang.org/protobuf v1.26.0
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.3.0
 )
 

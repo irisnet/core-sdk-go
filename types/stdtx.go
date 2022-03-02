@@ -227,6 +227,8 @@ type BaseTx struct {
 	Password           string        `json:"password"`
 	Gas                uint64        `json:"gas"`
 	Fee                DecCoins      `json:"fee"`
+	FeePayer           AccAddress    `json:"fee_payer"`
+	FeeGranter         AccAddress    `json:"fee_granter"`
 	Memo               string        `json:"memo"`
 	Mode               BroadcastMode `json:"broadcast_mode"`
 	SimulateAndExecute bool          `json:"simulate_and_execute"`
