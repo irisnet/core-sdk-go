@@ -403,7 +403,6 @@ func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*sdktypes.Factory, erro
 	return factory, nil
 }
 
-// TODO
 func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence uint64, baseTx sdktypes.BaseTx) (*sdktypes.Factory, error) {
 	factory := sdktypes.NewFactory().
 		WithChainID(base.cfg.ChainID).
@@ -412,7 +411,10 @@ func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence 
 		WithSimulateAndExecute(baseTx.SimulateAndExecute).
 		WithGas(base.cfg.Gas).
 		WithSignModeHandler(tx.MakeSignModeHandler(tx.DefaultSignModes)).
-		WithTxConfig(base.encodingConfig.TxConfig)
+		WithTxConfig(base.encodingConfig.TxConfig).
+		WithQueryFunc(base.QueryWithData).
+		WithFeeGranter(base.cfg.FeeGranter).
+		WithFeePayer(base.cfg.FeePayer)
 
 	factory.WithAddress(addr).
 		WithAccountNumber(accountNumber).
@@ -443,6 +445,14 @@ func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence 
 
 	if len(baseTx.Memo) > 0 {
 		factory.WithMemo(baseTx.Memo)
+	}
+
+	if !baseTx.FeeGranter.Empty() {
+		factory.WithFeeGranter(baseTx.FeeGranter)
+	}
+
+	if !baseTx.FeePayer.Empty() {
+		factory.WithFeePayer(baseTx.FeePayer)
 	}
 
 	return factory, nil
