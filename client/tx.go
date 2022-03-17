@@ -105,12 +105,10 @@ func (base *baseClient) buildTx(msgs []sdk.Msg, baseTx sdk.BaseTx) ([]byte, *sdk
 	if err != nil {
 		return nil, builder, sdk.Wrap(err)
 	}
-
 	txByte, err := builder.BuildAndSign(baseTx.From, msgs, false)
 	if err != nil {
 		return nil, builder, sdk.Wrap(err)
 	}
-
 	base.Logger().Debug("sign transaction success")
 	return txByte, builder, nil
 }

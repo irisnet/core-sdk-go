@@ -167,7 +167,6 @@ func (base *baseClient) BuildAndSend(msg []sdktypes.Msg, baseTx sdktypes.BaseTx)
 		if e != nil {
 			return e
 		}
-
 		if res, e = base.broadcastTx(txByte, ctx.Mode()); e != nil {
 			address = ctx.Address()
 			return e
