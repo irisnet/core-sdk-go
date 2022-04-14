@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -22,6 +23,9 @@ func (base baseClient) QueryTx(hash string) (sdk.ResultQueryTx, error) {
 	}
 
 	res, err := base.Tx(context.Background(), tx, true)
+
+	fmt.Println("交易结果=====================", res)
+
 	if err != nil {
 		return sdk.ResultQueryTx{}, err
 	}
