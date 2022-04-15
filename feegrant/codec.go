@@ -17,18 +17,10 @@ func init() {
 	amino.Seal()
 }
 
-//// RegisterInterfaces No duplicate registration
-//func RegisterInterfaces(registry types.InterfaceRegistry) {
-//	registry.RegisterImplementations(
-//		(*sdk.Msg)(nil),
-//		&MsgGrantAllowance{},
-//		&MsgRevokeAllowance{},
-//	)
-//}
-
 // RegisterInterfaces registers the interfaces types with the interface registry
 func RegisterInterfaces(registry types.InterfaceRegistry) {
-	registry.RegisterImplementations((*sdk.Msg)(nil),
+	registry.RegisterImplementations(
+		(*sdk.Msg)(nil),
 		&MsgGrantAllowance{},
 		&MsgRevokeAllowance{},
 	)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -24,15 +23,11 @@ func (base baseClient) QueryTx(hash string) (sdk.ResultQueryTx, error) {
 
 	res, err := base.Tx(context.Background(), tx, true)
 
-	fmt.Println("交易结果=====================", res)
-
 	if err != nil {
 		return sdk.ResultQueryTx{}, err
 	}
 
 	resBlocks, err := base.getResultBlocks([]*ctypes.ResultTx{res})
-
-	fmt.Println("区块内容=====================", resBlocks)
 
 	if err != nil {
 		return sdk.ResultQueryTx{}, err
@@ -223,7 +218,6 @@ func (base baseClient) parseTxResult(res *ctypes.ResultTx, resBlock *ctypes.Resu
 
 	decode := base.encodingConfig.TxConfig.TxDecoder()
 	if tx, err = decode(res.Tx); err != nil {
-		fmt.Println("没解析成功，err", err)
 		return sdk.ResultQueryTx{}, err
 	}
 
