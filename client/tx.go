@@ -22,13 +22,11 @@ func (base baseClient) QueryTx(hash string) (sdk.ResultQueryTx, error) {
 	}
 
 	res, err := base.Tx(context.Background(), tx, true)
-
 	if err != nil {
 		return sdk.ResultQueryTx{}, err
 	}
 
 	resBlocks, err := base.getResultBlocks([]*ctypes.ResultTx{res})
-
 	if err != nil {
 		return sdk.ResultQueryTx{}, err
 	}
