@@ -335,14 +335,14 @@ func WSAddrOption(wsAddr string) Option {
 	}
 }
 
-func GRPCOptions(gRPCOptions []grpc.DialOption, TLS bool, grpcAddr string) Option {
+func GRPCOptions(gRPCOptions []grpc.DialOption, TLS bool, rpcAddr string) Option {
 	return func(cfg *ClientConfig) error {
 		if !TLS {
 			cfg.GRPCOptions = gRPCOptions
 			return nil
 		}
 
-		certificateList, err := GetTLSCertPool(grpcAddr)
+		certificateList, err := GetTLSCertPool(rpcAddr)
 		if err != nil {
 			panic(err)
 		}
