@@ -79,7 +79,7 @@ func CopyBytes(bz []byte) (ret []byte) {
 	return ret
 }
 
-// GetTLSCertPool get certificates from gateWayURL
+// GetTLSCertPool get certificates from target server
 func GetTLSCertPool(gateWayURL string) ([]*x509.Certificate, error) {
 	if !strings.Contains(strings.ToLower(gateWayURL), "https://") {
 		return nil, errors.New("TLS is enabled, but the address is http")
