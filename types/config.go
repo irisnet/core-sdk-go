@@ -1,10 +1,12 @@
 package types
 
 import (
+	"crypto/x509"
 	"fmt"
 	"os"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/irisnet/core-sdk-go/common/crypto"
 	"github.com/irisnet/core-sdk-go/types/store"
@@ -333,9 +335,25 @@ func WSAddrOption(wsAddr string) Option {
 	}
 }
 
-func GRPCOptions(gRPCOptions []grpc.DialOption) Option {
+func GRPCOptions(gRPCOptions []grpc.DialOption, TLS bool, grpcAddr string) Option {
 	return func(cfg *ClientConfig) error {
-		cfg.GRPCOptions = gRPCOptions
+		if !TLS {
+			cfg.GRPCOptions = gRPCOptions
+			return nil
+		}
+
+		certificateList, err := GetTLSCertPool(grpcAddr)
+		if err != nil {
+			panic(err)
+		}
+
+		roots := x509.NewCertPool()
+		for i := range certificateList {
+			roots.AddCert(certificateList[i])
+		}
+		cert := credentials.NewClientTLSFromCert(roots, "")
+		cfg.GRPCOptions = append(gRPCOptions, grpc.WithTransportCredentials(cert))
+
 		return nil
 	}
 }
