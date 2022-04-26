@@ -1,8 +1,13 @@
 package types
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/binary"
 	"encoding/json"
+	"errors"
+	"net/http"
+	"strings"
 	"time"
 )
 
@@ -72,4 +77,29 @@ func CopyBytes(bz []byte) (ret []byte) {
 	ret = make([]byte, len(bz))
 	copy(ret, bz)
 	return ret
+}
+
+// GetTLSCertPool get certificates from target server
+func GetTLSCertPool(gateWayURL string) ([]*x509.Certificate, error) {
+	if !strings.Contains(strings.ToLower(gateWayURL), "https://") {
+		return nil, errors.New("this function requires HTTPS protocol")
+	}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Get(gateWayURL)
+	defer func() {
+		closeErr := resp.Body.Close()
+		if err == nil {
+			err = closeErr
+		}
+	}()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.TLS.PeerCertificates, err
 }
