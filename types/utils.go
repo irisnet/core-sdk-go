@@ -90,16 +90,14 @@ func GetTLSCertPool(gateWayURL string) ([]*x509.Certificate, error) {
 	client := &http.Client{Transport: tr}
 
 	resp, err := client.Get(gateWayURL)
-	defer func() {
-		closeErr := resp.Body.Close()
-		if err == nil {
-			err = closeErr
-		}
-	}()
-
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if resp != nil && err == nil {
+			err = resp.Body.Close()
+		}
+	}()
 
 	return resp.TLS.PeerCertificates, err
 }
