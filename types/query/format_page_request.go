@@ -11,7 +11,7 @@ func FormatPageRequest(pageReq *PageRequest) (*PageRequest, sdk.Error) {
 	if pageReq.CountTotal {
 		return pageReq, sdk.Wrapf(CountTotalErrMsg)
 	}
-	pageReq.CountTotal = false
+
 	if pageReq.Limit == 0 || pageReq.Limit > 100 {
 		return pageReq, sdk.Wrapf(LimitErrMsg)
 	}
