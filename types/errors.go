@@ -51,6 +51,7 @@ const (
 	NotSupported            Code = 37
 	NotFound                Code = 38
 	IO                      Code = 39
+	AppConfig               Code = 40
 	Panic                   Code = 111222
 )
 
@@ -101,6 +102,7 @@ func init() {
 	_ = register(RootCodespace, NotSupported, "feature not supported")
 	_ = register(RootCodespace, NotFound, "not found")
 	_ = register(RootCodespace, IO, "Internal IO error")
+	_ = register(RootCodespace, AppConfig, "error in app.toml")
 	_ = register(RootCodespace, Panic, "panic")
 }
 
@@ -119,6 +121,7 @@ type Error interface {
 	Error() string
 	Code() uint32
 	Codespace() string
+	WrapfError(string) Error
 }
 
 // GetError is used to covert irita error to sdk error
@@ -128,7 +131,8 @@ func GetError(codespace string, code uint32, log ...string) Error {
 	if !ok {
 		return Wrap(errors.New(strings.Join(log, ",")))
 	}
-	return err
+
+	return err.WrapfError(strings.Join(log, "."))
 }
 
 // Wrap extends given error with an additional information.
@@ -142,6 +146,8 @@ func Wrap(err error) Error {
 	if err == nil {
 		return nil
 	}
+	code := errInvalid.Code()
+	codespace := errInvalid.Codespace()
 
 	if strings.Contains(err.Error(), wrongSeqMsg) {
 		return sdkError{
@@ -151,9 +157,15 @@ func Wrap(err error) Error {
 		}
 	}
 
+	e, ok := err.(sdkError)
+	if ok {
+		code = e.Code()
+		codespace = e.Codespace()
+	}
+
 	return sdkError{
-		codespace: errInvalid.Codespace(),
-		code:      errInvalid.Code(),
+		code:      code,
+		codespace: codespace,
 		desc:      err.Error(),
 	}
 }
@@ -176,6 +188,11 @@ type sdkError struct {
 	codespace string
 	code      uint32
 	desc      string
+}
+
+func (e sdkError) WrapfError(desc string) Error {
+	e.desc = fmt.Sprintf("%s: %s", e.desc, desc)
+	return e
 }
 
 func (e sdkError) Error() string {
@@ -232,4 +249,8 @@ func CatchPanic(fn func(errMsg string)) {
 		}
 		fn(msg)
 	}
+}
+
+func RegisterErr(codespace string, code Code, description string) Error {
+	return register(codespace, code, description)
 }
