@@ -51,6 +51,7 @@ const (
 	NotSupported            Code = 37
 	NotFound                Code = 38
 	IO                      Code = 39
+	AppConfig               Code = 40
 	Panic                   Code = 111222
 )
 
@@ -60,49 +61,50 @@ var (
 	wrongSeqMsg = "account sequence mismatch, expected"
 )
 
-func init() {
-	_ = register(RootCodespace, OK, "success")
-	_ = register(RootCodespace, Internal, "internal")
-	_ = register(RootCodespace, TxDecode, "tx parse error")
-	_ = register(RootCodespace, InvalidSequence, "invalid sequence")
-	_ = register(RootCodespace, Unauthorized, "unauthorized")
-	_ = register(RootCodespace, InsufficientFunds, "insufficient funds")
-	_ = register(RootCodespace, UnknownRequest, "unknown request")
-	_ = register(RootCodespace, InvalidAddress, "invalid address")
-	_ = register(RootCodespace, InvalidPubkey, "invalid pubkey")
-	_ = register(RootCodespace, UnknownAddress, "unknown address")
-	_ = register(RootCodespace, InvalidCoins, "invalid coins")
-	_ = register(RootCodespace, OutOfGas, "out of gas")
-	_ = register(RootCodespace, MemoTooLarge, "memo too large")
-	_ = register(RootCodespace, InsufficientFee, "insufficient fee")
-	_ = register(RootCodespace, TooManySignatures, "maximum number of signatures exceeded")
-	_ = register(RootCodespace, NoSignatures, "no signatures supplied")
-	_ = register(RootCodespace, ErrJsonMarshal, "failed to marshal JSON bytes")
-	_ = register(RootCodespace, ErrJsonUnmarshal, "failed to unmarshal JSON bytes")
-	_ = register(RootCodespace, InvalidRequest, "invalid request")
-	_ = register(RootCodespace, TxInMempoolCache, "tx already in mempool")
-	_ = register(RootCodespace, MempoolIsFull, "mempool is full")
-	_ = register(RootCodespace, TxTooLarge, "tx too large")
-	_ = register(RootCodespace, KeyNotFound, "key not found")
-	_ = register(RootCodespace, WrongPassword, "invalid account password")
-	_ = register(RootCodespace, InvalidSigner, "tx intended signer does not match the given signer")
-	_ = register(RootCodespace, InvalidGasAdjustment, "invalid gas adjustment")
-	_ = register(RootCodespace, InvalidHeight, "invalid height")
-	_ = register(RootCodespace, InvalidVersion, "invalid version")
-	_ = register(RootCodespace, InvalidChainID, "invalid chain-id")
-	_ = register(RootCodespace, InvalidType, "invalid type")
-	_ = register(RootCodespace, TxTimeoutHeight, "tx timeout height")
-	_ = register(RootCodespace, UnknownExtensionOptions, "unknown extension options")
-	_ = register(RootCodespace, WrongSequence, "incorrect account sequence")
-	_ = register(RootCodespace, PackAny, "failed packing protobuf message to Any")
-	_ = register(RootCodespace, UnpackAny, "failed unpacking protobuf message from Any")
-	_ = register(RootCodespace, Logic, "internal logic error")
-	_ = register(RootCodespace, Conflict, "conflict")
-	_ = register(RootCodespace, NotSupported, "feature not supported")
-	_ = register(RootCodespace, NotFound, "not found")
-	_ = register(RootCodespace, IO, "Internal IO error")
-	_ = register(RootCodespace, Panic, "panic")
-}
+var (
+	Success                    = register(RootCodespace, OK, "success")
+	ErrInternal                = register(RootCodespace, Internal, "internal")
+	ErrTxDecode                = register(RootCodespace, TxDecode, "tx parse error")
+	ErrInvalidSequence         = register(RootCodespace, InvalidSequence, "invalid sequence")
+	ErrUnauthorized            = register(RootCodespace, Unauthorized, "unauthorized")
+	ErrInsufficientFunds       = register(RootCodespace, InsufficientFunds, "insufficient funds")
+	ErrUnknownRequest          = register(RootCodespace, UnknownRequest, "unknown request")
+	ErrInvalidAddress          = register(RootCodespace, InvalidAddress, "invalid address")
+	ErrInvalidPubKey           = register(RootCodespace, InvalidPubkey, "invalid pubkey")
+	ErrUnknownAddress          = register(RootCodespace, UnknownAddress, "unknown address")
+	ErrInvalidCoins            = register(RootCodespace, InvalidCoins, "invalid coins")
+	ErrOutOfGas                = register(RootCodespace, OutOfGas, "out of gas")
+	ErrMemoTooLarge            = register(RootCodespace, MemoTooLarge, "memo too large")
+	ErrInsufficientFee         = register(RootCodespace, InsufficientFee, "insufficient fee")
+	ErrTooManySignatures       = register(RootCodespace, TooManySignatures, "maximum number of signatures exceeded")
+	ErrNoSignatures            = register(RootCodespace, NoSignatures, "no signatures supplied")
+	ErrJSONMarshal             = register(RootCodespace, ErrJsonMarshal, "failed to marshal JSON bytes")
+	ErrJSONUnmarshal           = register(RootCodespace, ErrJsonUnmarshal, "failed to unmarshal JSON bytes")
+	ErrInvalidRequest          = register(RootCodespace, InvalidRequest, "invalid request")
+	ErrTxInMempoolCache        = register(RootCodespace, TxInMempoolCache, "tx already in mempool")
+	ErrMempoolIsFull           = register(RootCodespace, MempoolIsFull, "mempool is full")
+	ErrTxTooLarge              = register(RootCodespace, TxTooLarge, "tx too large")
+	ErrKeyNotFound             = register(RootCodespace, KeyNotFound, "key not found")
+	ErrWrongPassword           = register(RootCodespace, WrongPassword, "invalid account password")
+	ErrorInvalidSigner         = register(RootCodespace, InvalidSigner, "tx intended signer does not match the given signer")
+	ErrorInvalidGasAdjustment  = register(RootCodespace, InvalidGasAdjustment, "invalid gas adjustment")
+	ErrInvalidHeight           = register(RootCodespace, InvalidHeight, "invalid height")
+	ErrInvalidVersion          = register(RootCodespace, InvalidVersion, "invalid version")
+	ErrInvalidChainID          = register(RootCodespace, InvalidChainID, "invalid chain-id")
+	ErrInvalidType             = register(RootCodespace, InvalidType, "invalid type")
+	ErrTxTimeoutHeight         = register(RootCodespace, TxTimeoutHeight, "tx timeout height")
+	ErrUnknownExtensionOptions = register(RootCodespace, UnknownExtensionOptions, "unknown extension options")
+	ErrWrongSequence           = register(RootCodespace, WrongSequence, "incorrect account sequence")
+	ErrPackAny                 = register(RootCodespace, PackAny, "failed packing protobuf message to Any")
+	ErrUnpackAny               = register(RootCodespace, UnpackAny, "failed unpacking protobuf message from Any")
+	ErrLogic                   = register(RootCodespace, Logic, "internal logic error")
+	ErrConflict                = register(RootCodespace, Conflict, "conflict")
+	ErrNotSupported            = register(RootCodespace, NotSupported, "feature not supported")
+	ErrNotFound                = register(RootCodespace, NotFound, "not found")
+	ErrIO                      = register(RootCodespace, IO, "Internal IO error")
+	ErrAppConfig               = register(RootCodespace, AppConfig, "error in app.toml")
+	ErrPanic                   = register(RootCodespace, Panic, "panic")
+)
 
 type Code uint32
 
@@ -119,6 +121,7 @@ type Error interface {
 	Error() string
 	Code() uint32
 	Codespace() string
+	WrapfError(string) Error
 }
 
 // GetError is used to covert irita error to sdk error
@@ -128,7 +131,8 @@ func GetError(codespace string, code uint32, log ...string) Error {
 	if !ok {
 		return Wrap(errors.New(strings.Join(log, ",")))
 	}
-	return err
+
+	return err.WrapfError(strings.Join(log, "."))
 }
 
 // Wrap extends given error with an additional information.
@@ -142,6 +146,8 @@ func Wrap(err error) Error {
 	if err == nil {
 		return nil
 	}
+	code := errInvalid.Code()
+	codespace := errInvalid.Codespace()
 
 	if strings.Contains(err.Error(), wrongSeqMsg) {
 		return sdkError{
@@ -151,9 +157,15 @@ func Wrap(err error) Error {
 		}
 	}
 
+	e, ok := err.(sdkError)
+	if ok {
+		code = e.Code()
+		codespace = e.Codespace()
+	}
+
 	return sdkError{
-		codespace: errInvalid.Codespace(),
-		code:      errInvalid.Code(),
+		code:      code,
+		codespace: codespace,
 		desc:      err.Error(),
 	}
 }
@@ -176,6 +188,11 @@ type sdkError struct {
 	codespace string
 	code      uint32
 	desc      string
+}
+
+func (e sdkError) WrapfError(desc string) Error {
+	e.desc = fmt.Sprintf("%s: %s", e.desc, desc)
+	return e
 }
 
 func (e sdkError) Error() string {
@@ -232,4 +249,8 @@ func CatchPanic(fn func(errMsg string)) {
 		}
 		fn(msg)
 	}
+}
+
+func RegisterErr(codespace string, code Code, description string) Error {
+	return register(codespace, code, description)
 }

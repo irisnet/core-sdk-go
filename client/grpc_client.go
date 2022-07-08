@@ -3,7 +3,7 @@ package client
 import (
 	grpc1 "github.com/gogo/protobuf/grpc"
 	"github.com/irisnet/core-sdk-go/types"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
