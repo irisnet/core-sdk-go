@@ -192,6 +192,7 @@ func (base *baseClient) BuildAndSend(msg []sdktypes.Msg, baseTx sdktypes.BaseTx)
 		retry.Attempts(tryThreshold),
 		retry.RetryIf(retryIfFunc),
 		retry.OnRetry(onRetryFunc),
+		retry.LastErrorOnly(true),
 	)
 
 	if err != nil {
