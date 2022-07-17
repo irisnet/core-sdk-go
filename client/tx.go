@@ -248,3 +248,7 @@ func parseQueryResponse(bz []byte) (sdk.SimulationResponse, error) {
 	}
 	return simRes, nil
 }
+
+func (base baseClient) RemoveCache(address string) bool {
+	return base.removeCache(address)
+}

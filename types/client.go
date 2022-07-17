@@ -13,7 +13,9 @@ type TxManager interface {
 	BuildAndSign(msg []Msg, baseTx BaseTx) ([]byte, Error)
 	BuildTxHash(msg []Msg, baseTx BaseTx) (string, Error)
 	BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) (ResultTx, Error)
-	BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx)  ([]byte, Error)
+	BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) ([]byte, Error)
+
+	RemoveCache(address string) bool
 }
 
 type Queries interface {
