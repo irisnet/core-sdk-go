@@ -3,6 +3,10 @@ package types
 import (
 	"errors"
 	"fmt"
+	"github.com/irisnet/core-sdk-go/client"
+	codectypes "github.com/irisnet/core-sdk-go/common/codec/types"
+	"github.com/irisnet/core-sdk-go/common/crypto/keys/sm2"
+	"github.com/irisnet/core-sdk-go/types/tx"
 	"github.com/irisnet/core-sdk-go/types/tx/signing"
 )
 
@@ -181,6 +185,14 @@ func (f *Factory) WithQueryFunc(queryFunc QueryWithData) *Factory {
 }
 
 func (f *Factory) BuildAndSign(name string, msgs []Msg, json bool) ([]byte, error) {
+	if f.SimulateAndExecute() {
+		_, adjusted, err := f.CalculateGas(msgs...)
+		if err != nil {
+			return nil, err
+		}
+		f.WithGas(adjusted)
+	}
+
 	tx, err := f.BuildUnsignedTx(msgs)
 	if err != nil {
 		return nil, err
@@ -244,6 +256,67 @@ func (f *Factory) BuildUnsignedTx(msgs []Msg) (TxBuilder, error) {
 	//f.txBuilder.SetTimeoutHeight(f.TimeoutHeight())
 
 	return tx, nil
+}
+
+// BuildSimTx creates an unsigned tx with an empty single signature and returns
+// the encoded transaction or an error if the unsigned transaction cannot be
+// built.
+func (f *Factory) BuildSimTx(msgs ...Msg) ([]byte, error) {
+	txb, err := f.BuildUnsignedTx(msgs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create an empty signature literal as the ante handler will populate with a
+	// sentinel pubkey.
+	sig := signing.SignatureV2{
+		PubKey: &sm2.PubKey{},
+		Data: &signing.SingleSignatureData{
+			SignMode: f.signMode,
+		},
+		Sequence: f.Sequence(),
+	}
+
+	if err := txb.SetSignatures(sig); err != nil {
+		return nil, err
+	}
+
+	any, ok := txb.(codectypes.IntoAny)
+	if !ok {
+		return nil, fmt.Errorf("cannot simulateAndExecute tx that cannot be wrapped into any")
+	}
+	cached := any.AsAny().GetCachedValue()
+	protoTx, ok := cached.(*tx.Tx)
+	if !ok {
+		return nil, fmt.Errorf("cannot simulateAndExecute amino tx")
+	}
+
+	simReq := client.SimulateRequest{Tx: protoTx}
+
+	return simReq.Marshal()
+}
+
+// CalculateGas simulates the execution of a transaction and returns the
+// simulation response obtained by the query and the adjusted gas amount.
+func (f *Factory) CalculateGas(msgs ...Msg,
+) (client.SimulateResponse, uint64, error) {
+	txBytes, err := f.BuildSimTx(msgs...)
+	if err != nil {
+		return client.SimulateResponse{}, 0, err
+	}
+
+	bz, _, err := f.queryFunc("/cosmos.tx.v1beta1.Service/Simulate", txBytes)
+	if err != nil {
+		return client.SimulateResponse{}, 0, err
+	}
+
+	var simRes client.SimulateResponse
+
+	if err := simRes.Unmarshal(bz); err != nil {
+		return client.SimulateResponse{}, 0, err
+	}
+
+	return simRes, uint64(f.GasAdjustment() * float64(simRes.GasInfo.GasUsed)), nil
 }
 
 // Sign signs a transaction given a name, passphrase, and a single message to
