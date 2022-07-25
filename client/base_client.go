@@ -18,6 +18,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
 
+	clientTx "github.com/irisnet/core-sdk-go/client/tx"
 	"github.com/irisnet/core-sdk-go/common"
 	commoncache "github.com/irisnet/core-sdk-go/common/cache"
 	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
@@ -335,8 +336,8 @@ func (base baseClient) QueryStore(key sdktypes.HexBytes, storeName string, heigh
 	return resp, nil
 }
 
-func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*sdktypes.Factory, error) {
-	factory := sdktypes.NewFactory().
+func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*clientTx.Factory, error) {
+	factory := clientTx.NewFactory().
 		WithChainID(base.cfg.ChainID).
 		WithKeyManager(base.AccountQuery.Km).
 		WithMode(base.cfg.Mode).
@@ -403,8 +404,8 @@ func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*sdktypes.Factory, erro
 	return factory, nil
 }
 
-func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence uint64, baseTx sdktypes.BaseTx) (*sdktypes.Factory, error) {
-	factory := sdktypes.NewFactory().
+func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence uint64, baseTx sdktypes.BaseTx) (*clientTx.Factory, error) {
+	factory := clientTx.NewFactory().
 		WithChainID(base.cfg.ChainID).
 		WithKeyManager(base.AccountQuery.Km).
 		WithMode(base.cfg.Mode).
