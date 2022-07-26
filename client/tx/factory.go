@@ -185,6 +185,14 @@ func (f *Factory) WithQueryFunc(queryFunc QueryWithData) *Factory {
 }
 
 func (f *Factory) BuildAndSign(name string, msgs []types.Msg, json bool) ([]byte, error) {
+	if f.SimulateAndExecute() {
+		_, adjusted, err := f.CalculateGas(msgs...)
+		if err != nil {
+			return nil, err
+		}
+		f.WithGas(adjusted)
+	}
+
 	tx, err := f.BuildUnsignedTx(msgs)
 	if err != nil {
 		return nil, err
@@ -248,6 +256,66 @@ func (f *Factory) BuildUnsignedTx(msgs []types.Msg) (types.TxBuilder, error) {
 	//f.txBuilder.SetTimeoutHeight(f.TimeoutHeight())
 
 	return tx, nil
+}
+
+// BuildSimTx creates an unsigned tx with an empty single signature and returns
+// the encoded transaction or an error if the unsigned transaction cannot be
+// built.
+func (f *Factory) BuildSimTx(msgs ...types.Msg) ([]byte, error) {
+	txb, err := f.BuildUnsignedTx(msgs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create an empty signature literal as the ante handler will populate with a
+	// sentinel pubkey.
+	sig := signing.SignatureV2{
+		PubKey: &sm2.PubKey{},
+		Data: &signing.SingleSignatureData{
+			SignMode: f.signMode,
+		},
+		Sequence: f.Sequence(),
+	}
+
+	if err := txb.SetSignatures(sig); err != nil {
+		return nil, err
+	}
+
+	any, ok := txb.(codecTypes.IntoAny)
+	if !ok {
+		return nil, fmt.Errorf("cannot simulateAndExecute tx that cannot be wrapped into any")
+	}
+	cached := any.AsAny().GetCachedValue()
+	protoTx, ok := cached.(*tx.Tx)
+	if !ok {
+		return nil, fmt.Errorf("cannot simulateAndExecute amino tx")
+	}
+
+	simReq := tx.SimulateRequest{Tx: protoTx}
+
+	return simReq.Marshal()
+}
+
+// CalculateGas simulates the execution of a transaction and returns the
+// simulation response obtained by the query and the adjusted gas amount.
+func (f *Factory) CalculateGas(msgs ...types.Msg) (tx.SimulateResponse, uint64, error) {
+	txBytes, err := f.BuildSimTx(msgs...)
+	if err != nil {
+		return tx.SimulateResponse{}, 0, err
+	}
+
+	bz, _, err := f.queryFunc("/cosmos.tx.v1beta1.Service/Simulate", txBytes)
+	if err != nil {
+		return tx.SimulateResponse{}, 0, err
+	}
+
+	var simRes tx.SimulateResponse
+
+	if err := simRes.Unmarshal(bz); err != nil {
+		return tx.SimulateResponse{}, 0, err
+	}
+
+	return simRes, uint64(f.GasAdjustment() * float64(simRes.GasInfo.GasUsed)), nil
 }
 
 // Sign signs a transaction given a name, passphrase, and a single message to
@@ -315,4 +383,15 @@ func (f *Factory) Sign(name string, txBuilder types.TxBuilder) error {
 
 	// And here the tx is populated with the signature
 	return txBuilder.SetSignatures(sig)
+}
+
+func toMinCoin(coins ...types.DecCoin) (types.Coins, types.Error) {
+	for i := range coins {
+		if coins[i].Denom == "iris" {
+			coins[i].Denom = "uiris"
+			coins[i].Amount = coins[i].Amount.MulInt(types.NewIntWithDecimal(1, 6))
+		}
+	}
+	ucoins, _ := types.DecCoins(coins).TruncateDecimal()
+	return ucoins, nil
 }

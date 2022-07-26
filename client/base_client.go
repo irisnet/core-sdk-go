@@ -168,6 +168,18 @@ func (base *baseClient) BuildAndSend(msg []sdktypes.Msg, baseTx sdktypes.BaseTx)
 		if e != nil {
 			return e
 		}
+
+		// TODO 下面判断和返回的逻辑应该放到 broadcastTx 中，broadcastTx 传入的 ctx 是 Factory
+		// 判断是模拟交易返回计算的 gas 费，不在链上执行
+		if ctx.SimulateAndExecute() {
+			res = sdktypes.ResultTx{
+				GasWanted: int64(ctx.Gas()),
+				GasUsed:   0,
+				Data:      txByte,
+			}
+			return nil
+		}
+
 		if res, e = base.broadcastTx(txByte, ctx.Mode()); e != nil {
 			address = ctx.Address()
 			return e
