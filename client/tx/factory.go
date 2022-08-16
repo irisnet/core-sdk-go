@@ -191,6 +191,14 @@ func (f *Factory) BuildAndSign(name string, msgs []types.Msg, json bool) ([]byte
 			return nil, err
 		}
 		f.WithGas(adjusted)
+
+		// TODO 设置计算出的费用。下面这个就不用了，因为在 broadcastTx 直接就返回了，不会执行和扣费
+		//fee, _ := types.ParseDecCoins(fmt.Sprintf("%dugas", adjusted))
+		//fees, err := toMinCoin(fee...)
+		//if err != nil {
+		//	return nil, err
+		//}
+		//f.WithFee(fees)
 	}
 
 	tx, err := f.BuildUnsignedTx(msgs)
