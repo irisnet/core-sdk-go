@@ -4,6 +4,7 @@ import (
 	"github.com/irisnet/core-sdk-go/common/codec"
 	commoncrypto "github.com/irisnet/core-sdk-go/common/codec"
 	"github.com/irisnet/core-sdk-go/common/crypto/keys/ed25519"
+	ethsecp256k1 "github.com/irisnet/core-sdk-go/common/crypto/keys/eth_secp256k1"
 	"github.com/irisnet/core-sdk-go/common/crypto/keys/multisig"
 	"github.com/irisnet/core-sdk-go/common/crypto/keys/secp256k1"
 	"github.com/irisnet/core-sdk-go/common/crypto/keys/sm2"
@@ -20,6 +21,7 @@ func init() {
 	amino = commoncrypto.NewLegacyAmino()
 	RegisterCrypto(amino)
 }
+
 // RegisterCrypto registers all crypto dependency types with the provided Amino
 // codec.
 func RegisterCrypto(cdc *codec.LegacyAmino) {
@@ -33,6 +35,7 @@ func RegisterCrypto(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&ed25519.PubKey{}, ed25519.PubKeyName, nil)
 	cdc.RegisterConcrete(&secp256k1.PubKey{}, secp256k1.PubKeyName, nil)
 	cdc.RegisterConcrete(&sm2.PubKey{}, sm2.PubKeyName, nil)
+	cdc.RegisterConcrete(&ethsecp256k1.PubKey{}, ethsecp256k1.PubKeyName, nil)
 	cdc.RegisterConcrete(&multisig.LegacyAminoPubKey{}, multisig.PubKeyAminoRoute, nil)
 
 	//register private key
@@ -43,6 +46,7 @@ func RegisterCrypto(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&secp256k1.PrivKey{}, secp256k1.PrivKeyName, nil)
 	cdc.RegisterConcrete(tmsm2.PrivKeySm2{}, tmsm2.PrivKeyName, nil)
 	cdc.RegisterConcrete(&sm2.PrivKey{}, sm2.PrivKeyName, nil)
+	cdc.RegisterConcrete(&ethsecp256k1.PrivKey{}, ethsecp256k1.PrivKeyName, nil)
 
 }
 
