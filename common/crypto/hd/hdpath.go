@@ -46,6 +46,19 @@ func NewParams(purpose, coinType, account uint32, change bool, addressIdx uint32
 // Parse the BIP44 path and unmarshal into the struct.
 func NewParamsFromPath(path string) (*BIP44Params, error) {
 	spl := strings.Split(path, "/")
+
+	// Handle absolute or relative paths
+	switch {
+	case spl[0] == path:
+		return nil, fmt.Errorf("path %s doesn't contain '/' separators", path)
+
+	case strings.TrimSpace(spl[0]) == "":
+		return nil, fmt.Errorf("ambiguous path %s: use 'm/' prefix for absolute paths, or no leading '/' for relative ones", path)
+
+	case strings.TrimSpace(spl[0]) == "m":
+		spl = spl[1:]
+	}
+
 	if len(spl) != 5 {
 		return nil, fmt.Errorf("path length is wrong. Expected 5, got %d", len(spl))
 	}
@@ -171,6 +184,13 @@ func ComputeMastersFromSeed(seed []byte) (secret [32]byte, chainCode [32]byte) {
 func DerivePrivateKeyForPath(privKeyBytes, chainCode [32]byte, path string) ([]byte, error) {
 	data := privKeyBytes
 	parts := strings.Split(path, "/")
+
+	switch {
+	case parts[0] == path:
+		return nil, fmt.Errorf("path '%s' doesn't contain '/' separators", path)
+	case strings.TrimSpace(parts[0]) == "m":
+		parts = parts[1:]
+	}
 
 	for _, part := range parts {
 		// do we have an apostrophe?

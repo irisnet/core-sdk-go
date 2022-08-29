@@ -205,7 +205,7 @@ func NewKeysClient(cfg types.ClientConfig, keyManager types.KeyManager) Client {
 	if err != nil {
 		panic(err)
 	}
-	return keysClient{(*BIP44Params), keyManager}
+	return keysClient{*BIP44Params, keyManager}
 }
 
 func (k keysClient) Add(name, password string) (string, string, types.Error) {
