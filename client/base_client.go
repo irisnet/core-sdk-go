@@ -400,6 +400,11 @@ func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*sdktypes.Factory, erro
 	if !baseTx.FeePayer.Empty() {
 		factory.WithFeePayer(baseTx.FeePayer)
 	}
+
+	if baseTx.TimeoutHeight > 0 {
+		factory.WithTimeout(baseTx.TimeoutHeight)
+	}
+
 	return factory, nil
 }
 
@@ -453,6 +458,10 @@ func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence 
 
 	if !baseTx.FeePayer.Empty() {
 		factory.WithFeePayer(baseTx.FeePayer)
+	}
+
+	if baseTx.TimeoutHeight > 0 {
+		factory.WithTimeout(baseTx.TimeoutHeight)
 	}
 
 	return factory, nil
