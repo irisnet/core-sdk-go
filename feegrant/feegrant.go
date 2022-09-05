@@ -20,15 +20,15 @@ func NewClient(bc sdk.BaseClient, cdc commoncodec.Marshaler) Client {
 	}
 }
 
-func (b feeGrantClient) Name() string {
+func (f feeGrantClient) Name() string {
 	return ModuleName
 }
 
-func (b feeGrantClient) RegisterInterfaceTypes(registry types.InterfaceRegistry) {
+func (f feeGrantClient) RegisterInterfaceTypes(registry types.InterfaceRegistry) {
 	RegisterInterfaces(registry)
 }
 
-func (f feeGrantClient) GrantAllowance(granter, grantee sdk.AccAddress,feeAllowance FeeAllowanceI, baseTx sdk.BaseTx) (sdk.ResultTx, sdk.Error) {
+func (f feeGrantClient) GrantAllowance(granter, grantee sdk.AccAddress, feeAllowance FeeAllowanceI, baseTx sdk.BaseTx) (sdk.ResultTx, sdk.Error) {
 	granter, err := sdk.AccAddressFromBech32(granter.String())
 	if err != nil {
 		return sdk.ResultTx{}, sdk.Wrapf(fmt.Sprintf("%s invalid address", granter))
@@ -39,7 +39,7 @@ func (f feeGrantClient) GrantAllowance(granter, grantee sdk.AccAddress,feeAllowa
 		return sdk.ResultTx{}, sdk.Wrapf(fmt.Sprintf("%s invalid address", grantee))
 	}
 
-	msg, error := NewMsgGrantAllowance(feeAllowance,granter, grantee)
+	msg, error := NewMsgGrantAllowance(feeAllowance, granter, grantee)
 	if error != nil {
 		return sdk.ResultTx{}, sdk.Wrapf(fmt.Sprintf("%s", error))
 	}
