@@ -39,7 +39,7 @@ func grant(s IntegrationTestSuite) {
 		GasAdjustment:      1.5,
 	}
 
-	result, err := s.FeeGrant.GrantAllowance(s.Account().Address,to,basic, baseTx)
+	result, err := s.FeeGrant.GrantAllowance(s.Account().Address, to, basic, baseTx)
 	require.NoError(s.T(), err)
 	require.NotEmpty(s.T(), result.Hash)
 }

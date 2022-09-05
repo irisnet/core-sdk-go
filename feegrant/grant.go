@@ -38,7 +38,7 @@ func (a Grant) ValidateBasic() error {
 		return errors.New("missing granter address")
 	}
 	if a.Grantee == "" {
-		return errors.New( "missing grantee address")
+		return errors.New("missing grantee address")
 	}
 	if a.Grantee == a.Granter {
 		return errors.New("cannot self-grant fee authorization")

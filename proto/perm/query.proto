@@ -7,23 +7,23 @@ option go_package = "github.com/irisnet/core-sdk-go/perm";
 
 // Query defines the gRPC querier service for perm module
 service Query {
-    // Roles queries the roles of a given address
-    rpc Roles (QueryRolesRequest) returns (QueryRolesResponse) {
-    }
+  // Roles queries the roles of a given address
+  rpc Roles (QueryRolesRequest) returns (QueryRolesResponse) {
+  }
 
-    // Blacklist queries the black list
-    rpc Blacklist (QueryBlacklistRequest) returns (QueryBlacklistResponse) {
-    }
+  // Blacklist queries the black list
+  rpc Blacklist (QueryBlacklistRequest) returns (QueryBlacklistResponse) {
+  }
 }
 
 // QueryRolesRequest is request type for the Query/Roles RPC method
 message QueryRolesRequest {
-    string address = 1;
+  string address = 1;
 }
 
 // QueryRolesResponse is response type for the Query/Roles RPC method
 message QueryRolesResponse {
-    repeated Role roles = 1;
+  repeated Role roles = 1;
 }
 
 // QueryBlacklistRequest is request type for the Query/Blacklist RPC method
@@ -32,5 +32,5 @@ message QueryBlacklistRequest {
 
 // QueryBlacklistResponse is response type for the Query/Blacklist RPC method
 message QueryBlacklistResponse {
-    repeated string addresses = 1;
+  repeated string addresses = 1;
 }

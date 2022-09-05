@@ -16,7 +16,7 @@ service Msg {
 // ICS20 enabled chains. See ICS Spec here:
 // https://github.com/cosmos/ics/tree/master/spec/ics-020-fungible-token-transfer#data-structures
 message MsgTransfer {
-  option (gogoproto.equal)           = false;
+  option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
   // the port on which the packet will be sent
@@ -32,7 +32,7 @@ message MsgTransfer {
   // Timeout height relative to the current block height.
   // The timeout is disabled when set to 0.
   Height timeout_height = 6
-      [(gogoproto.moretags) = "yaml:\"timeout_height\"", (gogoproto.nullable) = false];
+  [(gogoproto.moretags) = "yaml:\"timeout_height\"", (gogoproto.nullable) = false];
   // Timeout timestamp (in nanoseconds) relative to the current block timestamp.
   // The timeout is disabled when set to 0.
   uint64 timeout_timestamp = 7 [(gogoproto.moretags) = "yaml:\"timeout_timestamp\""];
@@ -51,7 +51,7 @@ message MsgTransferResponse {}
 // In these cases, the RevisionNumber is incremented so that height continues to
 // be monitonically increasing even as the RevisionHeight gets reset
 message Height {
-  option (gogoproto.goproto_getters)  = false;
+  option (gogoproto.goproto_getters) = false;
 
   // the revision that the client is currently on
   uint64 revision_number = 1 [(gogoproto.moretags) = "yaml:\"revision_number\""];

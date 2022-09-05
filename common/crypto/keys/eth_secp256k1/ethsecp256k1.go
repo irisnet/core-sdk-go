@@ -32,7 +32,7 @@ const (
 )
 
 var (
-	_ tencrypto.PrivKey  = &PrivKey{}
+	_ tencrypto.PrivKey    = &PrivKey{}
 	_ codec.AminoMarshaler = &PrivKey{}
 )
 
@@ -123,7 +123,6 @@ func (privKey PrivKey) Sign(digestBz []byte) ([]byte, error) {
 func (privKey PrivKey) ToECDSA() (*ecdsa.PrivateKey, error) {
 	return crypto.ToECDSA(privKey.Bytes())
 }
-
 
 // Address returns the address of the ECDSA public key.
 // The function will return an empty address if the public key is invalid.

@@ -20,6 +20,7 @@ func init() {
 	amino = commoncrypto.NewLegacyAmino()
 	RegisterCrypto(amino)
 }
+
 // RegisterCrypto registers all crypto dependency types with the provided Amino
 // codec.
 func RegisterCrypto(cdc *codec.LegacyAmino) {
