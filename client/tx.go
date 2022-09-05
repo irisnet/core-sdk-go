@@ -176,7 +176,7 @@ func (base baseClient) broadcastTxSync(tx []byte) (sdk.ResultTx, sdk.Error) {
 	}
 
 	if res.Code != 0 {
-		return sdk.ResultTx{}, sdk.GetError(sdk.RootCodespace, res.Code, res.Log)
+		return sdk.ResultTx{}, sdk.GetError(res.Codespace, res.Code, res.Log)
 	}
 
 	return sdk.ResultTx{Hash: res.Hash.String()}, nil
