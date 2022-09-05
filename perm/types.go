@@ -2,6 +2,7 @@ package perm
 
 import (
 	"errors"
+	"github.com/gogo/protobuf/proto"
 	sdk "github.com/irisnet/core-sdk-go/types"
 )
 
@@ -27,7 +28,7 @@ func (m MsgAssignRoles) Route() string {
 }
 
 func (m MsgAssignRoles) Type() string {
-	return TypeMsgAssignRoles
+	return MsgTypeURL(&m)
 }
 
 func (m MsgAssignRoles) ValidateBasic() error {
@@ -53,4 +54,9 @@ func (m MsgAssignRoles) GetSignBytes() []byte {
 
 func (m MsgAssignRoles) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.MustAccAddressFromBech32(m.Operator)}
+}
+
+// MsgTypeURL returns the TypeURL of a `sdk.Msg`.
+func MsgTypeURL(msg sdk.Msg) string {
+	return "/" + proto.MessageName(msg)
 }
