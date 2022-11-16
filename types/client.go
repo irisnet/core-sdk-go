@@ -13,7 +13,7 @@ type TxManager interface {
 	BuildAndSign(msg []Msg, baseTx BaseTx) ([]byte, Error)
 	BuildTxHash(msg []Msg, baseTx BaseTx) (string, Error)
 	BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) (ResultTx, Error)
-	BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx)  ([]byte, Error)
+	BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) ([]byte, Error)
 }
 
 type Queries interface {
@@ -39,6 +39,10 @@ type StoreQuery interface {
 type AccountQuery interface {
 	QueryAccount(address string) (BaseAccount, Error)
 	QueryAddress(name, password string) (AccAddress, Error)
+}
+
+type CacheManager interface {
+	RemoveCache(address string) bool
 }
 
 type TmQuery interface {
@@ -67,4 +71,5 @@ type BaseClient interface {
 	Logger
 	GRPCClient
 	KeyManager
+	CacheManager
 }
