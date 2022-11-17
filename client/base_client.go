@@ -83,8 +83,8 @@ func NewBaseClient(cfg sdktypes.ClientConfig, encodingConfig sdktypes.EncodingCo
 	return &base
 }
 
-func (a *baseClient) RemoveCache(address string) bool {
-	return a.removeCache(address)
+func (base *baseClient) RemoveCache(address string) bool {
+	return base.removeCache(address)
 }
 
 func (base *baseClient) Logger() log.Logger {
