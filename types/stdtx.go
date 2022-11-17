@@ -233,6 +233,7 @@ type BaseTx struct {
 	Mode               BroadcastMode `json:"broadcast_mode"`
 	SimulateAndExecute bool          `json:"simulate_and_execute"`
 	GasAdjustment      float64       `json:"gas_adjustment"`
+	TimeoutHeight      uint64        `json:"timeout_height"`
 }
 
 // ResultTx encapsulates the return result of the transaction. When the transaction fails,
