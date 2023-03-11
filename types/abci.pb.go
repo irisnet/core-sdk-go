@@ -5,8 +5,8 @@ package types
 
 import (
 	fmt "fmt"
+	proto "github.com/cosmos/gogoproto/proto"
 	_ "github.com/gogo/protobuf/gogoproto"
-	proto "github.com/gogo/protobuf/proto"
 	types "github.com/irisnet/core-sdk-go/common/codec/types"
 	types1 "github.com/tendermint/tendermint/abci/types"
 	io "io"
