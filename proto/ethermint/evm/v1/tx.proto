@@ -33,11 +33,12 @@ message MsgEthereumTx {
   // against the address derived from the signature (V, R, S) using the
   // secp256k1 elliptic curve
   string from = 4;
+
+  // feeGranter
+  string fee_payer = 5;
 }
 
 // LegacyTx is the transaction data of regular Ethereum transactions.
-// NOTE: All non-protected transactions (i.e non EIP155 signed) will fail if the
-// AllowUnprotectedTxs parameter is disabled. 
 message LegacyTx {
   option (gogoproto.goproto_getters) = false;
   option (cosmos_proto.implements_interface) = "TxData";
