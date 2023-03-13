@@ -5,7 +5,6 @@ import (
 	proto "github.com/gogo/protobuf/proto"
 	"github.com/irisnet/core-sdk-go/common/codec"
 	codectypes "github.com/irisnet/core-sdk-go/common/codec/types"
-	cryptocodec "github.com/irisnet/core-sdk-go/common/crypto/codec"
 	sdktypes "github.com/irisnet/core-sdk-go/types"
 )
 
@@ -15,7 +14,7 @@ var (
 )
 
 func init() {
-	cryptocodec.RegisterCrypto(amino)
+	//cryptocodec.RegisterCrypto(amino)
 }
 
 type (
@@ -43,7 +42,7 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 
 }
 
-// PackClientState constructs a new Any packed with the given tx data value. It returns
+// PackTxData constructs a new Any packed with the given tx data value. It returns
 // an error if the client state can't be casted to a protobuf message or if the concrete
 // implemention is not registered to the protobuf codec.
 func PackTxData(txData TxData) (*codectypes.Any, error) {

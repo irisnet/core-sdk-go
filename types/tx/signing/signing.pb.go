@@ -5,7 +5,7 @@ package signing
 
 import (
 	fmt "fmt"
-	proto "github.com/cosmos/gogoproto/proto"
+	proto "github.com/gogo/protobuf/proto"
 	types "github.com/irisnet/core-sdk-go/common/codec/types"
 	types1 "github.com/irisnet/core-sdk-go/common/crypto/types"
 	io "io"

@@ -7,11 +7,11 @@ import (
 	bytes "bytes"
 	compress_gzip "compress/gzip"
 	fmt "fmt"
-	github_com_cosmos_gogoproto_proto "github.com/cosmos/gogoproto/proto"
-	proto "github.com/cosmos/gogoproto/proto"
-	github_com_cosmos_gogoproto_protoc_gen_gogo_descriptor "github.com/cosmos/gogoproto/protoc-gen-gogo/descriptor"
-	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
 	_ "github.com/gogo/protobuf/gogoproto"
+	github_com_gogo_protobuf_proto "github.com/gogo/protobuf/proto"
+	proto "github.com/gogo/protobuf/proto"
+	github_com_gogo_protobuf_protoc_gen_gogo_descriptor "github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
+	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
 	types1 "github.com/irisnet/core-sdk-go/common/codec/types"
 	github_com_irisnet_core_sdk_go_types "github.com/irisnet/core-sdk-go/types"
 	types2 "github.com/irisnet/core-sdk-go/types"
@@ -1210,11 +1210,11 @@ var fileDescriptor_64c30c6cf92913c9 = []byte{
 	0x00, 0x00, 0xff, 0xff, 0x0f, 0x95, 0xb2, 0x5b, 0x09, 0x17, 0x00, 0x00,
 }
 
-func (this *Pool) Description() (desc *github_com_cosmos_gogoproto_protoc_gen_gogo_descriptor.FileDescriptorSet) {
+func (this *Pool) Description() (desc *github_com_gogo_protobuf_protoc_gen_gogo_descriptor.FileDescriptorSet) {
 	return StakingDescription()
 }
-func StakingDescription() (desc *github_com_cosmos_gogoproto_protoc_gen_gogo_descriptor.FileDescriptorSet) {
-	d := &github_com_cosmos_gogoproto_protoc_gen_gogo_descriptor.FileDescriptorSet{}
+func StakingDescription() (desc *github_com_gogo_protobuf_protoc_gen_gogo_descriptor.FileDescriptorSet) {
+	d := &github_com_gogo_protobuf_protoc_gen_gogo_descriptor.FileDescriptorSet{}
 	var gzipped = []byte{
 		// 9513 bytes of a gzipped FileDescriptorSet
 		0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x7d, 0x6d, 0x70, 0x1c, 0xd9,
@@ -1822,7 +1822,7 @@ func StakingDescription() (desc *github_com_cosmos_gogoproto_protoc_gen_gogo_des
 	if err != nil {
 		panic(err)
 	}
-	if err := github_com_cosmos_gogoproto_proto.Unmarshal(ungzipped, d); err != nil {
+	if err := github_com_gogo_protobuf_proto.Unmarshal(ungzipped, d); err != nil {
 		panic(err)
 	}
 	return d
@@ -2196,7 +2196,7 @@ func (m *Commission) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	n2, err2 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(m.UpdateTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(m.UpdateTime):])
+	n2, err2 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.UpdateTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.UpdateTime):])
 	if err2 != nil {
 		return 0, err2
 	}
@@ -2315,7 +2315,7 @@ func (m *Validator) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0x52
-	n5, err5 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(m.UnbondingTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(m.UnbondingTime):])
+	n5, err5 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.UnbondingTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.UnbondingTime):])
 	if err5 != nil {
 		return 0, err5
 	}
@@ -2720,7 +2720,7 @@ func (m *UnbondingDelegationEntry) MarshalToSizedBuffer(dAtA []byte) (int, error
 	}
 	i--
 	dAtA[i] = 0x1a
-	n8, err8 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(m.CompletionTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(m.CompletionTime):])
+	n8, err8 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.CompletionTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime):])
 	if err8 != nil {
 		return 0, err8
 	}
@@ -2776,7 +2776,7 @@ func (m *RedelegationEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0x1a
-	n9, err9 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(m.CompletionTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(m.CompletionTime):])
+	n9, err9 := github_com_gogo_protobuf_types.StdTimeMarshalTo(m.CompletionTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime):])
 	if err9 != nil {
 		return 0, err9
 	}
@@ -2892,7 +2892,7 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x10
 	}
-	n10, err10 := github_com_cosmos_gogoproto_types.StdDurationMarshalTo(m.UnbondingTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.UnbondingTime):])
+	n10, err10 := github_com_gogo_protobuf_types.StdDurationMarshalTo(m.UnbondingTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdDuration(m.UnbondingTime):])
 	if err10 != nil {
 		return 0, err10
 	}
@@ -3130,7 +3130,7 @@ func (m *Commission) Size() (n int) {
 	_ = l
 	l = m.CommissionRates.Size()
 	n += 1 + l + sovStaking(uint64(l))
-	l = github_com_cosmos_gogoproto_types.SizeOfStdTime(m.UpdateTime)
+	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.UpdateTime)
 	n += 1 + l + sovStaking(uint64(l))
 	return n
 }
@@ -3193,7 +3193,7 @@ func (m *Validator) Size() (n int) {
 	if m.UnbondingHeight != 0 {
 		n += 1 + sovStaking(uint64(m.UnbondingHeight))
 	}
-	l = github_com_cosmos_gogoproto_types.SizeOfStdTime(m.UnbondingTime)
+	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.UnbondingTime)
 	n += 1 + l + sovStaking(uint64(l))
 	l = m.Commission.Size()
 	n += 1 + l + sovStaking(uint64(l))
@@ -3336,7 +3336,7 @@ func (m *UnbondingDelegationEntry) Size() (n int) {
 	if m.CreationHeight != 0 {
 		n += 1 + sovStaking(uint64(m.CreationHeight))
 	}
-	l = github_com_cosmos_gogoproto_types.SizeOfStdTime(m.CompletionTime)
+	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime)
 	n += 1 + l + sovStaking(uint64(l))
 	l = m.InitialBalance.Size()
 	n += 1 + l + sovStaking(uint64(l))
@@ -3354,7 +3354,7 @@ func (m *RedelegationEntry) Size() (n int) {
 	if m.CreationHeight != 0 {
 		n += 1 + sovStaking(uint64(m.CreationHeight))
 	}
-	l = github_com_cosmos_gogoproto_types.SizeOfStdTime(m.CompletionTime)
+	l = github_com_gogo_protobuf_types.SizeOfStdTime(m.CompletionTime)
 	n += 1 + l + sovStaking(uint64(l))
 	l = m.InitialBalance.Size()
 	n += 1 + l + sovStaking(uint64(l))
@@ -3396,7 +3396,7 @@ func (m *Params) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.UnbondingTime)
+	l = github_com_gogo_protobuf_types.SizeOfStdDuration(m.UnbondingTime)
 	n += 1 + l + sovStaking(uint64(l))
 	if m.MaxValidators != 0 {
 		n += 1 + sovStaking(uint64(m.MaxValidators))
@@ -3854,7 +3854,7 @@ func (m *Commission) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_cosmos_gogoproto_types.StdTimeUnmarshal(&m.UpdateTime, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.UpdateTime, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -4374,7 +4374,7 @@ func (m *Validator) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_cosmos_gogoproto_types.StdTimeUnmarshal(&m.UnbondingTime, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.UnbondingTime, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -5349,7 +5349,7 @@ func (m *UnbondingDelegationEntry) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_cosmos_gogoproto_types.StdTimeUnmarshal(&m.CompletionTime, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.CompletionTime, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -5519,7 +5519,7 @@ func (m *RedelegationEntry) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_cosmos_gogoproto_types.StdTimeUnmarshal(&m.CompletionTime, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_gogo_protobuf_types.StdTimeUnmarshal(&m.CompletionTime, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -5850,7 +5850,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_cosmos_gogoproto_types.StdDurationUnmarshal(&m.UnbondingTime, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_gogo_protobuf_types.StdDurationUnmarshal(&m.UnbondingTime, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
