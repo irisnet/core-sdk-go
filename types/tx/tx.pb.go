@@ -5,8 +5,8 @@ package tx
 
 import (
 	fmt "fmt"
+	proto "github.com/cosmos/gogoproto/proto"
 	_ "github.com/gogo/protobuf/gogoproto"
-	proto "github.com/gogo/protobuf/proto"
 	types "github.com/irisnet/core-sdk-go/common/codec/types"
 	types1 "github.com/irisnet/core-sdk-go/common/crypto/types"
 	github_com_irisnet_core_sdk_go_types "github.com/irisnet/core-sdk-go/types"
@@ -476,6 +476,7 @@ type ModeInfo struct {
 	// multisig signer
 	//
 	// Types that are valid to be assigned to Sum:
+	//
 	//	*ModeInfo_Single_
 	//	*ModeInfo_Multi_
 	Sum isModeInfo_Sum `protobuf_oneof:"sum"`

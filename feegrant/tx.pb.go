@@ -6,9 +6,9 @@ package feegrant
 import (
 	context "context"
 	fmt "fmt"
+	grpc1 "github.com/cosmos/gogoproto/grpc"
+	proto "github.com/cosmos/gogoproto/proto"
 	_ "github.com/gogo/protobuf/gogoproto"
-	grpc1 "github.com/gogo/protobuf/grpc"
-	proto "github.com/gogo/protobuf/proto"
 	types "github.com/irisnet/core-sdk-go/common/codec/types"
 	_ "github.com/regen-network/cosmos-proto"
 	grpc "google.golang.org/grpc"

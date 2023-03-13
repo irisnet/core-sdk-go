@@ -1,5 +1,4 @@
 // Package modules is to warpped the API provided by each module of IRITA
-//
 package client
 
 import (
@@ -22,6 +21,7 @@ import (
 	commoncache "github.com/irisnet/core-sdk-go/common/cache"
 	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
 	sdklog "github.com/irisnet/core-sdk-go/common/log"
+	sdk "github.com/irisnet/core-sdk-go/types"
 	sdktypes "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/core-sdk-go/types/tx"
 )
@@ -132,6 +132,10 @@ func (base *baseClient) BuildAndSignWithAccount(addr string, accountNumber, sequ
 
 	base.Logger().Debug("sign transaction success")
 	return txByte, nil
+}
+
+func (base *baseClient) BroadcastTx(txBytes []byte, mode sdk.BroadcastMode) (res sdk.ResultTx, err sdk.Error) {
+	return base.broadcastTx(txBytes, mode)
 }
 
 func (base *baseClient) BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx) (sdktypes.ResultTx, sdktypes.Error) {
@@ -480,7 +484,7 @@ type locker struct {
 	logger log.Logger
 }
 
-//NewLocker implement the function of lock, can lock resources according to conditions
+// NewLocker implement the function of lock, can lock resources according to conditions
 func NewLocker(size int) *locker {
 	shards := make([]chan int, size)
 	for i := 0; i < size; i++ {

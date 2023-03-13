@@ -8,12 +8,13 @@ import (
 
 type TxManager interface {
 	TmQuery
+	BroadcastTx(txBytes []byte, mode BroadcastMode) (res ResultTx, err Error)
 	SendBatch(msgs Msgs, baseTx BaseTx) ([]ResultTx, Error)
 	BuildAndSend(msg []Msg, baseTx BaseTx) (ResultTx, Error)
 	BuildAndSign(msg []Msg, baseTx BaseTx) ([]byte, Error)
 	BuildTxHash(msg []Msg, baseTx BaseTx) (string, Error)
 	BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) (ResultTx, Error)
-	BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx)  ([]byte, Error)
+	BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) ([]byte, Error)
 }
 
 type Queries interface {
