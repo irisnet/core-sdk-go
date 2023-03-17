@@ -2,6 +2,7 @@ package ethermint
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
@@ -62,7 +63,7 @@ func TestClient(t *testing.T) {
 	cli := NewClient(sdkClient.BaseClient, sdkClient.EncodingConfig().TxConfig)
 	cli.RegisterInterfaceTypes(sdkClient.EncodingConfig().InterfaceRegistry)
 
-	resp1, err := sdkClient.QueryTx("CCF73180DFF268DE3E451B5A59CDE9FA8E4D2BEF925158FD73A86A4E64400077")
+	resp1, err := sdkClient.QueryTx("51A728BAEA19FE27DC0F221B0F04C2A75D55C2D723F30FA67391AEDBF65F8049")
 	if err != nil {
 		panic(err)
 	}
@@ -71,11 +72,15 @@ func TestClient(t *testing.T) {
 		return
 	}
 
-	if txResponse.Ret == nil {
-		return
-	}
+	//if txResponse.Ret == nil {
+	//	fmt.Println("no err")
+	//	return
+	//}
 
 	revetErr := evmtypes.NewExecErrorWithReason(txResponse.Ret)
+	fmt.Println(revetErr.ErrorData())
+	fmt.Println(revetErr.ErrorCode())
+	fmt.Println(revetErr.Error())
 	if err != nil {
 		return
 	}
