@@ -174,7 +174,7 @@ func (r rpcClient) parseTx(data sdk.EventData) sdk.EventDataTx {
 func (r rpcClient) parseNewBlock(data sdk.EventData) sdk.EventDataNewBlock {
 	block := data.(tmtypes.EventDataNewBlock)
 	return sdk.EventDataNewBlock{
-		Block: sdk.ParseBlock(r.cdc, block.Block),
+		Block: sdk.ParseBlock(r.txDecoder, block.Block),
 		ResultBeginBlock: sdk.ResultBeginBlock{
 			Events: sdk.StringifyEvents(block.ResultBeginBlock.Events),
 		},
@@ -207,7 +207,7 @@ func (r rpcClient) parseValidatorSetUpdates(data sdk.EventData) sdk.EventDataVal
 }
 
 func getSubscriber() string {
-	subscriber := "irishub-sdk-go"
+	subscriber := "core-sdk-go"
 	id, err := uuid.NewV1()
 	if err == nil {
 		subscriber = fmt.Sprintf("%s-%s", subscriber, id.String())
