@@ -19,15 +19,16 @@ type Block struct {
 }
 
 type Data struct {
-	Txs []StdTx `json:"txs"`
+	Txs []Tx `json:"txs"`
 }
 
-func ParseBlock(cdc *commoncodec.LegacyAmino, block *tmtypes.Block) Block {
-	var txs []StdTx
+func ParseBlock(txDecoder TxDecoder, block *tmtypes.Block) Block {
+	var txs []Tx
+
 	for _, tx := range block.Txs {
-		var stdTx StdTx
-		if err := cdc.UnmarshalBinaryBare(tx, &stdTx); err == nil {
-			txs = append(txs, stdTx)
+		t, err := txDecoder(tx)
+		if err == nil {
+			txs = append(txs, t)
 		}
 	}
 	return Block{
