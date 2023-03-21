@@ -80,7 +80,7 @@ func (base baseClient) QueryBlock(height int64) (sdk.BlockDetail, error) {
 
 	return sdk.BlockDetail{
 		BlockID:     block.BlockID,
-		Block:       sdk.ParseBlock(base.encodingConfig.Amino, block.Block),
+		Block:       sdk.ParseBlock(base.encodingConfig.TxConfig.TxDecoder(), block.Block),
 		BlockResult: sdk.ParseBlockResult(blockResult),
 	}, nil
 }
