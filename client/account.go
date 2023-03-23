@@ -64,7 +64,8 @@ func (a AccountQuery) QueryAccount(address string) (sdk.BaseAccount, sdk.Error) 
 		return sdk.BaseAccount{}, sdk.Wrap(err)
 	}
 
-	account := baseAccount.(*auth.BaseAccount).ConvertAccount(a.cdc).(sdk.BaseAccount)
+	a2 := baseAccount.(auth.BaseAccountI)
+	account := a2.ConvertAccount(a.cdc).(sdk.BaseAccount)
 
 	breq := &bank.QueryAllBalancesRequest{
 		Address:    address,
