@@ -3,6 +3,7 @@ package types
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/irisnet/core-sdk-go/types/tx/signing"
 )
 
@@ -262,7 +263,7 @@ func (f *Factory) BuildTx(name string, msgs []Msg) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	return signBytes, nil
+	return crypto.Keccak256Hash(signBytes).Bytes(), nil
 }
 
 func (f *Factory) SetUnsignedTxSignature(name string, msgs []Msg, signedData []byte) ([]byte, error) {
