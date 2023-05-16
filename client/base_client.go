@@ -294,7 +294,7 @@ func (base *baseClient) BuildTx(addr string, sequence, accountNumber uint64, msg
 	return unsignedTxBytes, nil
 }
 
-func (base *baseClient) SetUnsignedTxSignature(addr string, sequence, accountNumber uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx, signedData []byte) ([]byte, sdktypes.Error) {
+func (base *baseClient) SetTxSignature(addr string, sequence, accountNumber uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx, signedData []byte) ([]byte, sdktypes.Error) {
 	builder, err := base.prepareWithAccount(addr, sequence, accountNumber, baseTx)
 	if err != nil {
 		return nil, sdktypes.Wrap(err)

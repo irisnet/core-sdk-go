@@ -15,7 +15,7 @@ type TxManager interface {
 	BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) (ResultTx, Error)
 	BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) ([]byte, Error)
 	BuildTx(addr string, sequence, accountNumber uint64, msg []Msg, baseTx BaseTx) ([]byte, Error)
-	SetUnsignedTxSignature(addr string, sequence, accountNumber uint64, msg []Msg, baseTx BaseTx, signedData []byte) ([]byte, Error)
+	SetTxSignature(addr string, sequence, accountNumber uint64, msg []Msg, baseTx BaseTx, signedData []byte) ([]byte, Error)
 }
 
 type Queries interface {
