@@ -279,8 +279,8 @@ func (base *baseClient) SendBatch(msgs sdktypes.Msgs, baseTx sdktypes.BaseTx) (r
 	return rs, nil
 }
 
-func (base *baseClient) BuildTx(msg []sdktypes.Msg, baseTx sdktypes.BaseTx) ([]byte, sdktypes.Error) {
-	builder, err := base.prepare(baseTx)
+func (base *baseClient) BuildTx(addr string, sequence, accountNumber uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx) ([]byte, sdktypes.Error) {
+	builder, err := base.prepareWithAccount(addr, sequence, accountNumber, baseTx)
 	if err != nil {
 		return nil, sdktypes.Wrap(err)
 	}
@@ -294,8 +294,8 @@ func (base *baseClient) BuildTx(msg []sdktypes.Msg, baseTx sdktypes.BaseTx) ([]b
 	return unsignedTxBytes, nil
 }
 
-func (base *baseClient) SetUnsignedTxSignature(msg []sdktypes.Msg, baseTx sdktypes.BaseTx, signedData []byte) ([]byte, sdktypes.Error) {
-	builder, err := base.prepare(baseTx)
+func (base *baseClient) SetUnsignedTxSignature(addr string, sequence, accountNumber uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx, signedData []byte) ([]byte, sdktypes.Error) {
+	builder, err := base.prepareWithAccount(addr, sequence, accountNumber, baseTx)
 	if err != nil {
 		return nil, sdktypes.Wrap(err)
 	}
