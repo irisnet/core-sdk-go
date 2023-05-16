@@ -279,6 +279,36 @@ func (base *baseClient) SendBatch(msgs sdktypes.Msgs, baseTx sdktypes.BaseTx) (r
 	return rs, nil
 }
 
+func (base *baseClient) BuildTx(msg []sdktypes.Msg, baseTx sdktypes.BaseTx) ([]byte, sdktypes.Error) {
+	builder, err := base.prepare(baseTx)
+	if err != nil {
+		return nil, sdktypes.Wrap(err)
+	}
+
+	unsignedTxBytes, err := builder.BuildTx(baseTx.From, msg)
+	if err != nil {
+		return nil, sdktypes.Wrap(err)
+	}
+
+	base.Logger().Debug("sign transaction success")
+	return unsignedTxBytes, nil
+}
+
+func (base *baseClient) SetUnsignedTxSignature(msg []sdktypes.Msg, baseTx sdktypes.BaseTx, signedData []byte) ([]byte, sdktypes.Error) {
+	builder, err := base.prepare(baseTx)
+	if err != nil {
+		return nil, sdktypes.Wrap(err)
+	}
+
+	txByte, err := builder.SetUnsignedTxSignature(baseTx.From, msg, signedData)
+	if err != nil {
+		return nil, sdktypes.Wrap(err)
+	}
+
+	base.Logger().Debug("sign transaction success")
+	return txByte, nil
+}
+
 func (base baseClient) QueryWithResponse(path string, data interface{}, result sdktypes.Response) error {
 	res, err := base.Query(path, data)
 	if err != nil {

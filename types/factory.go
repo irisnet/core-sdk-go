@@ -213,6 +213,97 @@ func (f *Factory) BuildAndSign(name string, msgs []Msg, json bool) ([]byte, erro
 	return txBytes, nil
 }
 
+func (f *Factory) BuildTx(name string, msgs []Msg) ([]byte, error) {
+	tx, err := f.BuildUnsignedTx(msgs)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	signMode := f.signMode
+	if signMode == signing.SignMode_SIGN_MODE_UNSPECIFIED {
+		// use the SignModeHandler's default mode if unspecified
+		signMode = f.txConfig.SignModeHandler().DefaultMode()
+	}
+	signerData := SignerData{
+		ChainID:       f.chainID,
+		AccountNumber: f.accountNumber,
+		Sequence:      f.sequence,
+	}
+
+	pubkey, _, err := f.keyManager.Find(name, f.password)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	// For SIGN_MODE_DIRECT, calling SetSignatures calls setSignerInfos on
+	// Factory under the hood, and SignerInfos is needed to generated the
+	// sign bytes. This is the reason for setting SetSignatures here, with a
+	// nil signature.
+	//
+	// Note: this line is not needed for SIGN_MODE_LEGACY_AMINO, but putting it
+	// also doesn't affect its generated sign bytes, so for code's simplicity
+	// sake, we put it here.
+	sigData := signing.SingleSignatureData{
+		SignMode:  signMode,
+		Signature: nil,
+	}
+	sig := signing.SignatureV2{
+		PubKey:   pubkey,
+		Data:     &sigData,
+		Sequence: f.Sequence(),
+	}
+	if err := tx.SetSignatures(sig); err != nil {
+		return []byte{}, err
+	}
+
+	// Generate the bytes to be signed.
+	signBytes, err := f.signModeHandler.GetSignBytes(signMode, signerData, tx.GetTx())
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return signBytes, nil
+}
+
+func (f *Factory) SetUnsignedTxSignature(name string, msgs []Msg, signedData []byte) ([]byte, error) {
+	tx, err := f.BuildUnsignedTx(msgs)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	signMode := f.signMode
+	if signMode == signing.SignMode_SIGN_MODE_UNSPECIFIED {
+		// use the SignModeHandler's default mode if unspecified
+		signMode = f.txConfig.SignModeHandler().DefaultMode()
+	}
+
+	pubkey, _, err := f.keyManager.Find(name, f.password)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	// Construct the SignatureV2 struct
+	sigData := signing.SingleSignatureData{
+		SignMode:  signMode,
+		Signature: signedData,
+	}
+	sig := signing.SignatureV2{
+		PubKey:   pubkey,
+		Data:     &sigData,
+		Sequence: f.Sequence(),
+	}
+
+	// And here the tx is populated with the signature
+	tx.SetSignatures(sig)
+
+	txBytes, err := f.txConfig.TxEncoder()(tx.GetTx())
+	if err != nil {
+		return nil, err
+	}
+
+	return txBytes, nil
+}
+
 func (f *Factory) BuildUnsignedTx(msgs []Msg) (TxBuilder, error) {
 	if f.chainID == "" {
 		return nil, fmt.Errorf("chain ID required but not specified")
