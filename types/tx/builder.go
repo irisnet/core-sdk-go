@@ -37,6 +37,7 @@ var (
 
 // ExtensionOptionsTxBuilder defines a Factory that can also set extensions.
 type ExtensionOptionsTxBuilder interface {
+	sdk.TxBuilder
 	SetExtensionOptions(...*codectypes.Any)
 	SetNonCriticalExtensionOptions(...*codectypes.Any)
 }

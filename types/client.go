@@ -8,6 +8,7 @@ import (
 
 type TxManager interface {
 	TmQuery
+	BroadcastTx(txBytes []byte, mode BroadcastMode) (res ResultTx, err Error)
 	SendBatch(msgs Msgs, baseTx BaseTx) ([]ResultTx, Error)
 	BuildAndSend(msg []Msg, baseTx BaseTx) (ResultTx, Error)
 	BuildAndSign(msg []Msg, baseTx BaseTx) ([]byte, Error)

@@ -21,6 +21,7 @@ import (
 	commoncache "github.com/irisnet/core-sdk-go/common/cache"
 	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
 	sdklog "github.com/irisnet/core-sdk-go/common/log"
+	sdk "github.com/irisnet/core-sdk-go/types"
 	sdktypes "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/core-sdk-go/types/tx"
 )
@@ -135,6 +136,10 @@ func (base *baseClient) BuildAndSignWithAccount(addr string, accountNumber, sequ
 
 	base.Logger().Debug("sign transaction success")
 	return txByte, nil
+}
+
+func (base *baseClient) BroadcastTx(txBytes []byte, mode sdk.BroadcastMode) (res sdk.ResultTx, err sdk.Error) {
+	return base.broadcastTx(txBytes, mode)
 }
 
 func (base *baseClient) BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx) (sdktypes.ResultTx, sdktypes.Error) {

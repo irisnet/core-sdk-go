@@ -131,6 +131,9 @@ func (k KeyManager) Import(name, password, armor string) (string, error) {
 		Algo:         k.Algo,
 	}
 
+	fmt.Println(string(cryptoamino.MarshalPubkey(pubKey)))
+	fmt.Println(string(cryptoamino.MarshalPrivKey(priv)))
+
 	err = k.KeyDAO.Write(name, password, info)
 	if err != nil {
 		return "", err
