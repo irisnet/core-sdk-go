@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
+	keys "github.com/irisnet/core-sdk-go/client"
+	cryptoamino "github.com/irisnet/core-sdk-go/common/crypto/codec"
 	"github.com/irisnet/core-sdk-go/types/tx/signing"
 )
 
@@ -214,7 +216,7 @@ func (f *Factory) BuildAndSign(name string, msgs []Msg, json bool) ([]byte, erro
 	return txBytes, nil
 }
 
-func (f *Factory) BuildTx(name string, msgs []Msg) ([]byte, error) {
+func (f *Factory) BuildTxWithoutKeyDao(pubkey []byte, algo string, msgs []Msg) ([]byte, error) {
 	tx, err := f.BuildUnsignedTx(msgs)
 	if err != nil {
 		return []byte{}, err
@@ -231,25 +233,19 @@ func (f *Factory) BuildTx(name string, msgs []Msg) ([]byte, error) {
 		Sequence:      f.sequence,
 	}
 
-	pubkey, _, err := f.keyManager.Find(name, f.password)
+	pubKey, err := cryptoamino.PubKeyFromBytes(pubkey)
 	if err != nil {
-		return []byte{}, err
+		return nil, nil
 	}
 
-	// For SIGN_MODE_DIRECT, calling SetSignatures calls setSignerInfos on
-	// Factory under the hood, and SignerInfos is needed to generated the
-	// sign bytes. This is the reason for setting SetSignatures here, with a
-	// nil signature.
-	//
-	// Note: this line is not needed for SIGN_MODE_LEGACY_AMINO, but putting it
-	// also doesn't affect its generated sign bytes, so for code's simplicity
-	// sake, we put it here.
+	publicKey := keys.FromTmPubKey(algo, pubKey)
+
 	sigData := signing.SingleSignatureData{
 		SignMode:  signMode,
 		Signature: nil,
 	}
 	sig := signing.SignatureV2{
-		PubKey:   pubkey,
+		PubKey:   publicKey,
 		Data:     &sigData,
 		Sequence: f.Sequence(),
 	}

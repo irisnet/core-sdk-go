@@ -284,13 +284,13 @@ func (base *baseClient) SendBatch(msgs sdktypes.Msgs, baseTx sdktypes.BaseTx) (r
 	return rs, nil
 }
 
-func (base *baseClient) BuildTx(addr string, sequence, accountNumber uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx) ([]byte, sdktypes.Error) {
+func (base *baseClient) BuildTx(addr string, pubkey []byte, algo string, sequence, accountNumber uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx) ([]byte, sdktypes.Error) {
 	builder, err := base.prepareWithAccount(addr, sequence, accountNumber, baseTx)
 	if err != nil {
 		return nil, sdktypes.Wrap(err)
 	}
 
-	unsignedTxBytes, err := builder.BuildTx(baseTx.From, msg)
+	unsignedTxBytes, err := builder.BuildTxWithoutKeyDao(pubkey, algo, msg)
 	if err != nil {
 		return nil, sdktypes.Wrap(err)
 	}
