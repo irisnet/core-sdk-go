@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
 	cryptoamino "github.com/irisnet/core-sdk-go/common/crypto/codec"
+	ethsecp256k1 "github.com/irisnet/core-sdk-go/common/crypto/keys/eth_secp256k1"
 	"github.com/irisnet/core-sdk-go/common/crypto/keys/secp256k1"
 	"github.com/irisnet/core-sdk-go/common/crypto/keys/sm2"
 	commoncryptotypes "github.com/irisnet/core-sdk-go/common/crypto/types"
@@ -420,6 +421,8 @@ func FromTmPubKey(Algo string, pubKey tmcrypto.PubKey) commoncryptotypes.PubKey 
 		pubkey = &sm2.PubKey{Key: pubkeyBytes}
 	case "secp256k1":
 		pubkey = &secp256k1.PubKey{Key: pubkeyBytes}
+	case "eth_secp256k1":
+		pubkey = &ethsecp256k1.PubKey{Key: pubkeyBytes}
 	}
 	return pubkey
 }
