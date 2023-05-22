@@ -266,7 +266,7 @@ func (f *Factory) BuildTxWithoutKeyDao(pubkey []byte, algo string, msgs []Msg) (
 	return crypto.Keccak256Hash(signBytes).Bytes(), nil
 }
 
-func (f *Factory) SetUnsignedTxSignature(name string, msgs []Msg, signedData []byte) ([]byte, error) {
+func (f *Factory) SetUnsignedTxSignature(pubkey []byte, algo string, msgs []Msg, signedData []byte) ([]byte, error) {
 	tx, err := f.BuildUnsignedTx(msgs)
 	if err != nil {
 		return []byte{}, err
@@ -278,10 +278,12 @@ func (f *Factory) SetUnsignedTxSignature(name string, msgs []Msg, signedData []b
 		signMode = f.txConfig.SignModeHandler().DefaultMode()
 	}
 
-	pubkey, _, err := f.keyManager.Find(name, f.password)
+	pubKey, err := cryptoamino.PubKeyFromBytes(pubkey)
 	if err != nil {
-		return []byte{}, err
+		return nil, nil
 	}
+
+	publicKey := FromTmPubKey(algo, pubKey)
 
 	// Construct the SignatureV2 struct
 	sigData := signing.SingleSignatureData{
@@ -289,7 +291,7 @@ func (f *Factory) SetUnsignedTxSignature(name string, msgs []Msg, signedData []b
 		Signature: signedData,
 	}
 	sig := signing.SignatureV2{
-		PubKey:   pubkey,
+		PubKey:   publicKey,
 		Data:     &sigData,
 		Sequence: f.Sequence(),
 	}

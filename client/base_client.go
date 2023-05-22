@@ -299,13 +299,13 @@ func (base *baseClient) BuildTx(addr string, pubkey []byte, algo string, sequenc
 	return unsignedTxBytes, nil
 }
 
-func (base *baseClient) SetTxSignature(addr string, sequence, accountNumber uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx, signedData []byte) ([]byte, sdktypes.Error) {
+func (base *baseClient) SetTxSignature(addr string, pubkey []byte, algo string, sequence, accountNumber uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx, signedData []byte) ([]byte, sdktypes.Error) {
 	builder, err := base.prepareWithAccount(addr, sequence, accountNumber, baseTx)
 	if err != nil {
 		return nil, sdktypes.Wrap(err)
 	}
 
-	txByte, err := builder.SetUnsignedTxSignature(baseTx.From, msg, signedData)
+	txByte, err := builder.SetUnsignedTxSignature(pubkey, algo, msg, signedData)
 	if err != nil {
 		return nil, sdktypes.Wrap(err)
 	}
