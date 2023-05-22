@@ -4,9 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
-	keys "github.com/irisnet/core-sdk-go/client"
 	cryptoamino "github.com/irisnet/core-sdk-go/common/crypto/codec"
+	"github.com/irisnet/core-sdk-go/common/crypto/keys/secp256k1"
+	"github.com/irisnet/core-sdk-go/common/crypto/keys/sm2"
+	commoncryptotypes "github.com/irisnet/core-sdk-go/common/crypto/types"
 	"github.com/irisnet/core-sdk-go/types/tx/signing"
+	tmcrypto "github.com/tendermint/tendermint/crypto"
 )
 
 // Factory defines a client transaction factory that facilitates generating and
@@ -238,7 +241,7 @@ func (f *Factory) BuildTxWithoutKeyDao(pubkey []byte, algo string, msgs []Msg) (
 		return nil, nil
 	}
 
-	publicKey := keys.FromTmPubKey(algo, pubKey)
+	publicKey := FromTmPubKey(algo, pubKey)
 
 	sigData := signing.SingleSignatureData{
 		SignMode:  signMode,
@@ -407,4 +410,16 @@ func (f *Factory) Sign(name string, txBuilder TxBuilder) error {
 
 	// And here the tx is populated with the signature
 	return txBuilder.SetSignatures(sig)
+}
+
+func FromTmPubKey(Algo string, pubKey tmcrypto.PubKey) commoncryptotypes.PubKey {
+	var pubkey commoncryptotypes.PubKey
+	pubkeyBytes := pubKey.Bytes()
+	switch Algo {
+	case "sm2":
+		pubkey = &sm2.PubKey{Key: pubkeyBytes}
+	case "secp256k1":
+		pubkey = &secp256k1.PubKey{Key: pubkeyBytes}
+	}
+	return pubkey
 }
