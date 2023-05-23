@@ -30,4 +30,9 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 		(*auth.Account)(nil),
 		&auth.BaseAccount{},
 	)
+
+	registry.RegisterImplementations(
+		(*auth.Account)(nil),
+		&auth.EthAccount{},
+	)
 }
