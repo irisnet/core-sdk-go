@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	cryptoamino "github.com/irisnet/core-sdk-go/common/crypto/codec"
 	ethsecp256k1 "github.com/irisnet/core-sdk-go/common/crypto/keys/eth_secp256k1"
 	"github.com/irisnet/core-sdk-go/common/crypto/keys/secp256k1"
@@ -262,10 +261,6 @@ func (f *Factory) BuildTxWithoutKeyDao(pubkey []byte, algo string, msgs []Msg) (
 	signBytes, err := f.signModeHandler.GetSignBytes(signMode, signerData, tx.GetTx())
 	if err != nil {
 		return []byte{}, err
-	}
-
-	if algo != "secp256k1" {
-		return crypto.Keccak256Hash(signBytes).Bytes(), nil
 	}
 
 	return signBytes, nil
