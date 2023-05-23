@@ -285,7 +285,7 @@ func (base *baseClient) SendBatch(msgs sdktypes.Msgs, baseTx sdktypes.BaseTx) (r
 }
 
 func (base *baseClient) BuildTx(addr string, pubkey []byte, algo string, sequence, accountNumber uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx) ([]byte, sdktypes.Error) {
-	builder, err := base.prepareWithAccount(addr, sequence, accountNumber, baseTx)
+	builder, err := base.prepareWithAccount(addr, accountNumber, sequence, baseTx)
 	if err != nil {
 		return nil, sdktypes.Wrap(err)
 	}
@@ -300,7 +300,7 @@ func (base *baseClient) BuildTx(addr string, pubkey []byte, algo string, sequenc
 }
 
 func (base *baseClient) SetTxSignature(addr string, pubkey []byte, algo string, sequence, accountNumber uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx, signedData []byte) ([]byte, sdktypes.Error) {
-	builder, err := base.prepareWithAccount(addr, sequence, accountNumber, baseTx)
+	builder, err := base.prepareWithAccount(addr, accountNumber, sequence, baseTx)
 	if err != nil {
 		return nil, sdktypes.Wrap(err)
 	}

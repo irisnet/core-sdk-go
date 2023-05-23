@@ -239,7 +239,7 @@ func (f *Factory) BuildTxWithoutKeyDao(pubkey []byte, algo string, msgs []Msg) (
 
 	pubKey, err := cryptoamino.PubKeyFromBytes(pubkey)
 	if err != nil {
-		return nil, nil
+		return []byte{}, err
 	}
 
 	publicKey := FromTmPubKey(algo, pubKey)
@@ -280,7 +280,7 @@ func (f *Factory) SetUnsignedTxSignature(pubkey []byte, algo string, msgs []Msg,
 
 	pubKey, err := cryptoamino.PubKeyFromBytes(pubkey)
 	if err != nil {
-		return nil, nil
+		return []byte{}, err
 	}
 
 	publicKey := FromTmPubKey(algo, pubKey)
