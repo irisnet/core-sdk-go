@@ -3,6 +3,7 @@ package types
 import (
 	"errors"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/crypto"
 	cryptoamino "github.com/irisnet/core-sdk-go/common/crypto/codec"
 	ethsecp256k1 "github.com/irisnet/core-sdk-go/common/crypto/keys/eth_secp256k1"
@@ -263,7 +264,11 @@ func (f *Factory) BuildTxWithoutKeyDao(pubkey []byte, algo string, msgs []Msg) (
 		return []byte{}, err
 	}
 
-	return crypto.Keccak256Hash(signBytes).Bytes(), nil
+	if algo != "secp256k1" {
+		return crypto.Keccak256Hash(signBytes).Bytes(), nil
+	}
+
+	return signBytes, nil
 }
 
 func (f *Factory) SetUnsignedTxSignature(pubkey []byte, algo string, msgs []Msg, signedData []byte) ([]byte, error) {
@@ -423,7 +428,7 @@ func FromTmPubKey(Algo string, pubKey tmcrypto.PubKey) commoncryptotypes.PubKey 
 		pubkey = &sm2.PubKey{Key: pubkeyBytes}
 	case "secp256k1":
 		pubkey = &secp256k1.PubKey{Key: pubkeyBytes}
-	case "eth_secp256k1":
+	case ethsecp256k1.KeyType:
 		pubkey = &ethsecp256k1.PubKey{Key: pubkeyBytes}
 	}
 	return pubkey
