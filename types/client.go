@@ -15,8 +15,9 @@ type TxManager interface {
 	BuildTxHash(msg []Msg, baseTx BaseTx) (string, Error)
 	BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) (ResultTx, Error)
 	BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) ([]byte, Error)
-	BuildTx(addr string, pubkey []byte, algo string, sequence, accountNumber uint64, msg []Msg, baseTx BaseTx) ([]byte, Error)
-	SetTxSignature(addr string, pubkey []byte, algo string, sequence, accountNumber uint64, msg []Msg, baseTx BaseTx, signedData []byte) ([]byte, Error)
+	BuildTx(addr string, pubkey []byte, algo string, sequence, accountNumber uint64, msg []Msg, baseTx BaseTx) ([]byte, *Factory, TxBuilder, Error)
+	SetTxSignature(builder *Factory, txBuilder TxBuilder, pubkey []byte, algo string, signedData []byte, msgs []Msg) ([]byte, Error)
+	EstimateTxSize(addr string, pubkey []byte, algo string, sequence, accountNumber uint64, msgs []Msg, baseTx BaseTx, signedData []byte) ([]byte, Error)
 }
 
 type Queries interface {
