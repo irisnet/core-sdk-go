@@ -220,10 +220,10 @@ func (f *Factory) BuildAndSign(name string, msgs []Msg, json bool) ([]byte, erro
 	return txBytes, nil
 }
 
-func (f *Factory) BuildTxWithoutKeyDao(pubkey []byte, algo string, msgs []Msg) ([]byte, error) {
+func (f *Factory) BuildTxWithoutKeyDao(pubkey []byte, algo string, msgs []Msg) ([]byte, TxBuilder, error) {
 	tx, err := f.BuildUnsignedTx(msgs)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, nil, err
 	}
 
 	signMode := f.signMode
@@ -239,7 +239,7 @@ func (f *Factory) BuildTxWithoutKeyDao(pubkey []byte, algo string, msgs []Msg) (
 
 	pubKey, err := cryptoamino.PubKeyFromBytes(pubkey)
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, nil, err
 	}
 
 	publicKey := FromTmPubKey(algo, pubKey)
@@ -254,22 +254,25 @@ func (f *Factory) BuildTxWithoutKeyDao(pubkey []byte, algo string, msgs []Msg) (
 		Sequence: f.Sequence(),
 	}
 	if err := tx.SetSignatures(sig); err != nil {
-		return []byte{}, err
+		return []byte{}, nil, err
 	}
 
 	// Generate the bytes to be signed.
 	signBytes, err := f.signModeHandler.GetSignBytes(signMode, signerData, tx.GetTx())
 	if err != nil {
-		return []byte{}, err
+		return []byte{}, nil, err
 	}
 
-	return signBytes, nil
+	return signBytes, tx, nil
 }
 
-func (f *Factory) SetUnsignedTxSignature(pubkey []byte, algo string, msgs []Msg, signedData []byte) ([]byte, error) {
-	tx, err := f.BuildUnsignedTx(msgs)
-	if err != nil {
-		return []byte{}, err
+func (f *Factory) SetUnsignedTxSignature(tx TxBuilder, pubkey []byte, algo string, signedData []byte, msgs []Msg) ([]byte, error) {
+	if tx == nil {
+		builder, err := f.BuildUnsignedTx(msgs)
+		if err != nil {
+			return []byte{}, err
+		}
+		tx = builder
 	}
 
 	signMode := f.signMode
