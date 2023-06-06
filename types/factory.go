@@ -3,7 +3,14 @@ package types
 import (
 	"errors"
 	"fmt"
+
+	cryptoamino "github.com/irisnet/core-sdk-go/common/crypto/codec"
+	ethsecp256k1 "github.com/irisnet/core-sdk-go/common/crypto/keys/eth_secp256k1"
+	"github.com/irisnet/core-sdk-go/common/crypto/keys/secp256k1"
+	"github.com/irisnet/core-sdk-go/common/crypto/keys/sm2"
+	commoncryptotypes "github.com/irisnet/core-sdk-go/common/crypto/types"
 	"github.com/irisnet/core-sdk-go/types/tx/signing"
+	tmcrypto "github.com/tendermint/tendermint/crypto"
 )
 
 // Factory defines a client transaction factory that facilitates generating and
@@ -213,6 +220,96 @@ func (f *Factory) BuildAndSign(name string, msgs []Msg, json bool) ([]byte, erro
 	return txBytes, nil
 }
 
+func (f *Factory) BuildTxWithoutKeyDao(pubkey []byte, algo string, msgs []Msg) ([]byte, TxBuilder, error) {
+	tx, err := f.BuildUnsignedTx(msgs)
+	if err != nil {
+		return []byte{}, nil, err
+	}
+
+	signMode := f.signMode
+	if signMode == signing.SignMode_SIGN_MODE_UNSPECIFIED {
+		// use the SignModeHandler's default mode if unspecified
+		signMode = f.txConfig.SignModeHandler().DefaultMode()
+	}
+	signerData := SignerData{
+		ChainID:       f.chainID,
+		AccountNumber: f.accountNumber,
+		Sequence:      f.sequence,
+	}
+
+	pubKey, err := cryptoamino.PubKeyFromBytes(pubkey)
+	if err != nil {
+		return []byte{}, nil, err
+	}
+
+	publicKey := FromTmPubKey(algo, pubKey)
+
+	sigData := signing.SingleSignatureData{
+		SignMode:  signMode,
+		Signature: nil,
+	}
+	sig := signing.SignatureV2{
+		PubKey:   publicKey,
+		Data:     &sigData,
+		Sequence: f.Sequence(),
+	}
+	if err := tx.SetSignatures(sig); err != nil {
+		return []byte{}, nil, err
+	}
+
+	// Generate the bytes to be signed.
+	signBytes, err := f.signModeHandler.GetSignBytes(signMode, signerData, tx.GetTx())
+	if err != nil {
+		return []byte{}, nil, err
+	}
+
+	return signBytes, tx, nil
+}
+
+func (f *Factory) SetUnsignedTxSignature(tx TxBuilder, pubkey []byte, algo string, signedData []byte, msgs []Msg) ([]byte, error) {
+	if tx == nil {
+		builder, err := f.BuildUnsignedTx(msgs)
+		if err != nil {
+			return []byte{}, err
+		}
+		tx = builder
+	}
+
+	signMode := f.signMode
+	if signMode == signing.SignMode_SIGN_MODE_UNSPECIFIED {
+		// use the SignModeHandler's default mode if unspecified
+		signMode = f.txConfig.SignModeHandler().DefaultMode()
+	}
+
+	pubKey, err := cryptoamino.PubKeyFromBytes(pubkey)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	publicKey := FromTmPubKey(algo, pubKey)
+
+	// Construct the SignatureV2 struct
+	sigData := signing.SingleSignatureData{
+		SignMode:  signMode,
+		Signature: signedData,
+	}
+	sig := signing.SignatureV2{
+		PubKey:   publicKey,
+		Data:     &sigData,
+		Sequence: f.Sequence(),
+	}
+
+	// And here the tx is populated with the signature
+	tx.SetSignatures(sig)
+
+	txBytes, err := f.txConfig.TxEncoder()(tx.GetTx())
+	if err != nil {
+		return nil, err
+	}
+
+	return txBytes, nil
+}
+
 func (f *Factory) BuildUnsignedTx(msgs []Msg) (TxBuilder, error) {
 	if f.chainID == "" {
 		return nil, fmt.Errorf("chain ID required but not specified")
@@ -319,4 +416,18 @@ func (f *Factory) Sign(name string, txBuilder TxBuilder) error {
 
 	// And here the tx is populated with the signature
 	return txBuilder.SetSignatures(sig)
+}
+
+func FromTmPubKey(Algo string, pubKey tmcrypto.PubKey) commoncryptotypes.PubKey {
+	var pubkey commoncryptotypes.PubKey
+	pubkeyBytes := pubKey.Bytes()
+	switch Algo {
+	case "sm2":
+		pubkey = &sm2.PubKey{Key: pubkeyBytes}
+	case "secp256k1":
+		pubkey = &secp256k1.PubKey{Key: pubkeyBytes}
+	case ethsecp256k1.KeyType:
+		pubkey = &ethsecp256k1.PubKey{Key: pubkeyBytes}
+	}
+	return pubkey
 }

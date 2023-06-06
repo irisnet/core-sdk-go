@@ -106,7 +106,7 @@ func makeEncodingConfig() types.EncodingConfig {
 		TxConfig:          txCfg,
 		Amino:             amino,
 	}
-	RegisterLegacyAminoCodec(encodingConfig.Amino)
+	//RegisterLegacyAminoCodec(encodingConfig.Amino)
 	RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	return encodingConfig
 }

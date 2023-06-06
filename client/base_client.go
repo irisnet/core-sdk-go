@@ -21,6 +21,7 @@ import (
 	commoncache "github.com/irisnet/core-sdk-go/common/cache"
 	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
 	sdklog "github.com/irisnet/core-sdk-go/common/log"
+	sdk "github.com/irisnet/core-sdk-go/types"
 	sdktypes "github.com/irisnet/core-sdk-go/types"
 	"github.com/irisnet/core-sdk-go/types/tx"
 )
@@ -135,6 +136,10 @@ func (base *baseClient) BuildAndSignWithAccount(addr string, accountNumber, sequ
 
 	base.Logger().Debug("sign transaction success")
 	return txByte, nil
+}
+
+func (base *baseClient) BroadcastTx(txBytes []byte, mode sdk.BroadcastMode) (res sdk.ResultTx, err sdk.Error) {
+	return base.broadcastTx(txBytes, mode)
 }
 
 func (base *baseClient) BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx) (sdktypes.ResultTx, sdktypes.Error) {
@@ -277,6 +282,45 @@ func (base *baseClient) SendBatch(msgs sdktypes.Msgs, baseTx sdktypes.BaseTx) (r
 		retry.OnRetry(onRetry),
 	)
 	return rs, nil
+}
+
+func (base *baseClient) BuildTx(addr string, pubkey []byte, algo string, sequence, accountNumber uint64, msg []sdktypes.Msg, baseTx sdktypes.BaseTx) ([]byte, *sdktypes.Factory, sdktypes.TxBuilder, sdktypes.Error) {
+	builder, err := base.prepareWithAccount(addr, accountNumber, sequence, baseTx)
+	if err != nil {
+		return nil, nil, nil, sdktypes.Wrap(err)
+	}
+
+	unsignedTxBytes, txBuilder, err := builder.BuildTxWithoutKeyDao(pubkey, algo, msg)
+	if err != nil {
+		return nil, nil, nil, sdktypes.Wrap(err)
+	}
+
+	base.Logger().Debug("sign transaction success")
+	return unsignedTxBytes, builder, txBuilder, nil
+}
+
+func (base *baseClient) SetTxSignature(builder *sdktypes.Factory, txBuilder sdktypes.TxBuilder, pubkey []byte, algo string, signedData []byte, msgs []sdktypes.Msg) ([]byte, sdktypes.Error) {
+	txByte, err := builder.SetUnsignedTxSignature(txBuilder, pubkey, algo, signedData, msgs)
+	if err != nil {
+		return nil, sdktypes.Wrap(err)
+	}
+
+	base.Logger().Debug("sign transaction success")
+	return txByte, nil
+}
+
+func (base *baseClient) EstimateTxSize(addr string, pubkey []byte, algo string, sequence, accountNumber uint64, msgs []sdktypes.Msg, baseTx sdktypes.BaseTx, signedData []byte) ([]byte, sdktypes.Error) {
+	factory, err := base.prepareWithAccount(addr, accountNumber, sequence, baseTx)
+	if err != nil {
+		return nil, sdktypes.Wrap(err)
+	}
+	txByte, err := factory.SetUnsignedTxSignature(nil, pubkey, algo, signedData, msgs)
+	if err != nil {
+		return nil, sdktypes.Wrap(err)
+	}
+
+	base.Logger().Debug("sign transaction success")
+	return txByte, nil
 }
 
 func (base baseClient) QueryWithResponse(path string, data interface{}, result sdktypes.Response) error {

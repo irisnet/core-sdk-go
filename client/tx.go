@@ -232,6 +232,7 @@ func (base baseClient) parseTxResult(res *ctypes.ResultTx, resBlock *ctypes.Resu
 			GasWanted: res.TxResult.GasWanted,
 			GasUsed:   res.TxResult.GasUsed,
 			Events:    sdk.StringifyEvents(res.TxResult.Events),
+			Data:      res.TxResult.Data,
 		},
 		Timestamp: resBlock.Block.Time.Format(time.RFC3339),
 	}, nil

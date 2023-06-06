@@ -26,16 +26,20 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/sirupsen/logrus v1.7.0
-	github.com/stretchr/testify v1.7.0
+	github.com/spf13/viper v1.9.0 // indirect
+	github.com/stretchr/testify v1.8.1
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.34.14
 	github.com/tendermint/tm-db v0.6.4
 	github.com/tjfoc/gmsm v1.4.0
-	golang.org/x/crypto v0.0.0-20211115234514-b4de73f9ece8
-	google.golang.org/genproto v0.0.0-20211116182654-e63d96a377c4
-	google.golang.org/grpc v1.41.0
-	google.golang.org/protobuf v1.27.1
+	github.com/tklauser/go-sysconf v0.3.7 // indirect
+	go.etcd.io/bbolt v1.3.6 // indirect
+	golang.org/x/crypto v0.1.0
+	golang.org/x/net v0.6.0 // indirect
+	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f
+	google.golang.org/grpc v1.53.0
+	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v2 v2.4.0
 )
 
