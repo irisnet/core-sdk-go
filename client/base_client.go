@@ -17,6 +17,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
 
+	clientTx "github.com/irisnet/core-sdk-go/client/tx"
 	"github.com/irisnet/core-sdk-go/common"
 	commoncache "github.com/irisnet/core-sdk-go/common/cache"
 	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
@@ -170,6 +171,18 @@ func (base *baseClient) BuildAndSend(msg []sdktypes.Msg, baseTx sdktypes.BaseTx)
 		if e != nil {
 			return e
 		}
+
+		// TODO 下面判断和返回的逻辑应该放到 broadcastTx 中，broadcastTx 传入的 ctx 是 Factory
+		// 判断是模拟交易返回计算的 gas 费，不在链上执行
+		if ctx.SimulateAndExecute() {
+			res = sdktypes.ResultTx{
+				GasWanted: int64(ctx.Gas()),
+				GasUsed:   0,
+				Data:      txByte,
+			}
+			return nil
+		}
+
 		if res, e = base.broadcastTx(txByte, ctx.Mode()); e != nil {
 			address = ctx.Address()
 			return e
@@ -338,8 +351,8 @@ func (base baseClient) QueryStore(key sdktypes.HexBytes, storeName string, heigh
 	return resp, nil
 }
 
-func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*sdktypes.Factory, error) {
-	factory := sdktypes.NewFactory().
+func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*clientTx.Factory, error) {
+	factory := clientTx.NewFactory().
 		WithChainID(base.cfg.ChainID).
 		WithKeyManager(base.AccountQuery.Km).
 		WithMode(base.cfg.Mode).
@@ -411,8 +424,8 @@ func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*sdktypes.Factory, erro
 	return factory, nil
 }
 
-func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence uint64, baseTx sdktypes.BaseTx) (*sdktypes.Factory, error) {
-	factory := sdktypes.NewFactory().
+func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence uint64, baseTx sdktypes.BaseTx) (*clientTx.Factory, error) {
+	factory := clientTx.NewFactory().
 		WithChainID(base.cfg.ChainID).
 		WithKeyManager(base.AccountQuery.Km).
 		WithMode(base.cfg.Mode).

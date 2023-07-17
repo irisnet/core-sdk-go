@@ -1,8 +1,12 @@
-package types
+package tx
 
 import (
 	"errors"
 	"fmt"
+	codecTypes "github.com/irisnet/core-sdk-go/common/codec/types"
+	"github.com/irisnet/core-sdk-go/common/crypto/keys/sm2"
+	"github.com/irisnet/core-sdk-go/types"
+	"github.com/irisnet/core-sdk-go/types/tx"
 	"github.com/irisnet/core-sdk-go/types/tx/signing"
 )
 
@@ -21,15 +25,15 @@ type (
 		gas                uint64
 		gasAdjustment      float64
 		simulateAndExecute bool
-		fees               Coins
-		feeGranter         AccAddress
-		feePayer           AccAddress
-		gasPrices          DecCoins
-		mode               BroadcastMode
+		fees               types.Coins
+		feeGranter         types.AccAddress
+		feePayer           types.AccAddress
+		gasPrices          types.DecCoins
+		mode               types.BroadcastMode
 		signMode           signing.SignMode
-		signModeHandler    SignModeHandler
-		keyManager         KeyManager
-		txConfig           TxConfig
+		signModeHandler    types.SignModeHandler
+		keyManager         types.KeyManager
+		txConfig           types.TxConfig
 		queryFunc          QueryWithData
 	}
 
@@ -52,7 +56,7 @@ func (f *Factory) Gas() uint64 { return f.gas }
 func (f Factory) GasAdjustment() float64 { return f.gasAdjustment }
 
 // Fees returns the fee of the transaction.
-func (f *Factory) Fees() Coins { return f.fees }
+func (f *Factory) Fees() types.Coins { return f.fees }
 
 // Sequence returns the sequence of the account.
 func (f *Factory) Sequence() uint64 { return f.sequence }
@@ -64,10 +68,10 @@ func (f *Factory) Memo() string { return f.memo }
 func (f *Factory) AccountNumber() uint64 { return f.accountNumber }
 
 // KeyManager returns keyManager.
-func (f *Factory) KeyManager() KeyManager { return f.keyManager }
+func (f *Factory) KeyManager() types.KeyManager { return f.keyManager }
 
 // Mode returns mode.
-func (f *Factory) Mode() BroadcastMode { return f.mode }
+func (f *Factory) Mode() types.BroadcastMode { return f.mode }
 
 // SimulateAndExecute returns the option to simulateAndExecute and then execute the transaction
 // using the gas from the simulation results
@@ -98,19 +102,19 @@ func (f *Factory) WithGasAdjustment(gasAdjustment float64) *Factory {
 }
 
 // WithFee returns a pointer of the context with an updated Fee.
-func (f *Factory) WithFee(fee Coins) *Factory {
+func (f *Factory) WithFee(fee types.Coins) *Factory {
 	f.fees = fee
 	return f
 }
 
 // WithFeeGranter returns a pointer of the context with an updated FeeGranter.
-func (f *Factory) WithFeeGranter(feeGranter AccAddress) *Factory {
+func (f *Factory) WithFeeGranter(feeGranter types.AccAddress) *Factory {
 	f.feeGranter = feeGranter
 	return f
 }
 
 // WithFeePayer returns a pointer of the context with an updated FeePayer.
-func (f *Factory) WithFeePayer(feePayer AccAddress) *Factory {
+func (f *Factory) WithFeePayer(feePayer types.AccAddress) *Factory {
 	f.feePayer = feePayer
 	return f
 }
@@ -133,14 +137,14 @@ func (f *Factory) WithAccountNumber(accnum uint64) *Factory {
 	return f
 }
 
-// WithKeyManager returns a pointer of the context with a KeyManager.
-func (f *Factory) WithKeyManager(keyManager KeyManager) *Factory {
+// WithKeyManager returns a pointer of the context with a types.KeyManager.
+func (f *Factory) WithKeyManager(keyManager types.KeyManager) *Factory {
 	f.keyManager = keyManager
 	return f
 }
 
 // WithMode returns a pointer of the context with a Mode.
-func (f *Factory) WithMode(mode BroadcastMode) *Factory {
+func (f *Factory) WithMode(mode types.BroadcastMode) *Factory {
 	f.mode = mode
 	return f
 }
@@ -163,14 +167,14 @@ func (f *Factory) WithAddress(address string) *Factory {
 	return f
 }
 
-// WithTxConfig returns a pointer of the context with an TxConfig
-func (f *Factory) WithTxConfig(txConfig TxConfig) *Factory {
+// WithTxConfig returns a pointer of the context with an types.TxConfig
+func (f *Factory) WithTxConfig(txConfig types.TxConfig) *Factory {
 	f.txConfig = txConfig
 	return f
 }
 
 // WithSignModeHandler returns a pointer of the context with an signModeHandler.
-func (f *Factory) WithSignModeHandler(signModeHandler SignModeHandler) *Factory {
+func (f *Factory) WithSignModeHandler(signModeHandler types.SignModeHandler) *Factory {
 	f.signModeHandler = signModeHandler
 	return f
 }
@@ -187,7 +191,22 @@ func (f *Factory) WithTimeout(height uint64) *Factory {
 	return f
 }
 
-func (f *Factory) BuildAndSign(name string, msgs []Msg, json bool) ([]byte, error) {
+func (f *Factory) BuildAndSign(name string, msgs []Msg, json bool) ([]byte, error) {	if f.SimulateAndExecute() {
+		_, adjusted, err := f.CalculateGas(msgs...)
+		if err != nil {
+			return nil, err
+		}
+		f.WithGas(adjusted)
+
+		// TODO 设置计算出的费用。下面这个就不用了，因为在 broadcastTx 直接就返回了，不会执行和扣费
+		//fee, _ := types.ParseDecCoins(fmt.Sprintf("%dugas", adjusted))
+		//fees, err := toMinCoin(fee...)
+		//if err != nil {
+		//	return nil, err
+		//}
+		//f.WithFee(fees)
+	}
+
 	tx, err := f.BuildUnsignedTx(msgs)
 	if err != nil {
 		return nil, err
@@ -213,7 +232,7 @@ func (f *Factory) BuildAndSign(name string, msgs []Msg, json bool) ([]byte, erro
 	return txBytes, nil
 }
 
-func (f *Factory) BuildUnsignedTx(msgs []Msg) (TxBuilder, error) {
+func (f *Factory) BuildUnsignedTx(msgs []types.Msg) (types.TxBuilder, error) {
 	if f.chainID == "" {
 		return nil, fmt.Errorf("chain ID required but not specified")
 	}
@@ -225,15 +244,15 @@ func (f *Factory) BuildUnsignedTx(msgs []Msg) (TxBuilder, error) {
 			return nil, errors.New("cannot provide both fees and gas prices")
 		}
 
-		glDec := NewDec(int64(f.gas))
+		glDec := types.NewDec(int64(f.gas))
 
 		// Derive the fees based on the provided gas prices, where
 		// fee = ceil(gasPrice * gasLimit).
-		fees = make(Coins, len(f.gasPrices))
+		fees = make(types.Coins, len(f.gasPrices))
 
 		for i, gp := range f.gasPrices {
 			fee := gp.Amount.Mul(glDec)
-			fees[i] = NewCoin(gp.Denom, fee.Ceil().RoundInt())
+			fees[i] = types.NewCoin(gp.Denom, fee.Ceil().RoundInt())
 		}
 	}
 
@@ -254,15 +273,75 @@ func (f *Factory) BuildUnsignedTx(msgs []Msg) (TxBuilder, error) {
 	return tx, nil
 }
 
+// BuildSimTx creates an unsigned tx with an empty single signature and returns
+// the encoded transaction or an error if the unsigned transaction cannot be
+// built.
+func (f *Factory) BuildSimTx(msgs ...types.Msg) ([]byte, error) {
+	txb, err := f.BuildUnsignedTx(msgs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create an empty signature literal as the ante handler will populate with a
+	// sentinel pubkey.
+	sig := signing.SignatureV2{
+		PubKey: &sm2.PubKey{},
+		Data: &signing.SingleSignatureData{
+			SignMode: f.signMode,
+		},
+		Sequence: f.Sequence(),
+	}
+
+	if err := txb.SetSignatures(sig); err != nil {
+		return nil, err
+	}
+
+	any, ok := txb.(codecTypes.IntoAny)
+	if !ok {
+		return nil, fmt.Errorf("cannot simulateAndExecute tx that cannot be wrapped into any")
+	}
+	cached := any.AsAny().GetCachedValue()
+	protoTx, ok := cached.(*tx.Tx)
+	if !ok {
+		return nil, fmt.Errorf("cannot simulateAndExecute amino tx")
+	}
+
+	simReq := tx.SimulateRequest{Tx: protoTx}
+
+	return simReq.Marshal()
+}
+
+// CalculateGas simulates the execution of a transaction and returns the
+// simulation response obtained by the query and the adjusted gas amount.
+func (f *Factory) CalculateGas(msgs ...types.Msg) (tx.SimulateResponse, uint64, error) {
+	txBytes, err := f.BuildSimTx(msgs...)
+	if err != nil {
+		return tx.SimulateResponse{}, 0, err
+	}
+
+	bz, _, err := f.queryFunc("/cosmos.tx.v1beta1.Service/Simulate", txBytes)
+	if err != nil {
+		return tx.SimulateResponse{}, 0, err
+	}
+
+	var simRes tx.SimulateResponse
+
+	if err := simRes.Unmarshal(bz); err != nil {
+		return tx.SimulateResponse{}, 0, err
+	}
+
+	return simRes, uint64(f.GasAdjustment() * float64(simRes.GasInfo.GasUsed)), nil
+}
+
 // Sign signs a transaction given a name, passphrase, and a single message to
 // signed. An error is returned if signing fails.
-func (f *Factory) Sign(name string, txBuilder TxBuilder) error {
+func (f *Factory) Sign(name string, txBuilder types.TxBuilder) error {
 	signMode := f.signMode
 	if signMode == signing.SignMode_SIGN_MODE_UNSPECIFIED {
 		// use the SignModeHandler's default mode if unspecified
 		signMode = f.txConfig.SignModeHandler().DefaultMode()
 	}
-	signerData := SignerData{
+	signerData := types.SignerData{
 		ChainID:       f.chainID,
 		AccountNumber: f.accountNumber,
 		Sequence:      f.sequence,
@@ -319,4 +398,15 @@ func (f *Factory) Sign(name string, txBuilder TxBuilder) error {
 
 	// And here the tx is populated with the signature
 	return txBuilder.SetSignatures(sig)
+}
+
+func toMinCoin(coins ...types.DecCoin) (types.Coins, types.Error) {
+	for i := range coins {
+		if coins[i].Denom == "iris" {
+			coins[i].Denom = "uiris"
+			coins[i].Amount = coins[i].Amount.MulInt(types.NewIntWithDecimal(1, 6))
+		}
+	}
+	ucoins, _ := types.DecCoins(coins).TruncateDecimal()
+	return ucoins, nil
 }
