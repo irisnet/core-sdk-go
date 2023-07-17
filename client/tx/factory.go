@@ -19,6 +19,7 @@ type (
 		chainID            string
 		memo               string
 		password           string
+		timeoutHeight      uint64
 		accountNumber      uint64
 		sequence           uint64
 		gas                uint64
@@ -184,8 +185,13 @@ func (f *Factory) WithQueryFunc(queryFunc QueryWithData) *Factory {
 	return f
 }
 
-func (f *Factory) BuildAndSign(name string, msgs []types.Msg, json bool) ([]byte, error) {
-	if f.SimulateAndExecute() {
+// WithTimeout Timeout for accessing the blockchain (such as query transactions, broadcast transactions, etc.)
+func (f *Factory) WithTimeout(height uint64) *Factory {
+	f.timeoutHeight = height
+	return f
+}
+
+func (f *Factory) BuildAndSign(name string, msgs []Msg, json bool) ([]byte, error) {	if f.SimulateAndExecute() {
 		_, adjusted, err := f.CalculateGas(msgs...)
 		if err != nil {
 			return nil, err
@@ -261,6 +267,7 @@ func (f *Factory) BuildUnsignedTx(msgs []types.Msg) (types.TxBuilder, error) {
 	tx.SetGasLimit(f.gas)
 	tx.SetFeeGranter(f.feeGranter)
 	tx.SetFeePayer(f.feePayer)
+	tx.SetTimeoutHeight(f.timeoutHeight)
 	//f.txBuilder.SetTimeoutHeight(f.TimeoutHeight())
 
 	return tx, nil

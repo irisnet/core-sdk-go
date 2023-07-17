@@ -1,5 +1,4 @@
 // Package modules is to warpped the API provided by each module of IRITA
-//
 package client
 
 import (
@@ -83,6 +82,10 @@ func NewBaseClient(cfg sdktypes.ClientConfig, encodingConfig sdktypes.EncodingCo
 		expiration: cacheExpirePeriod,
 	}
 	return &base
+}
+
+func (base *baseClient) RemoveCache(address string) bool {
+	return base.removeCache(address)
 }
 
 func (base *baseClient) Logger() log.Logger {
@@ -413,6 +416,11 @@ func (base *baseClient) prepare(baseTx sdktypes.BaseTx) (*clientTx.Factory, erro
 	if !baseTx.FeePayer.Empty() {
 		factory.WithFeePayer(baseTx.FeePayer)
 	}
+
+	if baseTx.TimeoutHeight > 0 {
+		factory.WithTimeout(baseTx.TimeoutHeight)
+	}
+
 	return factory, nil
 }
 
@@ -468,6 +476,10 @@ func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence 
 		factory.WithFeePayer(baseTx.FeePayer)
 	}
 
+	if baseTx.TimeoutHeight > 0 {
+		factory.WithTimeout(baseTx.TimeoutHeight)
+	}
+
 	return factory, nil
 }
 
@@ -484,7 +496,7 @@ type locker struct {
 	logger log.Logger
 }
 
-//NewLocker implement the function of lock, can lock resources according to conditions
+// NewLocker implement the function of lock, can lock resources according to conditions
 func NewLocker(size int) *locker {
 	shards := make([]chan int, size)
 	for i := 0; i < size; i++ {

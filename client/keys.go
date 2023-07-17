@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	ethsecp256k1 "github.com/irisnet/core-sdk-go/common/crypto/keys/eth_secp256k1"
 
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 
@@ -178,6 +179,8 @@ func FromTmPubKey(Algo string, pubKey tmcrypto.PubKey) commoncryptotypes.PubKey 
 		pubkey = &sm2.PubKey{Key: pubkeyBytes}
 	case "secp256k1":
 		pubkey = &secp256k1.PubKey{Key: pubkeyBytes}
+	case ethsecp256k1.KeyType:
+		pubkey = &ethsecp256k1.PubKey{Key: pubkeyBytes}
 	}
 	return pubkey
 }
@@ -202,7 +205,7 @@ func NewKeysClient(cfg types.ClientConfig, keyManager types.KeyManager) Client {
 	if err != nil {
 		panic(err)
 	}
-	return keysClient{(*BIP44Params), keyManager}
+	return keysClient{*BIP44Params, keyManager}
 }
 
 func (k keysClient) Add(name, password string) (string, string, types.Error) {
