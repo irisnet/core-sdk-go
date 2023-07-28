@@ -3,7 +3,11 @@ package types
 import (
 	"errors"
 	"fmt"
-	"github.com/irisnet/core-sdk-go/types/tx/signing"
+
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 )
 
 // Factory defines a client transaction factory that facilitates generating and
@@ -21,15 +25,15 @@ type (
 		gas                uint64
 		gasAdjustment      float64
 		simulateAndExecute bool
-		fees               Coins
-		feeGranter         AccAddress
-		feePayer           AccAddress
-		gasPrices          DecCoins
+		fees               types.Coins
+		feeGranter         types.AccAddress
+		feePayer           types.AccAddress
+		gasPrices          types.DecCoins
 		mode               BroadcastMode
 		signMode           signing.SignMode
-		signModeHandler    SignModeHandler
+		signModeHandler    authsigning.SignModeHandler
 		keyManager         KeyManager
-		txConfig           TxConfig
+		txConfig           client.TxConfig
 		queryFunc          QueryWithData
 	}
 
@@ -52,7 +56,7 @@ func (f *Factory) Gas() uint64 { return f.gas }
 func (f Factory) GasAdjustment() float64 { return f.gasAdjustment }
 
 // Fees returns the fee of the transaction.
-func (f *Factory) Fees() Coins { return f.fees }
+func (f *Factory) Fees() types.Coins { return f.fees }
 
 // Sequence returns the sequence of the account.
 func (f *Factory) Sequence() uint64 { return f.sequence }
@@ -98,19 +102,19 @@ func (f *Factory) WithGasAdjustment(gasAdjustment float64) *Factory {
 }
 
 // WithFee returns a pointer of the context with an updated Fee.
-func (f *Factory) WithFee(fee Coins) *Factory {
+func (f *Factory) WithFee(fee types.Coins) *Factory {
 	f.fees = fee
 	return f
 }
 
 // WithFeeGranter returns a pointer of the context with an updated FeeGranter.
-func (f *Factory) WithFeeGranter(feeGranter AccAddress) *Factory {
+func (f *Factory) WithFeeGranter(feeGranter types.AccAddress) *Factory {
 	f.feeGranter = feeGranter
 	return f
 }
 
 // WithFeePayer returns a pointer of the context with an updated FeePayer.
-func (f *Factory) WithFeePayer(feePayer AccAddress) *Factory {
+func (f *Factory) WithFeePayer(feePayer types.AccAddress) *Factory {
 	f.feePayer = feePayer
 	return f
 }
@@ -164,13 +168,13 @@ func (f *Factory) WithAddress(address string) *Factory {
 }
 
 // WithTxConfig returns a pointer of the context with an TxConfig
-func (f *Factory) WithTxConfig(txConfig TxConfig) *Factory {
+func (f *Factory) WithTxConfig(txConfig client.TxConfig) *Factory {
 	f.txConfig = txConfig
 	return f
 }
 
 // WithSignModeHandler returns a pointer of the context with an signModeHandler.
-func (f *Factory) WithSignModeHandler(signModeHandler SignModeHandler) *Factory {
+func (f *Factory) WithSignModeHandler(signModeHandler authsigning.SignModeHandler) *Factory {
 	f.signModeHandler = signModeHandler
 	return f
 }
@@ -187,7 +191,7 @@ func (f *Factory) WithTimeout(height uint64) *Factory {
 	return f
 }
 
-func (f *Factory) BuildAndSign(name string, msgs []Msg, json bool) ([]byte, error) {
+func (f *Factory) BuildAndSign(name string, msgs []types.Msg, json bool) ([]byte, error) {
 	tx, err := f.BuildUnsignedTx(msgs)
 	if err != nil {
 		return nil, err
@@ -213,7 +217,7 @@ func (f *Factory) BuildAndSign(name string, msgs []Msg, json bool) ([]byte, erro
 	return txBytes, nil
 }
 
-func (f *Factory) BuildUnsignedTx(msgs []Msg) (TxBuilder, error) {
+func (f *Factory) BuildUnsignedTx(msgs []types.Msg) (client.TxBuilder, error) {
 	if f.chainID == "" {
 		return nil, fmt.Errorf("chain ID required but not specified")
 	}
@@ -225,15 +229,15 @@ func (f *Factory) BuildUnsignedTx(msgs []Msg) (TxBuilder, error) {
 			return nil, errors.New("cannot provide both fees and gas prices")
 		}
 
-		glDec := NewDec(int64(f.gas))
+		glDec := types.NewDec(int64(f.gas))
 
 		// Derive the fees based on the provided gas prices, where
 		// fee = ceil(gasPrice * gasLimit).
-		fees = make(Coins, len(f.gasPrices))
+		fees = make(types.Coins, len(f.gasPrices))
 
 		for i, gp := range f.gasPrices {
 			fee := gp.Amount.Mul(glDec)
-			fees[i] = NewCoin(gp.Denom, fee.Ceil().RoundInt())
+			fees[i] = types.NewCoin(gp.Denom, fee.Ceil().RoundInt())
 		}
 	}
 
@@ -256,13 +260,13 @@ func (f *Factory) BuildUnsignedTx(msgs []Msg) (TxBuilder, error) {
 
 // Sign signs a transaction given a name, passphrase, and a single message to
 // signed. An error is returned if signing fails.
-func (f *Factory) Sign(name string, txBuilder TxBuilder) error {
+func (f *Factory) Sign(name string, txBuilder client.TxBuilder) error {
 	signMode := f.signMode
 	if signMode == signing.SignMode_SIGN_MODE_UNSPECIFIED {
 		// use the SignModeHandler's default mode if unspecified
 		signMode = f.txConfig.SignModeHandler().DefaultMode()
 	}
-	signerData := SignerData{
+	signerData := authsigning.SignerData{
 		ChainID:       f.chainID,
 		AccountNumber: f.accountNumber,
 		Sequence:      f.sequence,

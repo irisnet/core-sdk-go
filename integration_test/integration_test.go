@@ -8,13 +8,20 @@ import (
 	"testing"
 	"time"
 
+	"github.com/irisnet/core-sdk-go/common/address/irishub"
+
+	"github.com/irisnet/core-sdk-go/crypto/keyring"
+
+	"cosmossdk.io/math"
+
+	"github.com/irisnet/core-sdk-go/store"
+
 	"github.com/stretchr/testify/suite"
 
+	cosmostypes "github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/irisnet/core-sdk-go"
-	"github.com/irisnet/core-sdk-go/common/crypto"
 	"github.com/irisnet/core-sdk-go/common/log"
-	"github.com/irisnet/core-sdk-go/types"
-	"github.com/irisnet/core-sdk-go/types/store"
+	sdktypes "github.com/irisnet/core-sdk-go/types"
 )
 
 const (
@@ -41,31 +48,25 @@ type SubTest struct {
 // MockAccount define a account for test
 type MockAccount struct {
 	Name, Password string
-	Address        types.AccAddress
+	Address        cosmostypes.AccAddress
 }
 
 func TestSuite(t *testing.T) {
+
 	suite.Run(t, new(IntegrationTestSuite))
 }
 
 func (s *IntegrationTestSuite) SetupSuite() {
-	bech32AddressPrefix := types.AddrPrefixCfg{
-		AccountAddr:   "iaa",
-		ValidatorAddr: "iva",
-		ConsensusAddr: "ica",
-		AccountPub:    "iap",
-		ValidatorPub:  "ivp",
-		ConsensusPub:  "icp",
+	sdkAddressCfg := irishub.NewConfig()
+	options := []sdktypes.Option{
+		sdktypes.KeyDAOOption(store.NewMemory(nil)),
+		sdktypes.TimeoutOption(10),
+		sdktypes.TokenManagerOption(TokenManager{}),
+		sdktypes.KeyManagerOption(keyring.NewKeyManager()),
+		sdktypes.Bech32AddressPrefixOption(sdkAddressCfg),
+		sdktypes.BIP44PathOption(""),
 	}
-	options := []types.Option{
-		types.KeyDAOOption(store.NewMemory(nil)),
-		types.TimeoutOption(10),
-		types.TokenManagerOption(TokenManager{}),
-		types.KeyManagerOption(crypto.NewKeyManager()),
-		types.Bech32AddressPrefixOption(&bech32AddressPrefix),
-		types.BIP44PathOption(""),
-	}
-	cfg, err := types.NewClientConfig(nodeURI, grpcAddr, chainID, options...)
+	cfg, err := sdktypes.NewClientConfig(nodeURI, grpcAddr, chainID, options...)
 	if err != nil {
 		panic(err)
 	}
@@ -74,8 +75,8 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.r = rand.New(rand.NewSource(time.Now().UnixNano()))
 	s.rootAccount = MockAccount{
 		Name:     "validator",
-		Password: "1234567890",
-		Address:  types.MustAccAddressFromBech32(addr),
+		Password: "12345678",
+		Address:  cosmostypes.MustAccAddressFromBech32(addr),
 	}
 	s.SetLogger(log.NewLogger(log.Config{
 		Format: log.FormatJSON,
@@ -106,7 +107,7 @@ func (s *IntegrationTestSuite) initAccount() {
 		s.randAccounts = append(s.randAccounts, MockAccount{
 			Name:     name,
 			Password: pwd,
-			Address:  types.MustAccAddressFromBech32(address),
+			Address:  cosmostypes.MustAccAddressFromBech32(address),
 		})
 	}
 }
@@ -147,31 +148,31 @@ func getPrivKeyArmor() []byte {
 
 type TokenManager struct{}
 
-func (TokenManager TokenManager) QueryToken(denom string) (types.Token, error) {
-	return types.Token{}, nil
+func (TokenManager TokenManager) QueryToken(denom string) (sdktypes.Token, error) {
+	return sdktypes.Token{}, nil
 }
 
-func (TokenManager TokenManager) SaveTokens(tokens ...types.Token) {
+func (TokenManager TokenManager) SaveTokens(tokens ...sdktypes.Token) {
 	return
 }
 
-func (TokenManager TokenManager) ToMinCoin(coins ...types.DecCoin) (types.Coins, types.Error) {
+func (TokenManager TokenManager) ToMinCoin(coins ...cosmostypes.DecCoin) (cosmostypes.Coins, sdktypes.Error) {
 	for i := range coins {
 		if coins[i].Denom == "iris" {
 			coins[i].Denom = "uiris"
-			coins[i].Amount = coins[i].Amount.MulInt(types.NewIntWithDecimal(1, 6))
+			coins[i].Amount = coins[i].Amount.MulInt(math.NewIntWithDecimal(1, 6))
 		}
 	}
-	ucoins, _ := types.DecCoins(coins).TruncateDecimal()
+	ucoins, _ := cosmostypes.DecCoins(coins).TruncateDecimal()
 	return ucoins, nil
 }
 
-func (TokenManager TokenManager) ToMainCoin(coins ...types.Coin) (types.DecCoins, types.Error) {
-	decCoins := make(types.DecCoins, len(coins), 0)
+func (TokenManager TokenManager) ToMainCoin(coins ...cosmostypes.Coin) (cosmostypes.DecCoins, sdktypes.Error) {
+	decCoins := make(cosmostypes.DecCoins, len(coins), 0)
 	for _, coin := range coins {
 		if coin.Denom == "uiris" {
-			amtount := types.NewDecFromInt(coin.Amount).Mul(types.NewDecWithPrec(1, 6))
-			decCoins = append(decCoins, types.NewDecCoinFromDec("iris", amtount))
+			amtount := cosmostypes.NewDecFromInt(coin.Amount).Mul(cosmostypes.NewDecWithPrec(1, 6))
+			decCoins = append(decCoins, cosmostypes.NewDecCoinFromDec("iris", amtount))
 		}
 	}
 	return decCoins, nil

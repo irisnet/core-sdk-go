@@ -3,12 +3,12 @@ package types
 import (
 	"encoding/base64"
 
+	"github.com/cosmos/cosmos-sdk/types"
+
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/encoding"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmtypes "github.com/tendermint/tendermint/types"
-
-	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
 )
 
 type Block struct {
@@ -19,11 +19,11 @@ type Block struct {
 }
 
 type Data struct {
-	Txs []Tx `json:"txs"`
+	Txs []types.Tx `json:"txs"`
 }
 
-func ParseBlock(txDecoder TxDecoder, block *tmtypes.Block) Block {
-	var txs []Tx
+func ParseBlock(txDecoder types.TxDecoder, block *tmtypes.Block) Block {
+	var txs []types.Tx
 
 	for _, tx := range block.Txs {
 		t, err := txDecoder(tx)
@@ -57,12 +57,12 @@ type ABCIResponses struct {
 }
 
 type ResultBeginBlock struct {
-	Events StringEvents `json:"events"`
+	Events types.StringEvents `json:"events"`
 }
 
 type ResultEndBlock struct {
-	Events           StringEvents      `json:"events"`
-	ValidatorUpdates []ValidatorUpdate `json:"validator_updates"`
+	Events           types.StringEvents `json:"events"`
+	ValidatorUpdates []ValidatorUpdate  `json:"validator_updates"`
 }
 
 func ParseValidatorUpdate(updates []abci.ValidatorUpdate) []ValidatorUpdate {
@@ -91,7 +91,7 @@ func ParseBlockResult(res *ctypes.ResultBlockResults) BlockResult {
 			Log:       r.Log,
 			GasWanted: r.GasWanted,
 			GasUsed:   r.GasUsed,
-			Events:    StringifyEvents(r.Events),
+			Events:    types.StringifyEvents(r.Events),
 		}
 	}
 	return BlockResult{
@@ -99,34 +99,12 @@ func ParseBlockResult(res *ctypes.ResultBlockResults) BlockResult {
 		Results: ABCIResponses{
 			DeliverTx: txResults,
 			EndBlock: ResultEndBlock{
-				Events:           StringifyEvents(res.EndBlockEvents),
+				Events:           types.StringifyEvents(res.EndBlockEvents),
 				ValidatorUpdates: ParseValidatorUpdate(res.ValidatorUpdates),
 			},
 			BeginBlock: ResultBeginBlock{
-				Events: StringifyEvents(res.BeginBlockEvents),
+				Events: types.StringifyEvents(res.BeginBlockEvents),
 			},
 		},
 	}
-}
-
-func ParseValidators(cdc *commoncodec.LegacyAmino, vs []*tmtypes.Validator) []Validator {
-	var validators = make([]Validator, len(vs))
-	for i, v := range vs {
-		bech32Addr, _ := ConsAddressFromHex(v.Address.String())
-		bech32PubKey, _ := Bech32ifyPubKey(Bech32PubKeyTypeConsPub, v.PubKey)
-
-		var pubKey PubKey
-		if bz, err := cdc.MarshalJSON(v.PubKey); err == nil {
-			_ = cdc.UnmarshalJSON(bz, &pubKey)
-		}
-		validators[i] = Validator{
-			Bech32Address:    bech32Addr.String(),
-			Bech32PubKey:     bech32PubKey,
-			Address:          v.Address.String(),
-			PubKey:           pubKey,
-			VotingPower:      v.VotingPower,
-			ProposerPriority: v.ProposerPriority,
-		}
-	}
-	return validators
 }

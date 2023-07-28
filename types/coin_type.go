@@ -2,6 +2,10 @@ package types
 
 import (
 	"strings"
+
+	"cosmossdk.io/math"
+
+	"github.com/cosmos/cosmos-sdk/types"
 )
 
 type Unit struct {
@@ -16,9 +20,9 @@ func NewUnit(denom string, scale uint8) Unit {
 	}
 }
 
-//GetScaleFactor return 1 * 10^scale
-func (u Unit) GetScaleFactor() Int {
-	return NewIntWithDecimal(1, int(u.Scale))
+// GetScaleFactor return 1 * 10^scale
+func (u Unit) GetScaleFactor() math.Int {
+	return math.NewIntWithDecimal(1, int(u.Scale))
 }
 
 type CoinType struct {
@@ -28,33 +32,33 @@ type CoinType struct {
 	Desc     string `json:"desc"`      //the description of CoinType
 }
 
-//ToMainCoin return the main denom coin from args
-func (ct CoinType) ConvertToMainCoin(coin Coin) (DecCoin, error) {
+// ConvertToMainCoin return the main denom coin from args
+func (ct CoinType) ConvertToMainCoin(coin types.Coin) (types.DecCoin, error) {
 	if !ct.hasUnit(coin.Denom) {
-		return DecCoin{
-			Amount: NewDecFromInt(coin.Amount),
+		return types.DecCoin{
+			Amount: types.NewDecFromInt(coin.Amount),
 			Denom:  coin.Denom,
 		}, nil
 		//return DecCoin{}, errors.New("coinType unit (%s) not defined" + coin.Denom)
 	}
 
 	if ct.isMainUnit(coin.Denom) {
-		return DecCoin{}, nil
+		return types.DecCoin{}, nil
 	}
 
 	// dest amount = src amount * (10^(dest scale) / 10^(src scale))
-	dstScale := NewDecFromInt(ct.MainUnit.GetScaleFactor())
-	srcScale := NewDecFromInt(ct.MinUnit.GetScaleFactor())
-	amount := NewDecFromInt(coin.Amount)
+	dstScale := types.NewDecFromInt(ct.MainUnit.GetScaleFactor())
+	srcScale := types.NewDecFromInt(ct.MinUnit.GetScaleFactor())
+	amount := types.NewDecFromInt(coin.Amount)
 
 	amt := amount.Mul(dstScale).Quo(srcScale)
-	return NewDecCoinFromDec(ct.MainUnit.Denom, amt), nil
+	return types.NewDecCoinFromDec(ct.MainUnit.Denom, amt), nil
 }
 
-//ToMinCoin return the min denom coin from args
-func (ct CoinType) ConvertToMinCoin(coin DecCoin) (newCoin Coin, err error) {
+// ToMinCoin return the min denom coin from args
+func (ct CoinType) ConvertToMinCoin(coin types.DecCoin) (newCoin types.Coin, err error) {
 	if !ct.hasUnit(coin.Denom) {
-		return Coin{
+		return types.Coin{
 			Amount: coin.Amount.TruncateInt(),
 			Denom:  coin.Denom,
 		}, nil
@@ -67,12 +71,12 @@ func (ct CoinType) ConvertToMinCoin(coin DecCoin) (newCoin Coin, err error) {
 	}
 
 	// dest amount = src amount * (10^(dest scale) / 10^(src scale))
-	srcScale := NewDecFromInt(ct.MainUnit.GetScaleFactor())
-	dstScale := NewDecFromInt(ct.MinUnit.GetScaleFactor())
+	srcScale := types.NewDecFromInt(ct.MainUnit.GetScaleFactor())
+	dstScale := types.NewDecFromInt(ct.MinUnit.GetScaleFactor())
 	amount := coin.Amount
 
 	amt := amount.Mul(dstScale).Quo(srcScale)
-	return NewCoin(ct.MinUnit.Denom, amt.RoundInt()), nil
+	return types.NewCoin(ct.MinUnit.Denom, amt.RoundInt()), nil
 }
 
 func (ct CoinType) isMainUnit(name string) bool {

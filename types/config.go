@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/irisnet/core-sdk-go/crypto/keyring"
+
+	store2 "github.com/irisnet/core-sdk-go/store"
+
+	"github.com/cosmos/cosmos-sdk/types"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-
-	"github.com/irisnet/core-sdk-go/common/crypto"
-	"github.com/irisnet/core-sdk-go/types/store"
 )
 
 const (
@@ -45,10 +48,10 @@ type ClientConfig struct {
 	Gas uint64
 
 	// Fee amount of point
-	Fee DecCoins
+	Fee types.DecCoins
 
 	// PrivKeyArmor DAO Implements
-	KeyDAO store.KeyDAO
+	KeyDAO store2.KeyDAO
 
 	// Private key generation algorithm(sm2,secp256k1)
 	Algo string
@@ -73,7 +76,7 @@ type ClientConfig struct {
 
 	TokenManager TokenManager
 
-	KeyManager crypto.KeyManager
+	KeyManager keyring.KeyManager
 
 	TxSizeLimit uint64
 
@@ -87,10 +90,10 @@ type ClientConfig struct {
 	WSAddr string
 
 	// bech32 Address Prefix
-	bech32Prefix *AddrPrefixCfg
+	sdkcfg *types.Config
 
-	FeeGranter AccAddress
-	FeePayer   AccAddress
+	FeeGranter types.AccAddress
+	FeePayer   types.AccAddress
 }
 
 func NewClientConfig(rpcAddr, grpcAddr, chainID string, options ...Option) (ClientConfig, error) {
@@ -160,7 +163,7 @@ func (cfg *ClientConfig) checkAndSetDefault() error {
 		return err
 	}
 
-	if err := Bech32AddressPrefixOption(cfg.bech32Prefix)(cfg); err != nil {
+	if err := Bech32AddressPrefixOption(cfg.sdkcfg)(cfg); err != nil {
 		return err
 	}
 
@@ -172,10 +175,10 @@ func (cfg *ClientConfig) checkAndSetDefault() error {
 
 type Option func(cfg *ClientConfig) error
 
-func FeeOption(fee DecCoins) Option {
+func FeeOption(fee types.DecCoins) Option {
 	return func(cfg *ClientConfig) error {
 		if fee == nil || fee.Empty() || !fee.IsValid() {
-			fees, _ := ParseDecCoins(defaultFees)
+			fees, _ := types.ParseDecCoins(defaultFees)
 			fee = fees
 		}
 		cfg.Fee = fee
@@ -183,11 +186,11 @@ func FeeOption(fee DecCoins) Option {
 	}
 }
 
-func KeyDAOOption(dao store.KeyDAO) Option {
+func KeyDAOOption(dao store2.KeyDAO) Option {
 	return func(cfg *ClientConfig) error {
 		if dao == nil {
 			defaultPath := os.ExpandEnv(defaultPath)
-			levelDB, err := store.NewLevelDB(defaultPath, nil)
+			levelDB, err := store2.NewLevelDB(defaultPath, nil)
 			if err != nil {
 				return err
 			}
@@ -295,17 +298,17 @@ func TxSizeLimitOption(txSizeLimit uint64) Option {
 	}
 }
 
-func KeyManagerOption(keyManager crypto.KeyManager) Option {
+func KeyManagerOption(keyManager keyring.KeyManager) Option {
 	return func(cfg *ClientConfig) error {
 		cfg.KeyManager = keyManager
 		return nil
 	}
 }
 
-func Bech32AddressPrefixOption(prefix *AddrPrefixCfg) Option {
+func Bech32AddressPrefixOption(sdkcfg *types.Config) Option {
 	return func(cfg *ClientConfig) error {
-		if prefix != nil {
-			setAddrPrefix(prefix)
+		if sdkcfg != nil {
+			sdkcfg.Seal()
 		}
 		return nil
 	}
@@ -360,7 +363,7 @@ func GRPCOptions(gRPCOptions []grpc.DialOption, TLS bool, rpcAddr string) Option
 
 func FeeGranterOptions(feeGranter string) Option {
 	return func(cfg *ClientConfig) error {
-		granter, err := AccAddressFromBech32(feeGranter)
+		granter, err := types.AccAddressFromBech32(feeGranter)
 		if err != nil {
 			panic(err)
 		}
@@ -371,7 +374,7 @@ func FeeGranterOptions(feeGranter string) Option {
 
 func FeePayerOptions(feePayer string) Option {
 	return func(cfg *ClientConfig) error {
-		feePayer, err := AccAddressFromBech32(feePayer)
+		feePayer, err := types.AccAddressFromBech32(feePayer)
 		if err != nil {
 			panic(err)
 		}

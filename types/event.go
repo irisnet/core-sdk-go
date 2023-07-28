@@ -6,20 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-)
 
-type WSClient interface {
-	SubscribeNewBlock(builder *EventQueryBuilder, handler EventNewBlockHandler) (Subscription, Error)
-	SubscribeTx(builder *EventQueryBuilder, handler EventTxHandler) (Subscription, Error)
-	SubscribeNewBlockHeader(handler EventNewBlockHeaderHandler) (Subscription, Error)
-	SubscribeValidatorSetUpdates(handler EventValidatorSetUpdatesHandler) (Subscription, Error)
-	Unsubscribe(subscription Subscription) Error
-}
+	"github.com/cosmos/cosmos-sdk/types"
+)
 
 type TmClient interface {
 	ABCIClient
 	SignClient
-	WSClient
 	StatusClient
 	NetworkClient
 }
@@ -43,7 +36,7 @@ type EventDataTx struct {
 	Hash   string   `json:"hash"`
 	Height int64    `json:"height"`
 	Index  uint32   `json:"index"`
-	Tx     Tx       `json:"tx"`
+	Tx     types.Tx `json:"tx"`
 	Result TxResult `json:"result"`
 }
 
@@ -53,14 +46,14 @@ func (tx EventDataTx) MarshalJson() []byte {
 }
 
 type TxResult struct {
-	Code      uint32       `json:"code"`
-	Log       string       `json:"log"`
-	GasWanted int64        `json:"gas_wanted"`
-	GasUsed   int64        `json:"gas_used"`
-	Events    StringEvents `json:"events"`
+	Code      uint32             `json:"code"`
+	Log       string             `json:"log"`
+	GasWanted int64              `json:"gas_wanted"`
+	GasUsed   int64              `json:"gas_used"`
+	Events    types.StringEvents `json:"events"`
 }
 
-type Attributes []Attribute
+type Attributes []types.Attribute
 
 func (a Attributes) GetValues(key string) (values []string) {
 	for _, attr := range a {
@@ -90,7 +83,7 @@ func (a Attributes) String() string {
 
 type EventTxHandler func(EventDataTx)
 
-//EventDataNewBlock for SubscribeNewBlock
+// EventDataNewBlock for SubscribeNewBlock
 type EventDataNewBlock struct {
 	Block            Block            `json:"block"`
 	ResultBeginBlock ResultBeginBlock `json:"result_begin_block"`
@@ -109,7 +102,7 @@ type PubKey struct {
 
 type EventNewBlockHandler func(EventDataNewBlock)
 
-//EventDataNewBlockHeader for SubscribeNewBlockHeader
+// EventDataNewBlockHeader for SubscribeNewBlockHeader
 type EventDataNewBlockHeader struct {
 	Header Header `json:"header"`
 
@@ -119,7 +112,7 @@ type EventDataNewBlockHeader struct {
 
 type EventNewBlockHeaderHandler func(EventDataNewBlockHeader)
 
-//EventDataValidatorSetUpdates for SubscribeValidatorSetUpdates
+// EventDataValidatorSetUpdates for SubscribeValidatorSetUpdates
 type Validator struct {
 	Bech32Address    string `json:"bech32_address"`
 	Bech32PubKey     string `json:"bech32_pubkey"`
@@ -134,7 +127,7 @@ type EventDataValidatorSetUpdates struct {
 
 type EventValidatorSetUpdatesHandler func(EventDataValidatorSetUpdates)
 
-//EventQueryBuilder for build query string
+// EventQueryBuilder for build query string
 type condition struct {
 	key   EventKey
 	value EventValue
@@ -198,7 +191,7 @@ func (c *condition) String() string {
 	}
 }
 
-//EventQueryBuilder is responsible for constructing listening conditions
+// EventQueryBuilder is responsible for constructing listening conditions
 type EventQueryBuilder struct {
 	conditions []string
 }
@@ -209,7 +202,7 @@ func NewEventQueryBuilder() *EventQueryBuilder {
 	}
 }
 
-//AddCondition is responsible for adding listening conditions
+// AddCondition is responsible for adding listening conditions
 func (eqb *EventQueryBuilder) AddCondition(c *condition) *EventQueryBuilder {
 	if c == nil {
 		return nil
@@ -218,7 +211,7 @@ func (eqb *EventQueryBuilder) AddCondition(c *condition) *EventQueryBuilder {
 	return eqb
 }
 
-//Build is responsible for constructing the listening condition into a listening instruction identified by tendermint
+// Build is responsible for constructing the listening condition into a listening instruction identified by tendermint
 func (eqb *EventQueryBuilder) Build() string {
 	var buf bytes.Buffer
 	for _, condition := range eqb.conditions {

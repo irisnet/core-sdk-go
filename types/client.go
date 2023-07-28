@@ -1,6 +1,7 @@
 package types
 
 import (
+	"github.com/cosmos/cosmos-sdk/types"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -8,12 +9,11 @@ import (
 
 type TxManager interface {
 	TmQuery
-	SendBatch(msgs Msgs, baseTx BaseTx) ([]ResultTx, Error)
-	BuildAndSend(msg []Msg, baseTx BaseTx) (ResultTx, Error)
-	BuildAndSign(msg []Msg, baseTx BaseTx) ([]byte, Error)
-	BuildTxHash(msg []Msg, baseTx BaseTx) (string, Error)
-	BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) (ResultTx, Error)
-	BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []Msg, baseTx BaseTx) ([]byte, Error)
+	BuildAndSend(msg []types.Msg, baseTx BaseTx) (ResultTx, Error)
+	BuildAndSign(msg []types.Msg, baseTx BaseTx) ([]byte, Error)
+	BuildTxHash(msg []types.Msg, baseTx BaseTx) (string, Error)
+	BuildAndSendWithAccount(addr string, accountNumber, sequence uint64, msg []types.Msg, baseTx BaseTx) (ResultTx, Error)
+	BuildAndSignWithAccount(addr string, accountNumber, sequence uint64, msg []types.Msg, baseTx BaseTx) ([]byte, Error)
 }
 
 type Queries interface {
@@ -38,7 +38,7 @@ type StoreQuery interface {
 
 type AccountQuery interface {
 	QueryAccount(address string) (BaseAccount, Error)
-	QueryAddress(name, password string) (AccAddress, Error)
+	QueryAddress(name, password string) (types.AccAddress, Error)
 }
 
 type CacheManager interface {
@@ -46,16 +46,16 @@ type CacheManager interface {
 }
 
 type TmQuery interface {
-	QueryTx(hash string) (ResultQueryTx, error)
-	QueryTxs(builder *EventQueryBuilder, page, size *int) (ResultSearchTxs, error)
+	QueryTx(hash string) (*types.TxResponse, error)
+	QueryTxs(events []string, page, limit int, orderBy string) (*types.SearchTxsResult, error)
 	QueryBlock(height int64) (BlockDetail, error)
 }
 
 type TokenManager interface {
 	QueryToken(denom string) (Token, error)
 	SaveTokens(tokens ...Token)
-	ToMinCoin(coin ...DecCoin) (Coins, Error)
-	ToMainCoin(coin ...Coin) (DecCoins, Error)
+	ToMinCoin(coin ...types.DecCoin) (types.Coins, Error)
+	ToMainCoin(coin ...types.Coin) (types.DecCoins, Error)
 }
 
 type Logger interface {

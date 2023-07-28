@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/irisnet/core-sdk-go/bank"
-	cache "github.com/irisnet/core-sdk-go/common/cache"
-	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
+	"github.com/irisnet/core-sdk-go/common/cache"
 	sdk "github.com/irisnet/core-sdk-go/types"
-	"github.com/irisnet/core-sdk-go/types/auth"
 )
 
 // Must be used with locker, otherwise there are thread safety issues
@@ -20,7 +21,7 @@ type AccountQuery struct {
 	sdk.GRPCClient
 	log.Logger
 	cache.Cache
-	cdc        commoncodec.Marshaler
+	cdc        codec.Codec
 	Km         sdk.KeyManager
 	expiration time.Duration
 }
@@ -50,40 +51,37 @@ func (a AccountQuery) QueryAccount(address string) (sdk.BaseAccount, sdk.Error) 
 		return sdk.BaseAccount{}, sdk.Wrap(err)
 	}
 
-	request := &auth.QueryAccountRequest{
+	request := &authtypes.QueryAccountRequest{
 		Address: address,
 	}
 
-	response, err := auth.NewQueryClient(conn).Account(context.Background(), request)
+	response, err := authtypes.NewQueryClient(conn).Account(context.Background(), request)
 	if err != nil {
 		return sdk.BaseAccount{}, sdk.Wrap(err)
 	}
 
-	var baseAccount auth.Account
+	var baseAccount authtypes.AccountI
 	if err := a.cdc.UnpackAny(response.Account, &baseAccount); err != nil {
 		return sdk.BaseAccount{}, sdk.Wrap(err)
 	}
 
-	a2 := baseAccount.(auth.BaseAccountI)
-	account := a2.ConvertAccount(a.cdc).(sdk.BaseAccount)
-
-	breq := &bank.QueryAllBalancesRequest{
-		Address:    address,
-		Pagination: nil,
-	}
-	balances, err := bank.NewQueryClient(conn).AllBalances(context.Background(), breq)
-	if err != nil {
-		return sdk.BaseAccount{}, sdk.Wrap(err)
+	account := sdk.BaseAccount{
+		Address:       baseAccount.GetAddress().String(),
+		AccountNumber: baseAccount.GetAccountNumber(),
+		Sequence:      baseAccount.GetSequence(),
 	}
 
-	account.Coins = balances.Balances
+	if baseAccount.GetPubKey() != nil {
+		account.PubKey = baseAccount.GetPubKey().String()
+	}
+
 	return account, nil
 }
 
-func (a AccountQuery) QueryAddress(name, password string) (sdk.AccAddress, sdk.Error) {
+func (a AccountQuery) QueryAddress(name, password string) (types.AccAddress, sdk.Error) {
 	addr, err := a.Get(a.prefixKey(name))
 	if err == nil {
-		address, err := sdk.AccAddressFromBech32(addr.(string))
+		address, err := types.AccAddressFromBech32(addr.(string))
 		if err != nil {
 			a.Debug("invalid address", "name", name)
 			_ = a.Remove(a.prefixKey(name))

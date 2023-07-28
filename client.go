@@ -1,64 +1,46 @@
 package sdk
 
 import (
-	"github.com/irisnet/core-sdk-go/feegrant"
-	"github.com/tendermint/tendermint/libs/log"
-
-	"github.com/irisnet/core-sdk-go/bank"
+	"github.com/cosmos/cosmos-sdk/codec"
+	cdctytpes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/irisnet/core-sdk-go/client"
 	keys "github.com/irisnet/core-sdk-go/client"
-	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
-	cryptotypes "github.com/irisnet/core-sdk-go/common/codec/types"
-	commoncryptocodec "github.com/irisnet/core-sdk-go/common/crypto/codec"
-	"github.com/irisnet/core-sdk-go/gov"
-	"github.com/irisnet/core-sdk-go/ibc/transfer"
-	"github.com/irisnet/core-sdk-go/staking"
-	"github.com/irisnet/core-sdk-go/types"
-	txtypes "github.com/irisnet/core-sdk-go/types/tx"
+	bank2 "github.com/irisnet/core-sdk-go/modules/bank"
+	"github.com/irisnet/core-sdk-go/modules/feegrant"
+	sdk "github.com/irisnet/core-sdk-go/types"
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 type Client struct {
 	logger         log.Logger
-	moduleManager  map[string]types.Module
-	encodingConfig types.EncodingConfig
-	types.BaseClient
-	Bank     bank.Client
+	moduleManager  map[string]sdk.Module
+	encodingConfig sdk.EncodingConfig
+	sdk.BaseClient
+	Bank     bank2.Client
 	Key      keys.Client
-	Staking  staking.Client
-	Gov      gov.Client
-	Transfer transfer.Client
 	FeeGrant feegrant.Client
 }
 
-func NewClient(cfg types.ClientConfig) Client {
-	encodingConfig := makeEncodingConfig()
+func NewClient(cfg sdk.ClientConfig) Client {
+	encodingConfig := sdk.MakeEncodingConfig()
 
 	// create a instance of baseClient
 	baseClient := client.NewBaseClient(cfg, encodingConfig, nil)
-	bankClient := bank.NewClient(baseClient, encodingConfig.Marshaler)
+	bankClient := bank2.NewClient(baseClient, encodingConfig.Marshaler)
 	keysClient := keys.NewKeysClient(cfg, baseClient)
-	transferClient := transfer.NewClient(baseClient, encodingConfig.Marshaler)
-	stakingClient := staking.NewClient(baseClient, encodingConfig.Marshaler)
-	govClient := gov.NewClient(baseClient, encodingConfig.Marshaler)
 	feeGrantClient := feegrant.NewClient(baseClient, encodingConfig.Marshaler)
 
 	client := Client{
 		logger:         baseClient.Logger(),
 		BaseClient:     baseClient,
-		moduleManager:  make(map[string]types.Module),
+		moduleManager:  make(map[string]sdk.Module),
 		encodingConfig: encodingConfig,
 		Bank:           bankClient,
 		Key:            keysClient,
-		Staking:        stakingClient,
-		Gov:            govClient,
-		Transfer:       transferClient,
 		FeeGrant:       feeGrantClient,
 	}
 	client.RegisterModule(
 		bankClient,
-		stakingClient,
-		govClient,
-		transferClient,
 		feeGrantClient,
 	)
 	return client
@@ -68,59 +50,38 @@ func (client *Client) SetLogger(logger log.Logger) {
 	client.BaseClient.SetLogger(logger)
 }
 
-func (client *Client) Codec() *commoncodec.LegacyAmino {
+func (client *Client) Codec() *codec.LegacyAmino {
 	return client.encodingConfig.Amino
 }
 
-func (client *Client) AppCodec() commoncodec.Marshaler {
+func (client *Client) AppCodec() codec.Codec {
 	return client.encodingConfig.Marshaler
 }
 
-func (client *Client) EncodingConfig() types.EncodingConfig {
+func (client *Client) EncodingConfig() sdk.EncodingConfig {
 	return client.encodingConfig
 }
 
-func (client *Client) Manager() types.BaseClient {
+func (client *Client) Manager() sdk.BaseClient {
 	return client.BaseClient
 }
 
-func (client *Client) RegisterModule(ms ...types.Module) {
+func (client *Client) RegisterModule(ms ...sdk.Module) {
 	for _, m := range ms {
 		m.RegisterInterfaceTypes(client.encodingConfig.InterfaceRegistry)
 	}
 }
 
-func (client *Client) Module(name string) types.Module {
+func (client *Client) Module(name string) sdk.Module {
 	return client.moduleManager[name]
 }
 
-func makeEncodingConfig() types.EncodingConfig {
-	amino := commoncodec.NewLegacyAmino()
-	interfaceRegistry := cryptotypes.NewInterfaceRegistry()
-	marshaler := commoncodec.NewProtoCodec(interfaceRegistry)
-	txCfg := txtypes.NewTxConfig(marshaler, txtypes.DefaultSignModes)
-
-	encodingConfig := types.EncodingConfig{
-		InterfaceRegistry: interfaceRegistry,
-		Marshaler:         marshaler,
-		TxConfig:          txCfg,
-		Amino:             amino,
-	}
-	RegisterLegacyAminoCodec(encodingConfig.Amino)
-	RegisterInterfaces(encodingConfig.InterfaceRegistry)
-	return encodingConfig
-}
-
 // RegisterLegacyAminoCodec registers the sdk message type.
-func RegisterLegacyAminoCodec(cdc *commoncodec.LegacyAmino) {
-	cdc.RegisterInterface((*types.Msg)(nil), nil)
-	cdc.RegisterInterface((*types.Tx)(nil), nil)
-	commoncryptocodec.RegisterCrypto(cdc)
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+
 }
 
 // RegisterInterfaces registers the sdk message type.
-func RegisterInterfaces(registry cryptotypes.InterfaceRegistry) {
-	registry.RegisterInterface("cosmos.v1beta1.Msg", (*types.Msg)(nil))
-	txtypes.RegisterInterfaces(registry)
-	commoncryptocodec.RegisterInterfaces(registry)
+func RegisterInterfaces(registry cdctytpes.InterfaceRegistry) {
+
 }

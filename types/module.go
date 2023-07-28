@@ -1,12 +1,12 @@
 package types
 
 import (
-	"github.com/tendermint/tendermint/crypto"
-
-	codectypes "github.com/irisnet/core-sdk-go/common/codec/types"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	"github.com/cosmos/cosmos-sdk/types"
 )
 
-//The purpose of this interface is to convert the irishub system type to the user receiving type
+// The purpose of this interface is to convert the irishub system type to the user receiving type
 // and standardize the user interface
 type Response interface {
 	Convert() interface{}
@@ -23,12 +23,12 @@ type Module interface {
 }
 
 type KeyManager interface {
-	Sign(name, password string, data []byte) ([]byte, crypto.PubKey, error)
+	Sign(name, password string, data []byte) ([]byte, cryptotypes.PubKey, error)
 	Insert(name, password string) (string, string, error)
 	Recover(name, password, mnemonic, hdPath string) (string, error)
 	Import(name, password string, privKeyArmor string) (address string, err error)
 	Export(name, password string) (privKeyArmor string, err error)
 	Delete(name, password string) error
-	Find(name, password string) (crypto.PubKey, AccAddress, error)
+	Find(name, password string) (cryptotypes.PubKey, types.AccAddress, error)
 	Add(name, password string) (address string, mnemonic string, err Error)
 }

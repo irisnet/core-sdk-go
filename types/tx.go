@@ -1,53 +1,42 @@
 package types
 
-import (
-	"github.com/tendermint/tendermint/crypto"
+import "github.com/cosmos/cosmos-sdk/types"
 
-	commoncodec "github.com/irisnet/core-sdk-go/common/codec"
+const (
+	// maxMemoCharacters = 100
+	// txSigLimit        = 7
+	maxGasWanted = uint64((1 << 63) - 1)
+
+	Sync   BroadcastMode = "sync"
+	Async  BroadcastMode = "async"
+	Commit BroadcastMode = "commit"
 )
 
 type (
-	// Generator defines an interface a client can utilize to generate an
-	// application-defined concrete transaction type. The type returned must
-	// implement ClientTx.
-	Generator interface {
-		NewTx() ClientTx
-		NewFee() ClientFee
-		NewSignature() ClientSignature
-	}
-
-	ClientFee interface {
-		Fee
-		SetGas(uint64)
-		SetAmount(Coins)
-	}
-
-	ClientSignature interface {
-		Signature
-		SetPubKey(crypto.PubKey) error
-		SetSignature([]byte)
-	}
-
-	// ClientTx defines an interface which an application-defined concrete transaction
-	// type must implement. Namely, it must be able to set messages, generate
-	// signatures, and provide canonical bytes to sign over. The transaction must
-	// also know how to encode itself.
-	ClientTx interface {
-		Tx
-		commoncodec.ProtoMarshaler
-
-		SetMsgs(...Msg) error
-		GetSignatures() []Signature
-		SetSignatures(...ClientSignature) error
-		GetFee() Fee
-		SetFee(ClientFee) error
-		GetMemo() string
-		SetMemo(string)
-
-		// CanonicalSignBytes returns the canonical JSON bytes to sign over, given a
-		// chain ID, along with an account and sequence number. The JSON encoding
-		// ensures all field names adhere to their proto definition, default values
-		// are omitted, and follows the JSON Canonical Form.
-		CanonicalSignBytes(cid string, num, seq uint64) ([]byte, error)
-	}
+	BroadcastMode string
 )
+
+type BaseTx struct {
+	From               string           `json:"from"`
+	Password           string           `json:"password"`
+	Gas                uint64           `json:"gas"`
+	Fee                types.DecCoins   `json:"fee"`
+	FeePayer           types.AccAddress `json:"fee_payer"`
+	FeeGranter         types.AccAddress `json:"fee_granter"`
+	Memo               string           `json:"memo"`
+	Mode               BroadcastMode    `json:"broadcast_mode"`
+	SimulateAndExecute bool             `json:"simulate_and_execute"`
+	GasAdjustment      float64          `json:"gas_adjustment"`
+	TimeoutHeight      uint64           `json:"timeout_height"`
+}
+
+// ResultTx encapsulates the return result of the transaction. When the transaction fails,
+// it is an empty object. The specific error information can be obtained through the Error interface.
+type ResultTx struct {
+	GasWanted int64              `json:"gas_wanted"`
+	GasUsed   int64              `json:"gas_used"`
+	Data      []byte             `json:"data"`
+	Events    types.StringEvents `json:"events"`
+	Hash      string             `json:"hash"`
+	Height    int64              `json:"height"`
+}
