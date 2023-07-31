@@ -11,6 +11,11 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 )
 
+type BlockDetailMetadata struct {
+	Block       []byte `json:"block"`
+	BlockResult []byte `json:"block_result"`
+}
+
 type Block struct {
 	tmtypes.Header `json:"header"`
 	Data           `json:"data"`

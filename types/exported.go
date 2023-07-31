@@ -49,6 +49,7 @@ type TmQuery interface {
 	QueryTx(hash string) (*types.TxResponse, error)
 	QueryTxs(events []string, page, limit int, orderBy string) (*types.SearchTxsResult, error)
 	QueryBlock(height int64) (BlockDetail, error)
+	BlockMetadata(height int64) (BlockDetailMetadata, error)
 }
 
 type TokenManager interface {

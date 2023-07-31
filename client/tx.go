@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -88,6 +89,31 @@ func (base baseClient) QueryBlock(height int64) (sdk.BlockDetail, error) {
 		BlockID:     block.BlockID,
 		Block:       sdk.ParseBlock(base.encodingConfig.TxConfig.TxDecoder(), block.Block),
 		BlockResult: sdk.ParseBlockResult(blockResult),
+	}, nil
+}
+
+func (base baseClient) BlockMetadata(height int64) (sdk.BlockDetailMetadata, error) {
+	block, err := base.Block(context.Background(), &height)
+	if err != nil {
+		return sdk.BlockDetailMetadata{}, err
+	}
+	blockMetadata, err := json.Marshal(block)
+	if err != nil {
+		return sdk.BlockDetailMetadata{}, err
+	}
+
+	blockResult, err := base.BlockResults(context.Background(), &height)
+	if err != nil {
+		return sdk.BlockDetailMetadata{}, err
+	}
+	blockResultMetadata, err := json.Marshal(blockResult)
+	if err != nil {
+		return sdk.BlockDetailMetadata{}, err
+	}
+
+	return sdk.BlockDetailMetadata{
+		Block:       blockMetadata,
+		BlockResult: blockResultMetadata,
 	}, nil
 }
 
