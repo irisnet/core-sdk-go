@@ -1,14 +1,12 @@
 package client
 
 import (
-	"github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/irisnet/core-sdk-go/types"
 	"github.com/tendermint/tendermint/libs/log"
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	rpcclienthttp "github.com/tendermint/tendermint/rpc/client/http"
-
-	sdk "github.com/irisnet/core-sdk-go/types"
 )
 
 type rpcClient struct {
@@ -34,9 +32,9 @@ func NewRPCClient(cfg sdk.ClientConfig,
 		panic(err)
 	}
 
-	if err := client.Start(); err != nil {
-		panic(err)
-	}
+	//if err := client.Start(); err != nil {
+	//	panic(err)
+	//}
 	return rpcClient{
 		Client:    client,
 		Logger:    logger,
