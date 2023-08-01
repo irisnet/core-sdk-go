@@ -77,11 +77,11 @@ func (client *Client) Module(name string) sdk.Module {
 }
 
 // RegisterLegacyAminoCodec registers the sdk message type.
-func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+func (client *Client) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 
 }
 
 // RegisterInterfaces registers the sdk message type.
-func RegisterInterfaces(registry cdctytpes.InterfaceRegistry) {
+func (client *Client) RegisterInterfaces(registry cdctytpes.InterfaceRegistry) {
 
 }
