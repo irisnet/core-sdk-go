@@ -2,27 +2,25 @@
 package client
 
 import (
-	"context"
 	"encoding/hex"
-	"errors"
-	"fmt"
 	"strings"
 	"time"
+
+	rpcclienthttp "github.com/tendermint/tendermint/rpc/client/http"
+
+	"google.golang.org/grpc"
 
 	"github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/avast/retry-go"
-	grpc1 "github.com/gogo/protobuf/grpc"
-	"github.com/gogo/protobuf/proto"
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/tmhash"
-	"github.com/tendermint/tendermint/libs/log"
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
-
 	commoncodec "github.com/cosmos/cosmos-sdk/codec"
+	"github.com/irisnet/core-sdk-go/common/cache"
 	commoncache "github.com/irisnet/core-sdk-go/common/cache"
 	sdklog "github.com/irisnet/core-sdk-go/common/log"
 	sdk "github.com/irisnet/core-sdk-go/types"
+	"github.com/tendermint/tendermint/crypto/tmhash"
+	"github.com/tendermint/tendermint/libs/log"
+	rpc "github.com/tendermint/tendermint/rpc/client"
 )
 
 const (
@@ -34,74 +32,77 @@ const (
 )
 
 type baseClient struct {
-	sdk.TmClient
+	rpc.Client
 	sdk.TokenManager
-	sdk.KeyManager
+	cache.Cache
+	log.Logger
+
+	KeyManager sdk.KeyManager
+
+	grpcConn   *grpc.ClientConn
+	expiration time.Duration
+
 	cfg            *sdk.ClientConfig
 	encodingConfig sdk.EncodingConfig
 	l              *locker
-	AccountQuery
 }
 
 // NewBaseClient return the baseClient for every sub modules
-func NewBaseClient(cfg sdk.ClientConfig, encodingConfig sdk.EncodingConfig, logger log.Logger) sdk.BaseClient {
+func NewBaseClient(cfg sdk.ClientConfig, encodingConfig sdk.EncodingConfig) sdk.BaseClient {
 	// create logger
-	if logger == nil {
-		logger = sdklog.NewLogger(sdklog.Config{
-			Format: sdklog.FormatText,
-			Level:  cfg.Level,
-		})
+	logger := sdklog.NewLogger(sdklog.Config{
+		Format: sdklog.FormatText,
+		Level:  cfg.Level,
+	})
+
+	grpcOptions := []grpc.DialOption{grpc.WithInsecure()}
+	if len(cfg.GRPCOptions) > 0 {
+		grpcOptions = append(grpcOptions, cfg.GRPCOptions...)
+	}
+
+	grpcConn, err := grpc.Dial(cfg.GRPCAddr, grpcOptions...)
+	if err != nil {
+		logger.Error(err.Error())
+		panic(err)
+	}
+
+	cometbftClient, err := rpcclienthttp.NewWithTimeout(
+		cfg.RPCAddr,
+		cfg.WSAddr,
+		cfg.Timeout)
+	if err != nil {
+		logger.Error(err.Error())
+		panic(err)
 	}
 
 	base := baseClient{
-		TmClient: NewRPCClient(
-			cfg,
-			encodingConfig.Amino,
-			encodingConfig.TxConfig.TxDecoder(),
-			logger,
-		),
+		Client:         cometbftClient,
+		grpcConn:       grpcConn,
 		cfg:            &cfg,
 		encodingConfig: encodingConfig,
 		l:              NewLocker(concurrency).setLogger(logger),
 		TokenManager:   cfg.TokenManager,
-	}
-	base.KeyManager = KeyManager{
-		KeyDAO: cfg.KeyDAO,
-		Algo:   cfg.Algo,
+		KeyManager:     sdk.NewKeyManager(cfg.KeyDAO, cfg.Algo),
 	}
 
 	c := commoncache.NewCache(cacheCapacity, cfg.Cached)
-	base.AccountQuery = AccountQuery{
-		Queries:    base,
-		GRPCClient: NewGRPCClient(cfg.GRPCAddr, cfg.GRPCOptions...),
-		Logger:     logger,
-		Cache:      c,
-		cdc:        encodingConfig.Marshaler,
-		Km:         base.KeyManager,
-		expiration: cacheExpirePeriod,
-	}
+	base.Cache = c
+
+	base.Logger = logger
+
 	return &base
 }
 
-func (base *baseClient) RemoveCache(address string) bool {
-	return base.removeCache(address)
-}
-
-func (base *baseClient) Logger() log.Logger {
-	return base.AccountQuery.Logger
+func (base *baseClient) GrpcConn() *grpc.ClientConn {
+	return base.grpcConn
 }
 
 func (base *baseClient) SetLogger(logger log.Logger) {
-	base.AccountQuery.Logger = logger
+	base.Logger = logger
 }
 
-// Codec returns codec.
 func (base *baseClient) Marshaler() commoncodec.Codec {
 	return base.encodingConfig.Marshaler
-}
-
-func (base *baseClient) GenConn() (grpc1.ClientConn, error) {
-	return base.AccountQuery.GenConn()
 }
 
 func (base *baseClient) BuildTxHash(msg []types.Msg, baseTx sdk.BaseTx) (string, sdk.Error) {
@@ -123,7 +124,7 @@ func (base *baseClient) BuildAndSign(msg []types.Msg, baseTx sdk.BaseTx) ([]byte
 		return nil, sdk.Wrap(err)
 	}
 
-	base.Logger().Debug("sign transaction success")
+	base.Debug("sign transaction success")
 	return txByte, nil
 }
 
@@ -133,7 +134,7 @@ func (base *baseClient) BuildAndSignWithAccount(addr string, accountNumber, sequ
 		return nil, sdk.Wrap(err)
 	}
 
-	base.Logger().Debug("sign transaction success")
+	base.Debug("sign transaction success")
 	return txByte, nil
 }
 
@@ -148,7 +149,7 @@ func (base *baseClient) BuildAndSendWithAccount(addr string, accountNumber, sequ
 		return sdk.ResultTx{}, err
 	}
 	if !valid {
-		base.Logger().Debug("tx is too large")
+		base.Debug("tx is too large")
 		// filter out transactions that have been sent
 		// reset the maximum number of msg in each transaction
 		//batch = batch / 2
@@ -187,7 +188,7 @@ func (base *baseClient) BuildAndSend(msg []types.Msg, baseTx sdk.BaseTx) (sdk.Re
 
 	onRetryFunc := func(n uint, err error) {
 		_ = base.removeCache(address)
-		base.Logger().Error("wrong sequence, will retry",
+		base.Error("wrong sequence, will retry",
 			"address", address, "attempts", n, "err", err.Error())
 	}
 
@@ -204,70 +205,11 @@ func (base *baseClient) BuildAndSend(msg []types.Msg, baseTx sdk.BaseTx) (sdk.Re
 	return res, nil
 }
 
-func (base baseClient) QueryWithResponse(path string, data interface{}, result sdk.Response) error {
-	res, err := base.Query(path, data)
-	if err != nil {
-		return err
-	}
-
-	if err := base.encodingConfig.Marshaler.UnmarshalJSON(res, result.(proto.Message)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (base baseClient) Query(path string, data interface{}) ([]byte, error) {
-	var bz []byte
-	var err error
-	if data != nil {
-		bz, err = base.encodingConfig.Marshaler.MarshalJSON(data.(proto.Message))
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	opts := rpcclient.ABCIQueryOptions{
-		// Height: cliCtx.Height,
-		Prove: false,
-	}
-	result, err := base.ABCIQueryWithOptions(context.Background(), path, bz, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := result.Response
-	if !resp.IsOK() {
-		return nil, errors.New(resp.Log)
-	}
-
-	return resp.Value, nil
-}
-
-func (base baseClient) QueryStore(key sdk.HexBytes, storeName string, height int64, prove bool) (res abci.ResponseQuery, err error) {
-	path := fmt.Sprintf("/store/%s/%s", storeName, "key")
-	opts := rpcclient.ABCIQueryOptions{
-		Prove:  prove,
-		Height: height,
-	}
-
-	result, err := base.ABCIQueryWithOptions(context.Background(), path, key, opts)
-	if err != nil {
-		return res, err
-	}
-
-	resp := result.Response
-	if !resp.IsOK() {
-		return res, errors.New(resp.Log)
-	}
-	return resp, nil
-}
-
 func (base *baseClient) prepare(baseTx sdk.BaseTx) (*sdk.Factory, error) {
 
 	factory := sdk.NewFactory().
 		WithChainID(base.cfg.ChainID).
-		WithKeyManager(base.AccountQuery.Km).
+		WithKeyManager(base.KeyManager).
 		WithMode(base.cfg.Mode).
 		WithSimulateAndExecute(baseTx.SimulateAndExecute).
 		WithGas(base.cfg.Gas).
@@ -340,7 +282,7 @@ func (base *baseClient) prepare(baseTx sdk.BaseTx) (*sdk.Factory, error) {
 func (base *baseClient) prepareWithAccount(addr string, accountNumber, sequence uint64, baseTx sdk.BaseTx) (*sdk.Factory, error) {
 	factory := sdk.NewFactory().
 		WithChainID(base.cfg.ChainID).
-		WithKeyManager(base.AccountQuery.Km).
+		WithKeyManager(base.KeyManager).
 		WithMode(base.cfg.Mode).
 		WithSimulateAndExecute(baseTx.SimulateAndExecute).
 		WithGas(base.cfg.Gas).

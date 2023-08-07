@@ -4,12 +4,9 @@ import (
 	"encoding/hex"
 	"strings"
 
-	"github.com/tendermint/tendermint/crypto"
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	tmclient "github.com/tendermint/tendermint/rpc/client"
 	tmtypes "github.com/tendermint/tendermint/types"
-
-	"github.com/cosmos/cosmos-sdk/types/kv"
 )
 
 type (
@@ -19,9 +16,6 @@ type (
 	StatusClient  = tmclient.StatusClient
 	NetworkClient = tmclient.NetworkClient
 	Header        = tmtypes.Header
-	Pair          = kv.Pair
-
-	TmPubKey = crypto.PubKey
 )
 
 func MustHexBytesFrom(hexStr string) HexBytes {

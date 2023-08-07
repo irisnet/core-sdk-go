@@ -15,13 +15,16 @@ import (
 type bankClient struct {
 	sdk.BaseClient
 	codec.Codec
+	queryCli banktypes.QueryClient
 }
 
 // bank NewClient
 func NewClient(bc sdk.BaseClient, cdc codec.Codec) Client {
+
 	return bankClient{
-		BaseClient: bc,
-		Codec:      cdc,
+		queryCli: banktypes.NewQueryClient(bc.GrpcConn()),
+
+		Codec: cdc,
 	}
 }
 
@@ -45,12 +48,8 @@ func (b bankClient) QueryAccount(address string) (sdk.BaseAccount, sdk.Error) {
 
 // TotalSupply queries the total supply of all coins.
 func (b bankClient) TotalSupply() (types.Coins, sdk.Error) {
-	conn, err := b.GenConn()
-	if err != nil {
-		return nil, sdk.Wrap(err)
-	}
 
-	resp, err := banktypes.NewQueryClient(conn).TotalSupply(
+	resp, err := b.queryCli.TotalSupply(
 		context.Background(),
 		&banktypes.QueryTotalSupplyRequest{},
 	)

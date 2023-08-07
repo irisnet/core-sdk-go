@@ -2,9 +2,7 @@ package sdk
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
-	cdctytpes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/irisnet/core-sdk-go/client"
-	keys "github.com/irisnet/core-sdk-go/client"
 	bank2 "github.com/irisnet/core-sdk-go/modules/bank"
 	"github.com/irisnet/core-sdk-go/modules/feegrant"
 	sdk "github.com/irisnet/core-sdk-go/types"
@@ -17,7 +15,6 @@ type Client struct {
 	encodingConfig sdk.EncodingConfig
 	sdk.BaseClient
 	Bank     bank2.Client
-	Key      keys.Client
 	FeeGrant feegrant.Client
 }
 
@@ -25,18 +22,15 @@ func NewClient(cfg sdk.ClientConfig) Client {
 	encodingConfig := sdk.MakeEncodingConfig()
 
 	// create a instance of baseClient
-	baseClient := client.NewBaseClient(cfg, encodingConfig, nil)
+	baseClient := client.NewBaseClient(cfg, encodingConfig)
 	bankClient := bank2.NewClient(baseClient, encodingConfig.Marshaler)
-	keysClient := keys.NewKeysClient(cfg, baseClient)
 	feeGrantClient := feegrant.NewClient(baseClient, encodingConfig.Marshaler)
 
 	client := Client{
-		logger:         baseClient.Logger(),
 		BaseClient:     baseClient,
 		moduleManager:  make(map[string]sdk.Module),
 		encodingConfig: encodingConfig,
 		Bank:           bankClient,
-		Key:            keysClient,
 		FeeGrant:       feeGrantClient,
 	}
 	client.RegisterModule(
@@ -74,14 +68,4 @@ func (client *Client) RegisterModule(ms ...sdk.Module) {
 
 func (client *Client) Module(name string) sdk.Module {
 	return client.moduleManager[name]
-}
-
-// RegisterLegacyAminoCodec registers the sdk message type.
-func (client *Client) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-
-}
-
-// RegisterInterfaces registers the sdk message type.
-func (client *Client) RegisterInterfaces(registry cdctytpes.InterfaceRegistry) {
-
 }

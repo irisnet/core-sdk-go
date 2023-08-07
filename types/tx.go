@@ -40,3 +40,11 @@ type ResultTx struct {
 	Hash      string             `json:"hash"`
 	Height    int64              `json:"height"`
 }
+
+type TxResult struct {
+	Code      uint32             `json:"code"`
+	Log       string             `json:"log"`
+	GasWanted int64              `json:"gas_wanted"`
+	GasUsed   int64              `json:"gas_used"`
+	Events    types.StringEvents `json:"events"`
+}

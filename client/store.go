@@ -7,7 +7,7 @@ import (
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
 )
 
-func (base baseClient) QueryWithData(path string, key []byte) ([]byte, int64, error) {
+func (base *baseClient) QueryWithData(path string, key []byte) ([]byte, int64, error) {
 	opts := rpcclient.ABCIQueryOptions{
 		Prove: true,
 	}
