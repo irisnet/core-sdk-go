@@ -1,11 +1,9 @@
 package keyring
 
 import (
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-
-	"github.com/cosmos/cosmos-sdk/crypto/hd"
+	sdkhd "github.com/irisnet/core-sdk-go/crypto/hd"
 )
 
 var (
-	SupportedAlgorithms = keyring.SigningAlgoList{hd.Secp256k1}
+	SupportedAlgorithms = sdkhd.SupportedAlgorithms
 )

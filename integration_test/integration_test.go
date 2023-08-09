@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/irisnet/core-sdk-go/common/address/irishub"
+	"github.com/irisnet/core-sdk-go/common/chain/irishub"
 
 	"github.com/irisnet/core-sdk-go/crypto/keyring"
 
