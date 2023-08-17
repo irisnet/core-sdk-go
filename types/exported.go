@@ -3,6 +3,7 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/libs/log"
+	rpc "github.com/tendermint/tendermint/rpc/client"
 	"google.golang.org/grpc"
 )
 
@@ -58,6 +59,7 @@ type BaseClient interface {
 	Queries
 	Logger
 	KeyClient
+	rpc.Client
 
 	GrpcConn() *grpc.ClientConn
 }

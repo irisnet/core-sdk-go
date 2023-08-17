@@ -37,6 +37,7 @@ func NewClient(cfg sdk.ClientConfig) Client {
 		bankClient,
 		feeGrantClient,
 	)
+
 	return client
 }
 
