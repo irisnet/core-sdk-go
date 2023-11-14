@@ -1,6 +1,7 @@
 package types
 
 import (
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/libs/log"
 	rpc "github.com/tendermint/tendermint/rpc/client"
@@ -61,5 +62,6 @@ type BaseClient interface {
 	KeyClient
 	rpc.Client
 
+	Marshaler() codec.Codec
 	GrpcConn() *grpc.ClientConn
 }
