@@ -16,6 +16,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(cdc)
 	cryptocodec.RegisterCrypto(cdc)
 	codec.RegisterEvidences(cdc)
+	std.RegisterLegacyAminoCodec(cdc)
 
 	// Register the auth modules msgs, requires import of x/auth/types.
 	authtypes.RegisterLegacyAminoCodec(cdc)
