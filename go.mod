@@ -138,5 +138,5 @@ replace (
 	github.com/jhump/protoreflect => github.com/jhump/protoreflect v1.9.0
 	//github.com/tendermint/tendermint => github.com/bianjieai/tendermint v0.34.23-irita-221118
 	// use cometbft
-	github.com/tendermint/tendermint => github.com/bianjieai/cometbft v0.0.0-20230726064514-4b071d98c9d7
+	github.com/tendermint/tendermint => github.com/bianjieai/cometbft v0.0.0-20231218034443-814dda94aba2
 )

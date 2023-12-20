@@ -4,7 +4,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/std"
-	"github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	cryptocodec "github.com/irisnet/core-sdk-go/crypto/codec"
 
@@ -13,9 +12,8 @@ import (
 
 // RegisterLegacyAminoCodec registers Interfaces from types, crypto, and SDK std.
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	types.RegisterLegacyAminoCodec(cdc)
+
 	cryptocodec.RegisterCrypto(cdc)
-	codec.RegisterEvidences(cdc)
 	std.RegisterLegacyAminoCodec(cdc)
 
 	// Register the auth modules msgs, requires import of x/auth/types.

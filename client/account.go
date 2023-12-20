@@ -51,6 +51,7 @@ func (base *baseClient) QueryAccount(address string) (sdk.BaseAccount, sdk.Error
 
 	if baseAccount.GetPubKey() != nil {
 		account.PubKey = baseAccount.GetPubKey().String()
+		account.PubKeyType = baseAccount.GetPubKey().Type()
 	}
 
 	return account, nil
