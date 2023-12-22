@@ -34,7 +34,7 @@ type JSONRpcClient struct {
 	*WSEvents
 }
 
-func NewJSONRpcClient(rpcAddr, wsAddr string, endpoint string, timeout uint, header http.Header) (JSONRpcClient, error) {
+func NewJSONRPCClient(rpcAddr, wsAddr string, endpoint string, timeout uint, header http.Header) (JSONRpcClient, error) {
 	if wsAddr == "" {
 		wsAddr = rpcAddr
 	}

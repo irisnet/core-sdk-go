@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/log"
 	rpc "github.com/tendermint/tendermint/rpc/client"
@@ -27,7 +28,7 @@ func NewRPCClient(cfg sdktypes.ClientConfig,
 	txDecoder sdk.TxDecoder,
 	logger log.Logger,
 ) sdk.TmClient {
-	client, err := sdkrpc.NewJSONRpcClient(
+	client, err := sdkrpc.NewJSONRPCClient(
 		cfg.RPCAddr,
 		cfg.WSAddr,
 		"/websocket",

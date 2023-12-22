@@ -758,7 +758,10 @@ func (m *BasicAllowance) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthFeegrant
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthFeegrant
 			}
 			if (iNdEx + skippy) > l {
@@ -975,7 +978,10 @@ func (m *PeriodicAllowance) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthFeegrant
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthFeegrant
 			}
 			if (iNdEx + skippy) > l {
@@ -1093,7 +1099,10 @@ func (m *AllowedMsgAllowance) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthFeegrant
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthFeegrant
 			}
 			if (iNdEx + skippy) > l {
@@ -1243,7 +1252,10 @@ func (m *Grant) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthFeegrant
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthFeegrant
 			}
 			if (iNdEx + skippy) > l {

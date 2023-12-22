@@ -11,6 +11,7 @@ import (
 	cryptotypes "github.com/irisnet/core-sdk-go/common/codec/types"
 	commoncryptocodec "github.com/irisnet/core-sdk-go/common/crypto/codec"
 	"github.com/irisnet/core-sdk-go/gov"
+	"github.com/irisnet/core-sdk-go/ibc/nft_transfer"
 	"github.com/irisnet/core-sdk-go/ibc/transfer"
 	"github.com/irisnet/core-sdk-go/staking"
 	"github.com/irisnet/core-sdk-go/types"
@@ -26,6 +27,7 @@ type Client struct {
 	Key      keys.Client
 	Staking  staking.Client
 	Gov      gov.Client
+	NFTTransfer nft_transfer.Client
 	Transfer transfer.Client
 	FeeGrant feegrant.Client
 }
@@ -38,6 +40,7 @@ func NewClient(cfg types.ClientConfig) Client {
 	bankClient := bank.NewClient(baseClient, encodingConfig.Marshaler)
 	keysClient := keys.NewKeysClient(cfg, baseClient)
 	transferClient := transfer.NewClient(baseClient, encodingConfig.Marshaler)
+	nftTransferClient := nft_transfer.NewClient(baseClient, encodingConfig.Marshaler)
 	stakingClient := staking.NewClient(baseClient, encodingConfig.Marshaler)
 	govClient := gov.NewClient(baseClient, encodingConfig.Marshaler)
 	feeGrantClient := feegrant.NewClient(baseClient, encodingConfig.Marshaler)
@@ -51,6 +54,7 @@ func NewClient(cfg types.ClientConfig) Client {
 		Key:            keysClient,
 		Staking:        stakingClient,
 		Gov:            govClient,
+		NFTTransfer: 	nftTransferClient,
 		Transfer:       transferClient,
 		FeeGrant:       feeGrantClient,
 	}
@@ -59,6 +63,7 @@ func NewClient(cfg types.ClientConfig) Client {
 		stakingClient,
 		govClient,
 		transferClient,
+		nftTransferClient,
 		feeGrantClient,
 	)
 	return client

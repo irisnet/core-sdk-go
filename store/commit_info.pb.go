@@ -488,7 +488,10 @@ func (m *CommitInfo) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthCommitInfo
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthCommitInfo
 			}
 			if (iNdEx + skippy) > l {
@@ -603,7 +606,10 @@ func (m *StoreInfo) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthCommitInfo
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthCommitInfo
 			}
 			if (iNdEx + skippy) > l {
@@ -706,7 +712,10 @@ func (m *CommitID) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthCommitInfo
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthCommitInfo
 			}
 			if (iNdEx + skippy) > l {
