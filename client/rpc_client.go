@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/log"
 	rpc "github.com/tendermint/tendermint/rpc/client"
@@ -38,9 +39,9 @@ func NewRPCClient(cfg sdktypes.ClientConfig,
 		panic(err)
 	}
 
-	if err := client.Start(); err != nil {
-		panic(err)
-	}
+	//if err := client.Start(); err != nil {
+	//	panic(err)
+	//}
 	return rpcClient{
 		Client:    client,
 		Logger:    logger,

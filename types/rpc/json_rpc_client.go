@@ -12,14 +12,15 @@ import (
 	"strconv"
 	"time"
 
+	//"github.com/tendermint/tendermint/rpc/jsonrpc/types"
+	types "github.com/irisnet/core-sdk-go/types/rpc/types"
+
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
-	tmjson "github.com/tendermint/tendermint/libs/json"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/libs/service"
 	"github.com/tendermint/tendermint/rpc/client"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	"github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 )
 
@@ -349,16 +350,21 @@ func (c *JSONRpcClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 func (c *JSONRpcClient) Call(ctx context.Context, method string, params map[string]interface{}, result interface{}) (interface{}, error) {
-	requestBytes, err := c.mapToRequest(method, params)
+	//requestBytes, err := c.mapToRequest(method, params)
+	request, err := types.MapToRequest(types.JSONRPCIntID(0), method, params)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %s", err.Error())
+	}
+	requestBytes, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
 	req, err := http.NewRequest(http.MethodPost, c.remote, bytes.NewReader(requestBytes))
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %s", err.Error())
 	}
-
+	req.Header.Set("Content-Type", "application/json")
 	if c.header != nil {
 		for h := range c.header {
 			req.Header.Add(h, c.header.Get(h))
@@ -375,17 +381,29 @@ func (c *JSONRpcClient) Call(ctx context.Context, method string, params map[stri
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %s", err.Error())
 	}
-	rpcResponse := &types.RPCResponse{}
-	if err = json.Unmarshal(httpResponseBytes, rpcResponse); err != nil {
-		return nil, fmt.Errorf("error unmarshalling: %s", err.Error())
+
+	res, err := unmarshalResponseBytes(httpResponseBytes, types.JSONRPCIntID(0), result)
+	if err != nil {
+		return nil, fmt.Errorf("%s. %w", getHTTPRespErrPrefix(httpResponse), err)
 	}
-	if rpcResponse.Error != nil {
-		return nil, fmt.Errorf("request failed, code: %d, message: %s, data: %s", rpcResponse.Error.Code, rpcResponse.Error.Message, rpcResponse.Error.Data)
-	}
-	if err = tmjson.Unmarshal(rpcResponse.Result, result); err != nil {
-		return nil, fmt.Errorf("error unmarshalling result: %s", err.Error())
-	}
-	return result, nil
+
+	//rpcResponse := &types.RPCResponse{}
+	//if err = json.Unmarshal(httpResponseBytes, rpcResponse); err != nil {
+	//	return nil, fmt.Errorf("error unmarshalling: %s", err.Error())
+	//}
+	//if rpcResponse.Error != nil {
+	//	return nil, fmt.Errorf("request failed, code: %d, message: %s, data: %s", rpcResponse.Error.Code, rpcResponse.Error.Message, rpcResponse.Error.Data)
+	//}
+	// 出错的地方
+	//if err = tmjson.Unmarshal(rpcResponse.Result, result); err != nil {
+	//	return nil, fmt.Errorf("error unmarshalling result: %s", err.Error())
+	//}
+
+	return res, nil
+}
+
+func getHTTPRespErrPrefix(resp *http.Response) string {
+	return fmt.Sprintf("error in json rpc client, with http response metadata: (Status: %s, Protocol %s)", resp.Status, resp.Proto)
 }
 
 func (c JSONRpcClient) broadcastTX(ctx context.Context, route string, tx tmtypes.Tx) (*ctypes.ResultBroadcastTx, error) {

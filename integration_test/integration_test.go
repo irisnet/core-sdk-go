@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	nodeURI  = "tcp://localhost:26657"
+	//nodeURI  = "tcp://localhost:26657"
+	nodeURI  = "https://rpc-iris.keplr.app:443"
 	grpcAddr = "localhost:9090"
 	chainID  = "test"
 	charset  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -71,6 +72,11 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	}
 
 	s.Client = sdk.NewClient(cfg)
+	_, err = s.Client.QueryTx("4462019955E00CE4EF7FA61931A6379A741420AF4FE61F82CA4F60B61C0639DC")
+	if err != nil {
+		panic(err)
+	}
+
 	s.r = rand.New(rand.NewSource(time.Now().UnixNano()))
 	s.rootAccount = MockAccount{
 		Name:     "validator",

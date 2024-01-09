@@ -3,7 +3,6 @@ package rpc
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -807,15 +806,4 @@ func (u parsedURL) GetURL() string {
 func (u parsedURL) GetTrimmedHostWithPath() string {
 	// replace / with . for http requests (kvstore domain)
 	return strings.ReplaceAll(u.GetHostWithPath(), "/", ".")
-}
-
-func validateResponseID(id interface{}) error {
-	if id == nil {
-		return errors.New("no ID")
-	}
-	_, ok := id.(types.JSONRPCIntID)
-	if !ok {
-		return fmt.Errorf("expected JSONRPCIntID, but got: %T", id)
-	}
-	return nil
 }
