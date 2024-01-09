@@ -79,8 +79,10 @@ func decodeReflect(bz []byte, rv reflect.Value) error {
 		// jsonpb.Unmarshaler{} 解析
 		if err := rv.Addr().Interface().(json.Unmarshaler).UnmarshalJSON(bz); err != nil {
 			_, ok := rv.Addr().Interface().(*abci.ResponseDeliverTx)
-			fmt.Println(ok)
-			return nil
+			if ok {
+				return nil
+			}
+			return err
 		}
 		return rv.Addr().Interface().(json.Unmarshaler).UnmarshalJSON(bz)
 	}

@@ -1,6 +1,8 @@
 package integration_test
 
 import (
+	"context"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -72,11 +74,15 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	}
 
 	s.Client = sdk.NewClient(cfg)
-	_, err = s.Client.QueryTx("4462019955E00CE4EF7FA61931A6379A741420AF4FE61F82CA4F60B61C0639DC")
+	//_, err = s.Client.QueryTx("4462019955E00CE4EF7FA61931A6379A741420AF4FE61F82CA4F60B61C0639DC")
+	//if err != nil {
+	//	panic(err)
+	//}
+	res, err := s.Client.Status(context.Background())
 	if err != nil {
 		panic(err)
 	}
-
+	fmt.Println(res)
 	s.r = rand.New(rand.NewSource(time.Now().UnixNano()))
 	s.rootAccount = MockAccount{
 		Name:     "validator",
