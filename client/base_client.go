@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	cometbftrpcclient "github.com/cometbft/cometbft/rpc/jsonrpc/client"
+
 	"github.com/avast/retry-go"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	"github.com/gogo/protobuf/proto"
@@ -41,6 +43,9 @@ type baseClient struct {
 	cfg            *sdktypes.ClientConfig
 	encodingConfig sdktypes.EncodingConfig
 	l              *locker
+
+	cometbftClient *cometbftrpcclient.Client
+
 	AccountQuery
 }
 
@@ -53,7 +58,10 @@ func NewBaseClient(cfg sdktypes.ClientConfig, encodingConfig sdktypes.EncodingCo
 			Level:  cfg.Level,
 		})
 	}
-
+	cometbftClient, err := cometbftrpcclient.New(cfg.RPCAddr)
+	if err != nil {
+		panic(err)
+	}
 	base := baseClient{
 		TmClient: NewRPCClient(
 			cfg,
@@ -65,6 +73,7 @@ func NewBaseClient(cfg sdktypes.ClientConfig, encodingConfig sdktypes.EncodingCo
 		encodingConfig: encodingConfig,
 		l:              NewLocker(concurrency).setLogger(logger),
 		TokenManager:   cfg.TokenManager,
+		cometbftClient: cometbftClient,
 	}
 	base.KeyManager = KeyManager{
 		KeyDAO: cfg.KeyDAO,

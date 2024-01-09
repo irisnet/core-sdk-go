@@ -39,9 +39,9 @@ func NewRPCClient(cfg sdktypes.ClientConfig,
 		panic(err)
 	}
 
-	if err := client.Start(); err != nil {
-		panic(err)
-	}
+	//if err := client.Start(); err != nil {
+	//	panic(err)
+	//}
 	return rpcClient{
 		Client:    client,
 		Logger:    logger,

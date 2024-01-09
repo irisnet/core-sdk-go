@@ -7,30 +7,111 @@ import (
 	"strings"
 	"time"
 
+	comettypes "github.com/cometbft/cometbft/rpc/core/types"
+
 	"github.com/gogo/protobuf/jsonpb"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/irisnet/core-sdk-go/types"
 	typetx "github.com/irisnet/core-sdk-go/types/tx"
 )
 
 // QueryTx returns the tx info
 func (base baseClient) QueryTx(hash string) (sdk.ResultQueryTx, error) {
-	tx, err := hex.DecodeString(hash)
+	//tx, err := hex.DecodeString(hash)
+	//if err != nil {
+	//	return sdk.ResultQueryTx{}, err
+	//}
+	//
+	//res, err := base.Tx(context.Background(), tx, true)
+	//if err != nil {
+	//	return sdk.ResultQueryTx{}, err
+	//}
+	//
+	//resBlocks, err := base.getResultBlocks([]*ctypes.ResultTx{res})
+	//if err != nil {
+	//	return sdk.ResultQueryTx{}, err
+	//}
+	txHash, err := hex.DecodeString(hash)
 	if err != nil {
+		return sdk.ResultQueryTx{}, err
+	}
+	result := new(comettypes.ResultTx)
+	params := map[string]interface{}{
+		"hash":  txHash,
+		"prove": true,
+	}
+	res, err := base.cometbftClient.Call(context.Background(), "tx", params, result)
+	if err != nil {
+		return sdk.ResultQueryTx{}, err
+	}
+	resultTx := res.(*comettypes.ResultTx)
+	resBlocks, err := base.getResultBlocks2([]*comettypes.ResultTx{resultTx})
+	if err != nil {
+		return sdk.ResultQueryTx{}, err
+	}
+	return base.parseTxResul2(resultTx, resBlocks[resultTx.Height])
+}
+
+func (base baseClient) getResultBlocks2(resTxs []*comettypes.ResultTx) (map[int64]*ctypes.ResultBlock, error) {
+	resBlocks := make(map[int64]*ctypes.ResultBlock)
+	for _, resTx := range resTxs {
+		if _, ok := resBlocks[resTx.Height]; !ok {
+			resBlock, err := base.Block(context.Background(), &resTx.Height)
+			if err != nil {
+				return nil, err
+			}
+
+			resBlocks[resTx.Height] = resBlock
+		}
+	}
+	return resBlocks, nil
+}
+
+func (base baseClient) parseTxResul2(res *comettypes.ResultTx, resBlock *ctypes.ResultBlock) (sdk.ResultQueryTx, error) {
+	var tx sdk.Tx
+	var err error
+
+	decode := base.encodingConfig.TxConfig.TxDecoder()
+	if tx, err = decode(res.Tx); err != nil {
 		return sdk.ResultQueryTx{}, err
 	}
 
-	res, err := base.Tx(context.Background(), tx, true)
+	unwrappedTx, err := typetx.Unwrap(base.Marshaler(), tx)
 	if err != nil {
 		return sdk.ResultQueryTx{}, err
 	}
+	events := sdktypes.StringifyEvents(res.TxResult.Events)
+	var sdkEvents []sdk.StringEvent
+	for _, event := range events {
+		tmpSdkevent := sdk.StringEvent{
+			Type:       event.Type,
+			Attributes: []sdk.Attribute{},
+		}
+		for _, attr := range event.Attributes {
+			tmpSdkevent.Attributes = append(tmpSdkevent.Attributes, sdk.Attribute{
+				Key:   attr.Key,
+				Value: attr.Value,
+			})
+		}
 
-	resBlocks, err := base.getResultBlocks([]*ctypes.ResultTx{res})
-	if err != nil {
-		return sdk.ResultQueryTx{}, err
+		sdkEvents = append(sdkEvents, tmpSdkevent)
 	}
-	return base.parseTxResult(res, resBlocks[res.Height])
+	return sdk.ResultQueryTx{
+		Hash:   res.Hash.String(),
+		Height: res.Height,
+		Tx:     *unwrappedTx,
+		Result: sdk.TxResult{
+			Code:      res.TxResult.Code,
+			Log:       res.TxResult.Log,
+			GasWanted: res.TxResult.GasWanted,
+			GasUsed:   res.TxResult.GasUsed,
+			Events:    sdkEvents,
+			Data:      res.TxResult.Data,
+		},
+		Timestamp: resBlock.Block.Time.Format(time.RFC3339),
+	}, nil
 }
 
 func (base baseClient) QueryTxs(builder *sdk.EventQueryBuilder, page, size *int) (sdk.ResultSearchTxs, error) {
